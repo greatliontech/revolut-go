@@ -263,6 +263,201 @@ func TestEmit_BodyReceiverEmittedAsValue(t *testing.T) {
 // numeric, and boolean. Regression test for a vet-caught bug where
 // named enums were emitted without a string() conversion and ints
 // were compared to "".
+// TestEmit_QueryParamsEncoderAndApplyDefaults pins the three
+// intertwined emit paths on a Params struct: the encode() helper
+// that serialises fields into url.Values, ApplyDefaults that
+// fills zero-value fields with the spec's declared defaults, and
+// the interaction between DefaultLiteral / DefaultZeroCond.
+func TestEmit_QueryParamsEncoderAndApplyDefaults(t *testing.T) {
+	d := &ir.Decl{
+		Name:               "ListParams",
+		Kind:               ir.DeclStruct,
+		QueryParamsEncoder: true,
+		Fields: []*ir.Field{
+			{JSONName: "limit", GoName: "Limit", Type: ir.Prim("int"), DefaultLiteral: "100"},
+			{JSONName: "page_token", GoName: "PageToken", Type: ir.Prim("string")},
+		},
+	}
+	w := newFileWriter("sample", []string{"net/url", "strconv"})
+	w.header()
+	writeDecl(w, d)
+	got := w.buf.String()
+	assertGofmt(t, "params-encoder", got)
+
+	for _, want := range []string{
+		"func (p *ListParams) encode() url.Values",
+		`q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))`,
+		`q.Set("page_token", p.PageToken)`,
+		"func (p *ListParams) ApplyDefaults()",
+		"if p.Limit == 0 {",
+		"p.Limit = 100",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %q\n---source---\n%s", want, got)
+		}
+	}
+}
+
+// TestEmit_FormEncoder pins the form encoder emission. Form
+// bodies are common on OAuth token exchanges; the encoder must
+// produce url.Values with one key per required field.
+func TestEmit_FormEncoder(t *testing.T) {
+	d := &ir.Decl{
+		Name:        "TokenReq",
+		Kind:        ir.DeclStruct,
+		FormEncoder: true,
+		Fields: []*ir.Field{
+			{JSONName: "grant_type", GoName: "GrantType", Type: ir.Prim("string"), Required: true},
+			{JSONName: "refresh_token", GoName: "RefreshToken", Type: ir.Prim("string")},
+		},
+	}
+	w := newFileWriter("x", []string{"fmt", "net/url", "strconv", "time"})
+	w.header()
+	writeDecl(w, d)
+	got := w.buf.String()
+	assertGofmt(t, "form-encoder", got)
+	for _, want := range []string{
+		"func (r *TokenReq) encodeForm() url.Values",
+		`"grant_type"`,
+		`"refresh_token"`,
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %q\n---source---\n%s", want, got)
+		}
+	}
+}
+
+// TestEmit_ProbeDecoderForUntaggedUnion pins the emitter path
+// for an untagged union where each variant has a required-field
+// probe. The decoder reads into a map[string]json.RawMessage
+// and dispatches based on which probe keys are present.
+func TestEmit_ProbeDecoderForUntaggedUnion(t *testing.T) {
+	spec := &ir.Spec{
+		Package:   "sample",
+		ErrPrefix: "sample",
+		Decls: []*ir.Decl{
+			{
+				Name:         "Event",
+				Kind:         ir.DeclInterface,
+				MarkerMethod: "isEvent",
+				Variants: []ir.Variant{
+					{GoName: "Click", Tag: "Click", RequiredProbe: []string{"x", "y"}},
+					{GoName: "Scroll", Tag: "Scroll", RequiredProbe: []string{"delta"}},
+				},
+			},
+			{
+				Name: "Click",
+				Kind: ir.DeclStruct,
+				Fields: []*ir.Field{
+					{JSONName: "x", GoName: "X", Type: ir.Prim("int"), Required: true},
+					{JSONName: "y", GoName: "Y", Type: ir.Prim("int"), Required: true},
+				},
+				ImplementsUnions: []string{"Event"},
+			},
+			{
+				Name: "Scroll",
+				Kind: ir.DeclStruct,
+				Fields: []*ir.Field{
+					{JSONName: "delta", GoName: "Delta", Type: ir.Prim("int"), Required: true},
+				},
+				ImplementsUnions: []string{"Event"},
+			},
+		},
+	}
+	dir, err := os.MkdirTemp("", "emit-probe-*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+	if err := Spec(spec, dir); err != nil {
+		t.Fatalf("Spec: %v", err)
+	}
+	b, err := os.ReadFile(filepath.Join(dir, "gen_types.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(b)
+	assertGofmt(t, "probe-decoder", src)
+	for _, want := range []string{
+		"type Event interface",
+		"isEvent()",
+		"func decodeEvent(data []byte) (Event, error)",
+		"hasJSONKey(m",
+		"func (Click) isEvent()",
+		"func (Scroll) isEvent()",
+	} {
+		if !strings.Contains(src, want) {
+			t.Errorf("missing %q\n---source---\n%s", want, src)
+		}
+	}
+}
+
+// TestEmit_CursorPaginationIterator pins the Seq2 iterator
+// emission for cursor-style pagination: the generated ListAll
+// method wraps List and advances via the next_page_token field.
+func TestEmit_CursorPaginationIterator(t *testing.T) {
+	spec := &ir.Spec{
+		Package:   "sample",
+		ErrPrefix: "sample",
+		Decls: []*ir.Decl{
+			{Name: "Item", Kind: ir.DeclStruct, Fields: []*ir.Field{
+				{JSONName: "id", GoName: "ID", Type: ir.Prim("string"), Required: true},
+			}},
+			{Name: "ListResp", Kind: ir.DeclStruct, Fields: []*ir.Field{
+				{JSONName: "items", GoName: "Items", Type: ir.Slice(ir.Named("Item"))},
+				{JSONName: "next_page_token", GoName: "NextPageToken", Type: ir.Prim("string")},
+			}},
+		},
+		Resources: []*ir.Resource{{
+			Name: "Stuff",
+			Methods: []*ir.Method{{
+				Receiver: "Stuff",
+				Name:     "List",
+				Returns:  ir.Named("ListResp"),
+				HTTPCall: ir.HTTPCall{
+					Method: "GET", PathExpr: "stuff",
+					RespKind: ir.RespJSONValue,
+					RespType: ir.Named("ListResp"),
+				},
+				Pagination: &ir.Pagination{
+					Shape:          ir.PaginationCursor,
+					ItemType:       ir.Named("Item"),
+					ItemsField:     "Items",
+					NextTokenField: "NextPageToken",
+					NextTokenType:  ir.Prim("string"),
+					PageTokenParam: "PageToken",
+					PageTokenType:  ir.Prim("string"),
+				},
+			}},
+		}},
+	}
+	dir, err := os.MkdirTemp("", "emit-pag-*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+	if err := Spec(spec, dir); err != nil {
+		t.Fatalf("Spec: %v", err)
+	}
+	b, err := os.ReadFile(filepath.Join(dir, "gen_stuff.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(b)
+	assertGofmt(t, "pagination", src)
+	for _, want := range []string{
+		"func (s *Stuff) ListAll(",
+		"iter.Seq2[Item, error]",
+		"s.List(ctx",
+		"resp.NextPageToken",
+		"p.PageToken",
+	} {
+		if !strings.Contains(src, want) {
+			t.Errorf("missing %q\n---source---\n%s", want, src)
+		}
+	}
+}
+
 func TestEmit_HeaderParamTypes(t *testing.T) {
 	spec := &ir.Spec{
 		Package:   "sample",
