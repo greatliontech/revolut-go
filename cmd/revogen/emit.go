@@ -551,7 +551,7 @@ func writeMethod(buf *bytes.Buffer, r *Resource, op *Operation, unionTypes map[s
 	}
 	// Body-field validation.
 	for _, v := range op.Validate {
-		fmt.Fprintf(buf, "\tif %s == \"\" {\n", v.GoExpr)
+		fmt.Fprintf(buf, "\tif %s {\n", v.Cond)
 		fmt.Fprintf(buf, "\t\treturn %serrors.New(%q)\n", ifZero(zero), v.Message)
 		buf.WriteString("\t}\n")
 	}

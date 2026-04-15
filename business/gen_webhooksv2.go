@@ -35,7 +35,7 @@ func (s *WebhooksV2) List(ctx context.Context) ([]WebhookV2Basic, error) {
 // Docs: https://developer.revolut.com/docs/business/create-webhook
 func (s *WebhooksV2) Create(ctx context.Context, req CreateWebhookRequest) (*WebhookV2, error) {
 	if req.URL == "" {
-		return nil, errors.New("business: CreateWebhookRequest.URL is required")
+		return nil, errors.New("business: CreateWebhookRequest.url is required")
 	}
 	var out WebhookV2
 	if err := s.t.Do(ctx, http.MethodPost, "webhooks", req, &out); err != nil {

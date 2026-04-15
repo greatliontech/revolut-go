@@ -92,10 +92,10 @@ func (s *Accounting) GetCategoriesAll(ctx context.Context, opts *GetAccountingCa
 // Docs: https://developer.revolut.com/docs/business/create-accounting-category
 func (s *Accounting) CreateCategory(ctx context.Context, req CreateAccountingCategoryRequest) (*ResourceCreatedResponse, error) {
 	if req.Code == "" {
-		return nil, errors.New("business: CreateAccountingCategoryRequest.Code is required")
+		return nil, errors.New("business: CreateAccountingCategoryRequest.code is required")
 	}
 	if req.Name == "" {
-		return nil, errors.New("business: CreateAccountingCategoryRequest.Name is required")
+		return nil, errors.New("business: CreateAccountingCategoryRequest.name is required")
 	}
 	var out ResourceCreatedResponse
 	if err := s.t.Do(ctx, http.MethodPost, "accounting-categories", req, &out); err != nil {
@@ -211,8 +211,11 @@ func (s *Accounting) GetLabelGroupsAll(ctx context.Context, opts *GetLabelGroups
 //
 // Docs: https://developer.revolut.com/docs/business/create-label-group
 func (s *Accounting) CreateLabelGroup(ctx context.Context, req CreateLabelGroupRequest) (*ResourceCreatedResponse, error) {
+	if len(req.Labels) == 0 {
+		return nil, errors.New("business: CreateLabelGroupRequest.labels is required")
+	}
 	if req.Name == "" {
-		return nil, errors.New("business: CreateLabelGroupRequest.Name is required")
+		return nil, errors.New("business: CreateLabelGroupRequest.name is required")
 	}
 	var out ResourceCreatedResponse
 	if err := s.t.Do(ctx, http.MethodPost, "label-groups", req, &out); err != nil {
@@ -243,7 +246,7 @@ func (s *Accounting) UpdateLabelGroup(ctx context.Context, groupID string, req U
 		return errors.New("business: group_id is required")
 	}
 	if req.Name == "" {
-		return errors.New("business: UpdateLabelGroupRequest.Name is required")
+		return errors.New("business: UpdateLabelGroupRequest.name is required")
 	}
 	return s.t.Do(ctx, http.MethodPatch, "label-groups/"+url.PathEscape(groupID), req, nil)
 }
@@ -343,7 +346,7 @@ func (s *Accounting) CreateLabel(ctx context.Context, groupID string, req Create
 		return nil, errors.New("business: group_id is required")
 	}
 	if req.Name == "" {
-		return nil, errors.New("business: CreateLabelRequest.Name is required")
+		return nil, errors.New("business: CreateLabelRequest.name is required")
 	}
 	var out ResourceCreatedResponse
 	if err := s.t.Do(ctx, http.MethodPost, "label-groups/"+url.PathEscape(groupID)+"/labels", req, &out); err != nil {
@@ -363,7 +366,7 @@ func (s *Accounting) UpdateLabel(ctx context.Context, groupID string, labelID st
 		return errors.New("business: label_id is required")
 	}
 	if req.Name == "" {
-		return errors.New("business: UpdateLabelRequest.Name is required")
+		return errors.New("business: UpdateLabelRequest.name is required")
 	}
 	return s.t.Do(ctx, http.MethodPatch, "label-groups/"+url.PathEscape(groupID)+"/labels/"+url.PathEscape(labelID), req, nil)
 }
@@ -455,10 +458,10 @@ func (s *Accounting) GetTaxRatesAll(ctx context.Context, opts *GetTaxRatesParams
 // Docs: https://developer.revolut.com/docs/business/create-tax-rate
 func (s *Accounting) CreateTaxRate(ctx context.Context, req CreateTaxRateRequest) (*ResourceCreatedResponse, error) {
 	if req.Name == "" {
-		return nil, errors.New("business: CreateTaxRateRequest.Name is required")
+		return nil, errors.New("business: CreateTaxRateRequest.name is required")
 	}
 	if req.Percentage == "" {
-		return nil, errors.New("business: CreateTaxRateRequest.Percentage is required")
+		return nil, errors.New("business: CreateTaxRateRequest.percentage is required")
 	}
 	var out ResourceCreatedResponse
 	if err := s.t.Do(ctx, http.MethodPost, "tax-rates", req, &out); err != nil {

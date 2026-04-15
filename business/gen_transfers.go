@@ -20,13 +20,16 @@ type Transfers struct {
 // Docs: https://developer.revolut.com/docs/business/create-payment
 func (s *Transfers) Pay(ctx context.Context, req TransactionPaymentRequest) (*TransferResponse, error) {
 	if req.AccountID == "" {
-		return nil, errors.New("business: TransactionPaymentRequest.AccountID is required")
+		return nil, errors.New("business: TransactionPaymentRequest.account_id is required")
 	}
 	if req.Amount == "" {
-		return nil, errors.New("business: TransactionPaymentRequest.Amount is required")
+		return nil, errors.New("business: TransactionPaymentRequest.amount is required")
+	}
+	if req.Receiver.CounterpartyID == "" {
+		return nil, errors.New("business: TransactionPaymentRequest.receiver.counterparty_id is required")
 	}
 	if req.RequestID == "" {
-		return nil, errors.New("business: TransactionPaymentRequest.RequestID is required")
+		return nil, errors.New("business: TransactionPaymentRequest.request_id is required")
 	}
 	var out TransferResponse
 	if err := s.t.Do(ctx, http.MethodPost, "pay", req, &out); err != nil {
@@ -40,19 +43,19 @@ func (s *Transfers) Pay(ctx context.Context, req TransactionPaymentRequest) (*Tr
 // Docs: https://developer.revolut.com/docs/business/create-transfer
 func (s *Transfers) Create(ctx context.Context, req TransferRequest) (*TransferResponse, error) {
 	if req.Amount == "" {
-		return nil, errors.New("business: TransferRequest.Amount is required")
+		return nil, errors.New("business: TransferRequest.amount is required")
 	}
 	if req.Currency == "" {
-		return nil, errors.New("business: TransferRequest.Currency is required")
+		return nil, errors.New("business: TransferRequest.currency is required")
 	}
 	if req.RequestID == "" {
-		return nil, errors.New("business: TransferRequest.RequestID is required")
+		return nil, errors.New("business: TransferRequest.request_id is required")
 	}
 	if req.SourceAccountID == "" {
-		return nil, errors.New("business: TransferRequest.SourceAccountID is required")
+		return nil, errors.New("business: TransferRequest.source_account_id is required")
 	}
 	if req.TargetAccountID == "" {
-		return nil, errors.New("business: TransferRequest.TargetAccountID is required")
+		return nil, errors.New("business: TransferRequest.target_account_id is required")
 	}
 	var out TransferResponse
 	if err := s.t.Do(ctx, http.MethodPost, "transfer", req, &out); err != nil {

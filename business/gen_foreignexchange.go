@@ -21,8 +21,20 @@ type ForeignExchange struct {
 //
 // Docs: https://developer.revolut.com/docs/business/exchange-money
 func (s *ForeignExchange) Exchange(ctx context.Context, req ExchangeRequest) (*ExchangeResponse, error) {
+	if req.From.AccountID == "" {
+		return nil, errors.New("business: ExchangeRequest.from.account_id is required")
+	}
+	if req.From.Currency == "" {
+		return nil, errors.New("business: ExchangeRequest.from.currency is required")
+	}
 	if req.RequestID == "" {
-		return nil, errors.New("business: ExchangeRequest.RequestID is required")
+		return nil, errors.New("business: ExchangeRequest.request_id is required")
+	}
+	if req.To.AccountID == "" {
+		return nil, errors.New("business: ExchangeRequest.to.account_id is required")
+	}
+	if req.To.Currency == "" {
+		return nil, errors.New("business: ExchangeRequest.to.currency is required")
 	}
 	var out ExchangeResponse
 	if err := s.t.Do(ctx, http.MethodPost, "exchange", req, &out); err != nil {

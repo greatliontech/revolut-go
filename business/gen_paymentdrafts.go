@@ -31,6 +31,9 @@ func (s *PaymentDrafts) List(ctx context.Context) (*PaymentDraftsResponse, error
 //
 // Docs: https://developer.revolut.com/docs/business/create-payment-draft
 func (s *PaymentDrafts) Create(ctx context.Context, req CreatePaymentDraftRequest) (*CreatePaymentDraftResponse, error) {
+	if len(req.Payments) == 0 {
+		return nil, errors.New("business: CreatePaymentDraftRequest.payments is required")
+	}
 	var out CreatePaymentDraftResponse
 	if err := s.t.Do(ctx, http.MethodPost, "payment-drafts", req, &out); err != nil {
 		return nil, err

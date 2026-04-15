@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 
@@ -28,7 +27,67 @@ func buildSpec(doc *openapi3.T, packageName string, resourceAllow []string, incl
 	}
 	b.buildTypes()
 	b.buildResources()
+	b.promoteRequestBodyPointers()
+	b.buildValidators()
 	return b.spec(packageName), nil
+}
+
+// buildValidators runs the recursive required-field walker for every
+// operation's request body. Done as a post-pass — after type promotion —
+// so the walker observes the final Go types (e.g. *int64 instead of
+// int64 for promoted required ints).
+func (b *builder) buildValidators() {
+	for _, r := range b.resources {
+		for _, op := range r.Ops {
+			if op.RequestType == "" {
+				continue
+			}
+			t, ok := b.typesByName[op.RequestType]
+			if !ok || t.Kind != KindStruct {
+				continue
+			}
+			visited := map[string]bool{op.RequestType: true}
+			op.Validate = b.walkRequired(t, "req", op.RequestType, visited)
+		}
+	}
+}
+
+// promoteRequestBodyPointers rewrites required bool / integer fields on
+// top-level request-body struct types to pointer types. Without this,
+// the zero value (false / 0) is indistinguishable from "user forgot to
+// set the field", which is unsafe for a banking SDK: a caller who
+// intends to send `false` and one who simply didn't fill the struct
+// would produce the same payload. Promotion to *bool / *int64 forces
+// an explicit choice, validated as `!= nil` before the HTTP call.
+//
+// Scope is deliberately narrow: only the top-level request type. Nested
+// types may be shared with response bodies, where such promotion would
+// change the decoded shape.
+func (b *builder) promoteRequestBodyPointers() {
+	requestBodies := map[string]bool{}
+	for _, r := range b.resources {
+		for _, op := range r.Ops {
+			if op.RequestType != "" {
+				requestBodies[op.RequestType] = true
+			}
+		}
+	}
+	for _, t := range b.types {
+		if !requestBodies[t.GoName] || t.Kind != KindStruct {
+			continue
+		}
+		for _, f := range t.Fields {
+			if !f.Required {
+				continue
+			}
+			switch f.GoType {
+			case "bool":
+				f.GoType = "*bool"
+			case "int", "int32", "int64":
+				f.GoType = "*int64"
+			}
+		}
+	}
 }
 
 type builder struct {
@@ -628,25 +687,100 @@ func (b *builder) buildOperation(httpMethod, path string, op *openapi3.Operation
 
 	o.Pagination = b.detectPagination(o)
 
-	// Validation hints: required string-valued fields on the request
-	// body. Non-string required fields (nested structs, arrays, time,
-	// ...) aren't validatable with a simple zero check, so we skip
-	// them — callers can rely on Revolut to reject malformed bodies.
-	if o.RequestType != "" {
-		if t, ok := b.typesByName[o.RequestType]; ok && t.Kind == KindStruct {
-			for _, f := range t.Fields {
-				if !f.Required || !isEmptyCheckable(f.GoType, b.typesByName) {
-					continue
-				}
-				o.Validate = append(o.Validate, FieldCheck{
-					GoExpr:  "req." + f.GoName,
-					Message: fmt.Sprintf("business: %s.%s is required", o.RequestType, f.GoName),
-				})
-			}
+	return o
+}
+
+// walkRequired produces one FieldCheck per required field on a struct
+// type and, recursively, per required field of any required value-type
+// nested struct. Cycle-guarded via visited type names.
+func (b *builder) walkRequired(t *NamedType, exprPrefix, jsonPathPrefix string, visited map[string]bool) []FieldCheck {
+	if t == nil || t.Kind != KindStruct {
+		return nil
+	}
+	var out []FieldCheck
+	for _, f := range t.Fields {
+		if !f.Required {
+			continue
+		}
+		expr := exprPrefix + "." + f.GoName
+		jsonPath := jsonPathPrefix + "." + f.JSONName
+		cond := unsetCond(f.GoType, expr, b.typesByName)
+		if cond != "" {
+			out = append(out, FieldCheck{
+				Cond:    cond,
+				Message: "business: " + jsonPath + " is required",
+			})
+		}
+		// Recurse into a required nested struct value so its own
+		// required fields are also validated. Skip pointers/arrays
+		// (their "unset" is already expressed via the top-level
+		// check); skip unions (opaque from here).
+		if nested := b.typesByName[f.GoType]; nested != nil && nested.Kind == KindStruct && !visited[f.GoType] {
+			visited[f.GoType] = true
+			out = append(out, b.walkRequired(nested, expr, jsonPath, visited)...)
+			delete(visited, f.GoType)
 		}
 	}
+	return out
+}
 
-	return o
+// unsetCond returns a Go boolean expression that is true when `expr` of
+// type `goType` is considered "unset" for validation purposes. Returns
+// "" when the type has no meaningful unset shape (e.g. a nested struct
+// whose presence is encoded by its own required-field checks at
+// recursion time, not at this level).
+func unsetCond(goType, expr string, named map[string]*NamedType) string {
+	// Pointers and slices share nil semantics.
+	if strings.HasPrefix(goType, "*") {
+		return expr + " == nil"
+	}
+	if strings.HasPrefix(goType, "[]") {
+		return "len(" + expr + ") == 0"
+	}
+	switch goType {
+	case "string", "json.Number", "core.Currency":
+		return expr + ` == ""`
+	case "time.Time":
+		return expr + ".IsZero()"
+	case "int", "int64", "int32":
+		// Ambiguous with zero — request-body promotion turns these
+		// into *int64 before this runs, so reaching here means the
+		// field lives on a non-promoted type (e.g. nested struct).
+		// Fall back to a zero check.
+		return expr + " == 0"
+	case "bool":
+		// Same reasoning as integers.
+		return ""
+	}
+	if t, ok := named[goType]; ok {
+		switch t.Kind {
+		case KindEnum:
+			if t.EnumBase == "string" {
+				return expr + ` == ""`
+			}
+			return expr + " == 0"
+		case KindAlias:
+			switch t.AliasTarget {
+			case "string", "core.Currency":
+				return expr + ` == ""`
+			case "int":
+				return expr + " == 0"
+			case "bool":
+				return ""
+			case "json.Number":
+				return expr + ` == ""`
+			case "any":
+				return expr + " == nil"
+			}
+		case KindUnion:
+			return expr + " == nil"
+		case KindStruct:
+			// Value-type nested struct: no top-level unset check.
+			// Its required subfields are validated by recursion.
+			return ""
+		}
+	}
+	return ""
 }
 
 // methodName derives the Go method name for an operation.
@@ -813,33 +947,6 @@ func looksSingular(s string) bool {
 }
 
 // --- helpers ------------------------------------------------------------
-
-// isEmptyCheckable reports whether a field's Go type can be compared to
-// the empty string to detect an unset value. True for plain strings,
-// string-backed enums and aliases, and json.Number (also a string).
-func isEmptyCheckable(goType string, named map[string]*NamedType) bool {
-	switch goType {
-	case "string", "json.Number":
-		return true
-	}
-	if strings.HasPrefix(goType, "[]") || strings.HasPrefix(goType, "*") || strings.Contains(goType, ".") {
-		// []T, *T always: not a plain string.
-		// For foreign-package refs (core.Currency) we need to check.
-		if goType == "core.Currency" {
-			return true
-		}
-		return false
-	}
-	if t, ok := named[goType]; ok {
-		switch t.Kind {
-		case KindEnum:
-			return t.EnumBase == "string"
-		case KindAlias:
-			return t.AliasTarget == "string" || t.AliasTarget == "core.Currency"
-		}
-	}
-	return false
-}
 
 func schemaTypeIs(s *openapi3.Schema, kind string) bool {
 	if s == nil || s.Type == nil {

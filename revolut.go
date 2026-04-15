@@ -45,6 +45,11 @@ type APIError = core.APIError
 // AsAPIError unwraps err into an *APIError if possible.
 func AsAPIError(err error) (*APIError, bool) { return core.AsAPIError(err) }
 
+// Ptr returns a pointer to v. It is convenient when populating required
+// *bool or *int64 fields on generated request-body structs, where the
+// pointer shape is used to distinguish "unset" from the zero value.
+func Ptr[T any](v T) *T { return &v }
+
 // Option configures a client constructor. Options are applied in order;
 // later options override earlier ones.
 type Option func(*clientOptions)

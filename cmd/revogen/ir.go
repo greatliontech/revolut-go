@@ -89,11 +89,14 @@ type PathParam struct {
 	Doc     string
 }
 
-// FieldCheck describes a non-empty validation the emitted method runs
-// before performing the HTTP call.
+// FieldCheck describes a required-field validation the emitted method
+// runs before performing the HTTP call. Cond is an emit-ready Go
+// boolean expression that evaluates to true when the field is unset
+// (e.g. `req.RequestID == ""`, `req.Amount == ""`, `req.Recipient == nil`,
+// `req.ExpiresAt.IsZero()`, `len(req.Items) == 0`).
 type FieldCheck struct {
-	GoExpr    string // Go expression evaluating to the value, e.g. "req.RequestID"
-	Message   string // text for the returned error
+	Cond    string
+	Message string
 }
 
 // TypeKind discriminates NamedType.

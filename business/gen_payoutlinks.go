@@ -99,19 +99,22 @@ func (s *PayoutLinks) ListAll(ctx context.Context, opts *GetPayoutLinksParams) i
 // Docs: https://developer.revolut.com/docs/business/create-payout-link
 func (s *PayoutLinks) Create(ctx context.Context, req CreatePayoutLinkRequest) (*PayoutLinkInitialProps, error) {
 	if req.AccountID == "" {
-		return nil, errors.New("business: CreatePayoutLinkRequest.AccountID is required")
+		return nil, errors.New("business: CreatePayoutLinkRequest.account_id is required")
+	}
+	if req.Amount == "" {
+		return nil, errors.New("business: CreatePayoutLinkRequest.amount is required")
 	}
 	if req.CounterpartyName == "" {
-		return nil, errors.New("business: CreatePayoutLinkRequest.CounterpartyName is required")
+		return nil, errors.New("business: CreatePayoutLinkRequest.counterparty_name is required")
 	}
 	if req.Currency == "" {
-		return nil, errors.New("business: CreatePayoutLinkRequest.Currency is required")
+		return nil, errors.New("business: CreatePayoutLinkRequest.currency is required")
 	}
 	if req.Reference == "" {
-		return nil, errors.New("business: CreatePayoutLinkRequest.Reference is required")
+		return nil, errors.New("business: CreatePayoutLinkRequest.reference is required")
 	}
 	if req.RequestID == "" {
-		return nil, errors.New("business: CreatePayoutLinkRequest.RequestID is required")
+		return nil, errors.New("business: CreatePayoutLinkRequest.request_id is required")
 	}
 	var out PayoutLinkInitialProps
 	if err := s.t.Do(ctx, http.MethodPost, "payout-links", req, &out); err != nil {
