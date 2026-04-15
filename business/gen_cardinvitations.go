@@ -4,9 +4,11 @@ package business
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -16,12 +18,43 @@ type CardInvitations struct {
 	t *transport.Transport
 }
 
+// GetCardInvitationsParams query parameters for: Retrieve a list of card invitations
+type GetCardInvitationsParams struct {
+	// Retrieves only card invitations created before this timestamp (`created_at` < `created_before`).
+	CreatedBefore time.Time `json:"created_before,omitempty"`
+	// The maximum number of card invitations to return per page.
+	Limit json.Number `json:"limit,omitempty"`
+	// Retrieves card invitations filtered by the specified state(s).
+	State []CardInvitationState `json:"state,omitempty"`
+}
+
+func (p *GetCardInvitationsParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if !p.CreatedBefore.IsZero() {
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339))
+	}
+	if p.Limit != "" {
+		q.Set("limit", string(p.Limit))
+	}
+	for _, v := range p.State {
+		q.Add("state", string(v))
+	}
+	return q
+}
+
 // List retrieve a list of card invitations
 //
 // Docs: https://developer.revolut.com/docs/business/get-card-invitations
-func (s *CardInvitations) List(ctx context.Context) ([][]CardInvitationResponse, error) {
+func (s *CardInvitations) List(ctx context.Context, opts *GetCardInvitationsParams) ([][]CardInvitationResponse, error) {
+	path := "card-invitations"
+	if q := opts.encode().Encode(); q != "" {
+		path += "?" + q
+	}
 	var out [][]CardInvitationResponse
-	if err := s.t.Do(ctx, http.MethodGet, "card-invitations", nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil

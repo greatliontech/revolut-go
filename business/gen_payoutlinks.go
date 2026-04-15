@@ -7,6 +7,8 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"strconv"
+	"time"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -16,12 +18,43 @@ type PayoutLinks struct {
 	t *transport.Transport
 }
 
+// GetPayoutLinksParams query parameters for: Retrieve a list of payout links
+type GetPayoutLinksParams struct {
+	// Retrieves links in the specified state(s). Possible states are:
+	State []PayoutLinkState `json:"state,omitempty"`
+	// Retrieves links with `created_at` < `created_before`.
+	CreatedBefore time.Time `json:"created_before,omitempty"`
+	// The maximum number of links returned per page.
+	Limit int `json:"limit,omitempty"`
+}
+
+func (p *GetPayoutLinksParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	for _, v := range p.State {
+		q.Add("state", string(v))
+	}
+	if !p.CreatedBefore.IsZero() {
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339))
+	}
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	}
+	return q
+}
+
 // List retrieve a list of payout links
 //
 // Docs: https://developer.revolut.com/docs/business/get-payout-links
-func (s *PayoutLinks) List(ctx context.Context) ([]PayoutLink, error) {
+func (s *PayoutLinks) List(ctx context.Context, opts *GetPayoutLinksParams) ([]PayoutLink, error) {
+	path := "payout-links"
+	if q := opts.encode().Encode(); q != "" {
+		path += "?" + q
+	}
 	var out []PayoutLink
-	if err := s.t.Do(ctx, http.MethodGet, "payout-links", nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil

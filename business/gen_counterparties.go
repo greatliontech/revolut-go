@@ -7,6 +7,8 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"strconv"
+	"time"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -27,12 +29,63 @@ func (s *Counterparties) AccountNameValidation(ctx context.Context, req Validate
 	return &out, nil
 }
 
+// GetCounterpartiesParams query parameters for: Retrieve a list of counterparties
+type GetCounterpartiesParams struct {
+	// The name of the counterparty to retrieve. It does not need to be an exact match, partial match is also supported.
+	Name string `json:"name,omitempty"`
+	// The exact account number of the counterparty to retrieve.
+	AccountNo string `json:"account_no,omitempty"`
+	// The exact sort code of the counterparty to retrieve.
+	SortCode string `json:"sort_code,omitempty"`
+	// The exact IBAN of the counterparty to retrieve.
+	IBAN string `json:"iban,omitempty"`
+	// The exact BIC of the counterparty to retrieve.
+	BIC string `json:"bic,omitempty"`
+	// Retrieves counterparties with `created_at` < `created_before`.
+	CreatedBefore time.Time `json:"created_before,omitempty"`
+	// The maximum number of counterparties returned per page.
+	Limit int `json:"limit,omitempty"`
+}
+
+func (p *GetCounterpartiesParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.Name != "" {
+		q.Set("name", p.Name)
+	}
+	if p.AccountNo != "" {
+		q.Set("account_no", p.AccountNo)
+	}
+	if p.SortCode != "" {
+		q.Set("sort_code", p.SortCode)
+	}
+	if p.IBAN != "" {
+		q.Set("iban", p.IBAN)
+	}
+	if p.BIC != "" {
+		q.Set("bic", p.BIC)
+	}
+	if !p.CreatedBefore.IsZero() {
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339))
+	}
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	}
+	return q
+}
+
 // List retrieve a list of counterparties
 //
 // Docs: https://developer.revolut.com/docs/business/get-counterparties
-func (s *Counterparties) List(ctx context.Context) ([]Counterparty, error) {
+func (s *Counterparties) List(ctx context.Context, opts *GetCounterpartiesParams) ([]Counterparty, error) {
+	path := "counterparties"
+	if q := opts.encode().Encode(); q != "" {
+		path += "?" + q
+	}
 	var out []Counterparty
-	if err := s.t.Do(ctx, http.MethodGet, "counterparties", nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil

@@ -4,8 +4,10 @@ package business
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -40,12 +42,43 @@ func (s *ForeignExchange) ListExchangeReasons(ctx context.Context) ([]ExchangeRe
 	return out, nil
 }
 
+// GetRateParams query parameters for: Get an exchange rate
+type GetRateParams struct {
+	// The currency that you exchange from in [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) format.
+	From Currency `json:"from,omitempty"`
+	// The amount of the currency to exchange **from**. The default value is `1.00`.
+	Amount json.Number `json:"amount,omitempty"`
+	// The currency that you exchange to in [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) format.
+	To Currency `json:"to,omitempty"`
+}
+
+func (p *GetRateParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.From != "" {
+		q.Set("from", string(p.From))
+	}
+	if p.Amount != "" {
+		q.Set("amount", string(p.Amount))
+	}
+	if p.To != "" {
+		q.Set("to", string(p.To))
+	}
+	return q
+}
+
 // GetRate get an exchange rate
 //
 // Docs: https://developer.revolut.com/docs/business/get-rate
-func (s *ForeignExchange) GetRate(ctx context.Context) (*ExchangeRateResponse, error) {
+func (s *ForeignExchange) GetRate(ctx context.Context, opts *GetRateParams) (*ExchangeRateResponse, error) {
+	path := "rate"
+	if q := opts.encode().Encode(); q != "" {
+		path += "?" + q
+	}
 	var out ExchangeRateResponse
-	if err := s.t.Do(ctx, http.MethodGet, "rate", nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil

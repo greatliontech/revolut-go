@@ -152,26 +152,25 @@ func emitResource(spec *Spec, r *Resource) string {
 	fmt.Fprintf(&buf, "package %s\n\n", spec.PackageName)
 
 	// Imports — compute from what the methods reference.
-	needsErrors := false
-	needsURL := false
-	for _, op := range r.Ops {
-		if len(op.PathParams) > 0 {
-			needsURL = true
-			needsErrors = true
-		}
-		if len(op.Validate) > 0 {
-			needsErrors = true
-		}
-	}
+	imports := resourceImports(r)
 
 	buf.WriteString("import (\n")
 	buf.WriteString("\t\"context\"\n")
-	if needsErrors {
+	if imports.errors {
 		buf.WriteString("\t\"errors\"\n")
 	}
 	buf.WriteString("\t\"net/http\"\n")
-	if needsURL {
+	if imports.url {
 		buf.WriteString("\t\"net/url\"\n")
+	}
+	if imports.strconv {
+		buf.WriteString("\t\"strconv\"\n")
+	}
+	if imports.time {
+		buf.WriteString("\t\"time\"\n")
+	}
+	if imports.json {
+		buf.WriteString("\t\"encoding/json\"\n")
 	}
 	buf.WriteString("\n\t\"github.com/greatliontech/revolut-go/internal/transport\"\n")
 	buf.WriteString(")\n\n")
@@ -182,9 +181,105 @@ func emitResource(spec *Spec, r *Resource) string {
 	buf.WriteString("}\n\n")
 
 	for _, op := range r.Ops {
+		if op.ParamsStruct != nil {
+			writeType(&buf, op.ParamsStruct)
+			writeParamsEncode(&buf, op)
+		}
 		writeMethod(&buf, r, op)
 	}
 	return buf.String()
+}
+
+type resourceImportSet struct {
+	errors  bool
+	url     bool
+	strconv bool
+	time    bool
+	json    bool
+}
+
+func resourceImports(r *Resource) resourceImportSet {
+	var s resourceImportSet
+	for _, op := range r.Ops {
+		if len(op.PathParams) > 0 {
+			s.url = true
+			s.errors = true
+		}
+		if len(op.Validate) > 0 {
+			s.errors = true
+		}
+		if op.ParamsStruct != nil {
+			s.url = true
+			for _, f := range op.ParamsStruct.Fields {
+				switch {
+				case f.GoType == "int", f.GoType == "int64", f.GoType == "bool":
+					s.strconv = true
+				case f.GoType == "time.Time":
+					s.time = true
+				case f.GoType == "json.Number":
+					s.json = true
+				case strings.HasPrefix(f.GoType, "[]"):
+					// Encoded as repeated values; no extra import.
+				}
+			}
+		}
+	}
+	return s
+}
+
+// writeParamsEncode emits an `encode` method for a params struct that
+// produces a url.Values with only the non-zero fields set, so callers
+// pay nothing for params they don't fill in.
+func writeParamsEncode(buf *bytes.Buffer, op *Operation) {
+	t := op.ParamsStruct
+	fmt.Fprintf(buf, "func (p *%s) encode() url.Values {\n", t.GoName)
+	buf.WriteString("\tif p == nil {\n\t\treturn nil\n\t}\n")
+	buf.WriteString("\tq := url.Values{}\n")
+	for i, f := range t.Fields {
+		qp := op.QueryParams[i]
+		emitQueryField(buf, f, qp.Name)
+	}
+	buf.WriteString("\treturn q\n}\n\n")
+}
+
+// emitQueryField writes the "if field has a value, q.Set(...)" for one
+// params-struct field.
+func emitQueryField(buf *bytes.Buffer, f *StructField, wireName string) {
+	expr := "p." + f.GoName
+	if strings.HasPrefix(f.GoType, "[]") {
+		// Repeated query parameter: emit one ?name=v per element.
+		inner := strings.TrimPrefix(f.GoType, "[]")
+		valueExpr := "v"
+		switch inner {
+		case "string":
+			// keep v as-is.
+		case "int", "int64":
+			valueExpr = "strconv.FormatInt(int64(v), 10)"
+		case "bool":
+			valueExpr = "strconv.FormatBool(v)"
+		case "time.Time":
+			valueExpr = "v.UTC().Format(time.RFC3339)"
+		default:
+			valueExpr = "string(v)"
+		}
+		fmt.Fprintf(buf, "\tfor _, v := range %s {\n\t\tq.Add(%q, %s)\n\t}\n", expr, wireName, valueExpr)
+		return
+	}
+	switch f.GoType {
+	case "string":
+		fmt.Fprintf(buf, "\tif %s != \"\" {\n\t\tq.Set(%q, %s)\n\t}\n", expr, wireName, expr)
+	case "int", "int64":
+		fmt.Fprintf(buf, "\tif %s != 0 {\n\t\tq.Set(%q, strconv.FormatInt(int64(%s), 10))\n\t}\n", expr, wireName, expr)
+	case "bool":
+		fmt.Fprintf(buf, "\tif %s {\n\t\tq.Set(%q, strconv.FormatBool(%s))\n\t}\n", expr, wireName, expr)
+	case "time.Time":
+		fmt.Fprintf(buf, "\tif !%s.IsZero() {\n\t\tq.Set(%q, %s.UTC().Format(time.RFC3339))\n\t}\n", expr, wireName, expr)
+	case "json.Number":
+		fmt.Fprintf(buf, "\tif %s != \"\" {\n\t\tq.Set(%q, string(%s))\n\t}\n", expr, wireName, expr)
+	default:
+		// Enum types (string-backed) and named aliases.
+		fmt.Fprintf(buf, "\tif %s != \"\" {\n\t\tq.Set(%q, string(%s))\n\t}\n", expr, wireName, expr)
+	}
 }
 
 func writeMethod(buf *bytes.Buffer, r *Resource, op *Operation) {
@@ -206,6 +301,9 @@ func writeMethod(buf *bytes.Buffer, r *Resource, op *Operation) {
 	}
 	if op.RequestType != "" {
 		params = append(params, "req "+op.RequestType)
+	}
+	if op.ParamsType != "" {
+		params = append(params, "opts *"+op.ParamsType)
 	}
 
 	retType := "error"
@@ -236,6 +334,13 @@ func writeMethod(buf *bytes.Buffer, r *Resource, op *Operation) {
 
 	// HTTP call.
 	pathExpr := renderPathExpr(op.PathTemplate, op.PathParams)
+	if op.ParamsType != "" {
+		fmt.Fprintf(buf, "\tpath := %s\n", pathExpr)
+		buf.WriteString("\tif q := opts.encode().Encode(); q != \"\" {\n")
+		buf.WriteString("\t\tpath += \"?\" + q\n")
+		buf.WriteString("\t}\n")
+		pathExpr = "path"
+	}
 	bodyArg := "nil"
 	if op.RequestType != "" {
 		bodyArg = "req"

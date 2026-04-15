@@ -23,16 +23,27 @@ type Resource struct {
 // Operation is one HTTP endpoint rendered as a Go method on the
 // resource's struct.
 type Operation struct {
-	GoMethod     string       // Go method name, e.g. "List", "Get", "Create"
-	HTTPMethod   string       // "GET", "POST", ...
-	PathTemplate string       // raw spec path, "/accounts/{account_id}"
-	PathParams   []*PathParam // path params in the order they appear in the URL
-	Summary      string       // one-line summary for godoc
-	Description  string       // full description for godoc
-	DocURL       string       // documentation URL, linked from godoc
-	RequestType  string       // Go type of the request body; empty for no body
-	ResponseType string       // Go type of the 2xx response; empty for void
-	Validate     []FieldCheck // client-side required-field checks
+	GoMethod     string        // Go method name, e.g. "List", "Get", "Create"
+	HTTPMethod   string        // "GET", "POST", ...
+	PathTemplate string        // raw spec path, "/accounts/{account_id}"
+	PathParams   []*PathParam  // path params in the order they appear in the URL
+	QueryParams  []*QueryParam // query-string params
+	Summary      string        // one-line summary for godoc
+	Description  string        // full description for godoc
+	DocURL       string        // documentation URL, linked from godoc
+	RequestType  string        // Go type of the request body; empty for no body
+	ResponseType string        // Go type of the 2xx response; empty for void
+	Validate     []FieldCheck  // client-side required-field checks
+	ParamsType   string        // Go type name holding query params (empty if none)
+	ParamsStruct *NamedType    // the synthesised params struct (or nil)
+}
+
+// QueryParam describes one ?foo=... URL parameter.
+type QueryParam struct {
+	Name   string // wire name, e.g. "from"
+	GoName string // Go field name, e.g. "From"
+	GoType string // Go field type: "string", "int", "bool", "time.Time", or an enum type name
+	Doc    string
 }
 
 // PathParam describes a single {…} in the path template.

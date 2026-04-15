@@ -217,6 +217,31 @@ func (b *builder) goTypeExpr(ref *openapi3.SchemaRef) string {
 	return ""
 }
 
+// buildParamsStruct lifts an operation's query parameters into a
+// dedicated struct so callers can set them ergonomically and leave
+// unspecified params as the zero value.
+func buildParamsStruct(goName string, params []*QueryParam, summary string) *NamedType {
+	fields := make([]*StructField, 0, len(params))
+	for _, p := range params {
+		fields = append(fields, &StructField{
+			JSONName: p.Name,
+			GoName:   p.GoName,
+			GoType:   p.GoType,
+			Doc:      p.Doc,
+		})
+	}
+	doc := summary
+	if doc != "" {
+		doc = "Query parameters for: " + doc
+	}
+	return &NamedType{
+		GoName: goName,
+		Kind:   KindStruct,
+		Doc:    doc,
+		Fields: fields,
+	}
+}
+
 // synthesizeInlineStruct builds a NamedType for a schema found inline
 // at an operation's response (no $ref in components/schemas). Used for
 // paginated container shapes like "{ next_page_token, items[] }".
@@ -422,22 +447,33 @@ func (b *builder) buildOperation(httpMethod, path string, op *openapi3.Operation
 		Description:  op.Description,
 	}
 
-	// Path params.
+	// Path and query params.
 	for _, paramRef := range op.Parameters {
 		if paramRef == nil || paramRef.Value == nil {
 			continue
 		}
 		p := paramRef.Value
-		if p.In != "path" {
-			// Query/header params are not yet supported; skip silently.
-			continue
+		switch p.In {
+		case "path":
+			o.PathParams = append(o.PathParams, &PathParam{
+				Name:   p.Name,
+				GoName: goParamName(p.Name),
+				GoType: "string",
+				Doc:    firstLine(p.Description),
+			})
+		case "query":
+			goType := b.goTypeExpr(p.Schema)
+			if goType == "" {
+				goType = "string"
+			}
+			o.QueryParams = append(o.QueryParams, &QueryParam{
+				Name:   p.Name,
+				GoName: goFieldName(p.Name),
+				GoType: goType,
+				Doc:    firstLine(p.Description),
+			})
 		}
-		o.PathParams = append(o.PathParams, &PathParam{
-			Name:   p.Name,
-			GoName: goParamName(p.Name),
-			GoType: "string",
-			Doc:    firstLine(p.Description),
-		})
+		// header/cookie params are ignored.
 	}
 
 	// Request body.
@@ -484,6 +520,14 @@ func (b *builder) buildOperation(httpMethod, path string, op *openapi3.Operation
 		return nil
 	}
 	o.DocURL = docURL(op.OperationID)
+
+	// Synthesise a <OperationID>Params struct for operations that have
+	// any query parameters. Colocated with the resource file at emit
+	// time so users can discover it alongside the method.
+	if len(o.QueryParams) > 0 {
+		o.ParamsType = goTypeName(op.OperationID) + "Params"
+		o.ParamsStruct = buildParamsStruct(o.ParamsType, o.QueryParams, op.Summary)
+	}
 
 	// Validation hints: required string-valued fields on the request
 	// body. Non-string required fields (nested structs, arrays, time,

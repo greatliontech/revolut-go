@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -16,12 +17,37 @@ type Accounting struct {
 	t *transport.Transport
 }
 
+// GetAccountingCategoriesParams query parameters for: Retrieve a list of accounting categories
+type GetAccountingCategoriesParams struct {
+	// The page size, that is, the maximum number of accounting categories to return per page.
+	Limit     int       `json:"limit,omitempty"`
+	PageToken PageToken `json:"page_token,omitempty"`
+}
+
+func (p *GetAccountingCategoriesParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	}
+	if p.PageToken != "" {
+		q.Set("page_token", string(p.PageToken))
+	}
+	return q
+}
+
 // GetCategories retrieve a list of accounting categories
 //
 // Docs: https://developer.revolut.com/docs/business/get-accounting-categories
-func (s *Accounting) GetCategories(ctx context.Context) (*GetAccountingCategoriesResponse, error) {
+func (s *Accounting) GetCategories(ctx context.Context, opts *GetAccountingCategoriesParams) (*GetAccountingCategoriesResponse, error) {
+	path := "accounting-categories"
+	if q := opts.encode().Encode(); q != "" {
+		path += "?" + q
+	}
 	var out GetAccountingCategoriesResponse
-	if err := s.t.Do(ctx, http.MethodGet, "accounting-categories", nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -78,12 +104,37 @@ func (s *Accounting) DeleteCategory(ctx context.Context, accountingCategoryID st
 	return s.t.Do(ctx, http.MethodDelete, "accounting-categories/"+url.PathEscape(accountingCategoryID), nil, nil)
 }
 
+// GetLabelGroupsParams query parameters for: Retrieve a list of label groups
+type GetLabelGroupsParams struct {
+	// The page size, that is, the maximum number of label groups to return per page.
+	Limit     int       `json:"limit,omitempty"`
+	PageToken PageToken `json:"page_token,omitempty"`
+}
+
+func (p *GetLabelGroupsParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	}
+	if p.PageToken != "" {
+		q.Set("page_token", string(p.PageToken))
+	}
+	return q
+}
+
 // GetLabelGroups retrieve a list of label groups
 //
 // Docs: https://developer.revolut.com/docs/business/get-label-groups
-func (s *Accounting) GetLabelGroups(ctx context.Context) (*GetLabelGroupsResponse, error) {
+func (s *Accounting) GetLabelGroups(ctx context.Context, opts *GetLabelGroupsParams) (*GetLabelGroupsResponse, error) {
+	path := "label-groups"
+	if q := opts.encode().Encode(); q != "" {
+		path += "?" + q
+	}
 	var out GetLabelGroupsResponse
-	if err := s.t.Do(ctx, http.MethodGet, "label-groups", nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -140,15 +191,40 @@ func (s *Accounting) DeleteLabelGroup(ctx context.Context, groupID string) error
 	return s.t.Do(ctx, http.MethodDelete, "label-groups/"+url.PathEscape(groupID), nil, nil)
 }
 
+// GetLabelsParams query parameters for: Retrieve a list of labels from a label group
+type GetLabelsParams struct {
+	// The page size, that is, the maximum number of labels to return per page.
+	Limit     int       `json:"limit,omitempty"`
+	PageToken PageToken `json:"page_token,omitempty"`
+}
+
+func (p *GetLabelsParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	}
+	if p.PageToken != "" {
+		q.Set("page_token", string(p.PageToken))
+	}
+	return q
+}
+
 // GetLabels retrieve a list of labels from a label group
 //
 // Docs: https://developer.revolut.com/docs/business/get-labels
-func (s *Accounting) GetLabels(ctx context.Context, groupID string) (*GetLabelsResponse, error) {
+func (s *Accounting) GetLabels(ctx context.Context, groupID string, opts *GetLabelsParams) (*GetLabelsResponse, error) {
 	if groupID == "" {
 		return nil, errors.New("business: group_id is required")
 	}
+	path := "label-groups/" + url.PathEscape(groupID) + "/labels"
+	if q := opts.encode().Encode(); q != "" {
+		path += "?" + q
+	}
 	var out GetLabelsResponse
-	if err := s.t.Do(ctx, http.MethodGet, "label-groups/"+url.PathEscape(groupID)+"/labels", nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -200,12 +276,37 @@ func (s *Accounting) DeleteLabel(ctx context.Context, groupID string, labelID st
 	return s.t.Do(ctx, http.MethodDelete, "label-groups/"+url.PathEscape(groupID)+"/labels/"+url.PathEscape(labelID), nil, nil)
 }
 
+// GetTaxRatesParams query parameters for: Retrieve a list of tax rates
+type GetTaxRatesParams struct {
+	// The page size, that is, the maximum number of tax rates to return per page.
+	Limit     int       `json:"limit,omitempty"`
+	PageToken PageToken `json:"page_token,omitempty"`
+}
+
+func (p *GetTaxRatesParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	}
+	if p.PageToken != "" {
+		q.Set("page_token", string(p.PageToken))
+	}
+	return q
+}
+
 // GetTaxRates retrieve a list of tax rates
 //
 // Docs: https://developer.revolut.com/docs/business/get-tax-rates
-func (s *Accounting) GetTaxRates(ctx context.Context) (*GetTaxRatesResponse, error) {
+func (s *Accounting) GetTaxRates(ctx context.Context, opts *GetTaxRatesParams) (*GetTaxRatesResponse, error) {
+	path := "tax-rates"
+	if q := opts.encode().Encode(); q != "" {
+		path += "?" + q
+	}
 	var out GetTaxRatesResponse
-	if err := s.t.Do(ctx, http.MethodGet, "tax-rates", nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil

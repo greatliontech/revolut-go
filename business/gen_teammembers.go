@@ -4,9 +4,11 @@ package business
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -16,23 +18,75 @@ type TeamMembers struct {
 	t *transport.Transport
 }
 
+// GetRolesParams query parameters for: Retrieve team roles
+type GetRolesParams struct {
+	// Retrieves roles with `created_at` < `created_before`.
+	CreatedBefore time.Time `json:"created_before,omitempty"`
+	// The maximum number of roles returned per page.
+	Limit json.Number `json:"limit,omitempty"`
+}
+
+func (p *GetRolesParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if !p.CreatedBefore.IsZero() {
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339))
+	}
+	if p.Limit != "" {
+		q.Set("limit", string(p.Limit))
+	}
+	return q
+}
+
 // ListRoles retrieve team roles
 //
 // Docs: https://developer.revolut.com/docs/business/get-roles
-func (s *TeamMembers) ListRoles(ctx context.Context) ([]Role, error) {
+func (s *TeamMembers) ListRoles(ctx context.Context, opts *GetRolesParams) ([]Role, error) {
+	path := "roles"
+	if q := opts.encode().Encode(); q != "" {
+		path += "?" + q
+	}
 	var out []Role
-	if err := s.t.Do(ctx, http.MethodGet, "roles", nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
+// GetTeamMembersParams query parameters for: Retrieve a list of team members
+type GetTeamMembersParams struct {
+	// Retrieves team members with `created_at` < `created_before`.
+	CreatedBefore time.Time `json:"created_before,omitempty"`
+	// The maximum number of team members returned per page.
+	Limit json.Number `json:"limit,omitempty"`
+}
+
+func (p *GetTeamMembersParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if !p.CreatedBefore.IsZero() {
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339))
+	}
+	if p.Limit != "" {
+		q.Set("limit", string(p.Limit))
+	}
+	return q
+}
+
 // List retrieve a list of team members
 //
 // Docs: https://developer.revolut.com/docs/business/get-team-members
-func (s *TeamMembers) List(ctx context.Context) ([]TeamMember, error) {
+func (s *TeamMembers) List(ctx context.Context, opts *GetTeamMembersParams) ([]TeamMember, error) {
+	path := "team-members"
+	if q := opts.encode().Encode(); q != "" {
+		path += "?" + q
+	}
 	var out []TeamMember
-	if err := s.t.Do(ctx, http.MethodGet, "team-members", nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil

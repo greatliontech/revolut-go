@@ -188,7 +188,7 @@ func TestSandbox_CounterpartiesList(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	counterparties, err := client.Counterparties.List(ctx)
+	counterparties, err := client.Counterparties.List(ctx, nil)
 	if err != nil {
 		t.Fatalf("Counterparties.List: %v", err)
 	}
@@ -202,11 +202,26 @@ func TestSandbox_TransactionsList(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	transactions, err := client.Transactions.List(ctx)
+	transactions, err := client.Transactions.List(ctx, nil)
 	if err != nil {
 		t.Fatalf("Transactions.List: %v", err)
 	}
-	t.Logf("got %d transactions", len(transactions))
+	t.Logf("got %d transactions (no filter)", len(transactions))
+}
+
+func TestSandbox_TransactionsList_WithCount(t *testing.T) {
+	client := newSandboxClient(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	transactions, err := client.Transactions.List(ctx, &business.GetTransactionsParams{Count: 2})
+	if err != nil {
+		t.Fatalf("Transactions.List(count=2): %v", err)
+	}
+	if len(transactions) > 2 {
+		t.Fatalf("count=2 should cap results at 2; got %d", len(transactions))
+	}
+	t.Logf("got %d transactions (count=2)", len(transactions))
 }
 
 func TestSandbox_AccountsGet(t *testing.T) {

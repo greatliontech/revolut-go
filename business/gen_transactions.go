@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -16,26 +17,88 @@ type Transactions struct {
 	t *transport.Transport
 }
 
+// GetTransactionParams query parameters for: Retrieve a transaction
+type GetTransactionParams struct {
+	// The type of the ID to retrieve the transaction by.
+	IDType string `json:"id_type,omitempty"`
+}
+
+func (p *GetTransactionParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.IDType != "" {
+		q.Set("id_type", p.IDType)
+	}
+	return q
+}
+
 // Get retrieve a transaction
 //
 // Docs: https://developer.revolut.com/docs/business/get-transaction
-func (s *Transactions) Get(ctx context.Context, id string) (*Transaction, error) {
+func (s *Transactions) Get(ctx context.Context, id string, opts *GetTransactionParams) (*Transaction, error) {
 	if id == "" {
 		return nil, errors.New("business: id is required")
 	}
+	path := "transaction/" + url.PathEscape(id)
+	if q := opts.encode().Encode(); q != "" {
+		path += "?" + q
+	}
 	var out Transaction
-	if err := s.t.Do(ctx, http.MethodGet, "transaction/"+url.PathEscape(id), nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
+// GetTransactionsParams query parameters for: Retrieve a list of transactions
+type GetTransactionsParams struct {
+	// The date and time you retrieve the historical transactions from, including this date-time.
+	From string `json:"from,omitempty"`
+	// The date and time you retrieve the historical transactions to, excluding this date-time.
+	To string `json:"to,omitempty"`
+	// The ID of the account
+	Account string `json:"account,omitempty"`
+	// The maximum number of the historical transactions to retrieve per page.
+	Count int `json:"count,omitempty"`
+	// The type of the historical transactions to retrieve.
+	Type TransactionType `json:"type,omitempty"`
+}
+
+func (p *GetTransactionsParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.From != "" {
+		q.Set("from", p.From)
+	}
+	if p.To != "" {
+		q.Set("to", p.To)
+	}
+	if p.Account != "" {
+		q.Set("account", p.Account)
+	}
+	if p.Count != 0 {
+		q.Set("count", strconv.FormatInt(int64(p.Count), 10))
+	}
+	if p.Type != "" {
+		q.Set("type", string(p.Type))
+	}
+	return q
+}
+
 // List retrieve a list of transactions
 //
 // Docs: https://developer.revolut.com/docs/business/get-transactions
-func (s *Transactions) List(ctx context.Context) ([]Transaction, error) {
+func (s *Transactions) List(ctx context.Context, opts *GetTransactionsParams) ([]Transaction, error) {
+	path := "transactions"
+	if q := opts.encode().Encode(); q != "" {
+		path += "?" + q
+	}
 	var out []Transaction
-	if err := s.t.Do(ctx, http.MethodGet, "transactions", nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil

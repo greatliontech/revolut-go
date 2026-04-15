@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -79,15 +80,41 @@ func (s *WebhooksV2) Delete(ctx context.Context, webhookID string) error {
 	return s.t.Do(ctx, http.MethodDelete, "webhooks/"+url.PathEscape(webhookID), nil, nil)
 }
 
+// GetFailedWebhookEventsParams query parameters for: Retrieve a list of failed webhook events
+type GetFailedWebhookEventsParams struct {
+	// The maximum number of events returned per page.
+	Limit int `json:"limit,omitempty"`
+	// Retrieves events with `created_at` < `created_before`.
+	CreatedBefore string `json:"created_before,omitempty"`
+}
+
+func (p *GetFailedWebhookEventsParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	}
+	if p.CreatedBefore != "" {
+		q.Set("created_before", p.CreatedBefore)
+	}
+	return q
+}
+
 // ListFailedEvents retrieve a list of failed webhook events
 //
 // Docs: https://developer.revolut.com/docs/business/get-failed-webhook-events
-func (s *WebhooksV2) ListFailedEvents(ctx context.Context, webhookID string) ([]WebhookEvent, error) {
+func (s *WebhooksV2) ListFailedEvents(ctx context.Context, webhookID string, opts *GetFailedWebhookEventsParams) ([]WebhookEvent, error) {
 	if webhookID == "" {
 		return nil, errors.New("business: webhook_id is required")
 	}
+	path := "webhooks/" + url.PathEscape(webhookID) + "/failed-events"
+	if q := opts.encode().Encode(); q != "" {
+		path += "?" + q
+	}
 	var out []WebhookEvent
-	if err := s.t.Do(ctx, http.MethodGet, "webhooks/"+url.PathEscape(webhookID)+"/failed-events", nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
