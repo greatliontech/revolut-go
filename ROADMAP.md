@@ -38,13 +38,13 @@ All ROADMAP items either shipped or explicitly closed.
 - **6.** Machine-readable defaults (`13db46c`). `ApplyDefaults()`
   method on Params structs, opt-in, skips zero-ambiguous bool
   defaults and prose defaults.
-- **7.** `format:` validation for path-param UUIDs — reopened
-  after audit found the skip-rationale weak (64 UUID path params;
-  typo retries on refund / capture endpoints consume idempotency
-  keys; crypto-ramp's `uuid | ulid` multi-format leaves server
-  errors ambiguous). Scope kept narrow: path-param UUIDs only —
-  email / uri / body-level format checks stay out because the
-  server error messages there are already actionable.
+- **7.** `format:` validation for path-param UUIDs (`956bb4b`).
+  ir.Param carries Format; applyParameters reads it off the spec;
+  the emitter attaches a local RFC-4122 `isUUID` pre-flight check
+  after the empty-string guard. Local isUUID helper emitted once
+  per package. Scope kept narrow: path-param UUIDs only — email /
+  uri / body-level checks stay out because server error messages
+  for those are already actionable.
 - **8.** Callback decoder regression test (`9a8b79b`). Adjacent
   discovery: merchant's callback declared an editorial
   discriminator (`propertyName: event` with prose mapping keys
@@ -218,6 +218,11 @@ work is plumbing:
 
 ---
 
-**Status: ROADMAP closed.** Items 7 and 11 deliberately skipped
-(rationale above). If new work surfaces from spec updates or user
-feedback, start a fresh ROADMAP.
+**Status: ROADMAP closed.** Item 11 deliberately deferred; item 7
+reopened and shipped after adversarial audit flagged the skip
+rationale as weak. Adjacent audit-driven fixes (cycle-breaking on
+self-referential schemas, enum-value dedup in openbanking,
+defensive-copy of HostAliases, behaviour tests for OB metadata +
+Signed, prose-default heuristic) also landed. If new work
+surfaces from spec updates or user feedback, start a fresh
+ROADMAP.
