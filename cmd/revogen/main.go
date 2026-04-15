@@ -95,10 +95,7 @@ func run(f flags) error {
 	if err != nil {
 		return fmt.Errorf("build IR: %w", err)
 	}
-	lower.Unions(spec)
-	lower.ReadOnly(spec)
-	lower.Validators(spec)
-	lower.ResolveNames(spec)
+	lower.RunAll(spec)
 	if f.verbose {
 		dumpIR(spec)
 	}
