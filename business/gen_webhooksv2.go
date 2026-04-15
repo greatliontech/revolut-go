@@ -8,8 +8,6 @@ import (
 	"iter"
 	"net/http"
 	"net/url"
-	"strconv"
-	"time"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -22,9 +20,10 @@ type WebhooksV2 struct {
 // List retrieve a list of webhooks
 //
 // Docs: https://developer.revolut.com/docs/business/get-webhooks
+// Required scopes: READ
 func (s *WebhooksV2) List(ctx context.Context) ([]WebhookV2Basic, error) {
 	var out []WebhookV2Basic
-	if err := s.t.Do(ctx, http.MethodGet, "webhooks", nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, "https://b2b.revolut.com/api/2.0/"+"webhooks", nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -33,12 +32,13 @@ func (s *WebhooksV2) List(ctx context.Context) ([]WebhookV2Basic, error) {
 // Create create a new webhook
 //
 // Docs: https://developer.revolut.com/docs/business/create-webhook
+// Required scopes: WRITE
 func (s *WebhooksV2) Create(ctx context.Context, req CreateWebhookRequest) (*WebhookV2, error) {
 	if req.URL == "" {
 		return nil, errors.New("business: CreateWebhookRequest.url is required")
 	}
 	var out WebhookV2
-	if err := s.t.Do(ctx, http.MethodPost, "webhooks", req, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodPost, "https://b2b.revolut.com/api/2.0/"+"webhooks", req, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -47,12 +47,13 @@ func (s *WebhooksV2) Create(ctx context.Context, req CreateWebhookRequest) (*Web
 // Get retrieve a webhook
 //
 // Docs: https://developer.revolut.com/docs/business/get-webhook
+// Required scopes: READ
 func (s *WebhooksV2) Get(ctx context.Context, webhookID string) (*WebhookV2, error) {
 	if webhookID == "" {
 		return nil, errors.New("business: webhook_id is required")
 	}
 	var out WebhookV2
-	if err := s.t.Do(ctx, http.MethodGet, "webhooks/"+url.PathEscape(webhookID), nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, "https://b2b.revolut.com/api/2.0/"+"webhooks/"+url.PathEscape(webhookID), nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -61,12 +62,13 @@ func (s *WebhooksV2) Get(ctx context.Context, webhookID string) (*WebhookV2, err
 // Update update a webhook
 //
 // Docs: https://developer.revolut.com/docs/business/update-webhook
+// Required scopes: WRITE
 func (s *WebhooksV2) Update(ctx context.Context, webhookID string, req UpdateWebhookRequest) (*WebhookV2Basic, error) {
 	if webhookID == "" {
 		return nil, errors.New("business: webhook_id is required")
 	}
 	var out WebhookV2Basic
-	if err := s.t.Do(ctx, http.MethodPatch, "webhooks/"+url.PathEscape(webhookID), req, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodPatch, "https://b2b.revolut.com/api/2.0/"+"webhooks/"+url.PathEscape(webhookID), req, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -75,44 +77,23 @@ func (s *WebhooksV2) Update(ctx context.Context, webhookID string, req UpdateWeb
 // Delete delete a webhook
 //
 // Docs: https://developer.revolut.com/docs/business/delete-webhook
+// Required scopes: WRITE
 func (s *WebhooksV2) Delete(ctx context.Context, webhookID string) error {
 	if webhookID == "" {
 		return errors.New("business: webhook_id is required")
 	}
-	return s.t.Do(ctx, http.MethodDelete, "webhooks/"+url.PathEscape(webhookID), nil, nil)
+	return s.t.Do(ctx, http.MethodDelete, "https://b2b.revolut.com/api/2.0/"+"webhooks/"+url.PathEscape(webhookID), nil, nil)
 }
 
-// GetFailedWebhookEventsParams query parameters for: Retrieve a list of failed webhook events
-type GetFailedWebhookEventsParams struct {
-	// The maximum number of events returned per page.
-	Limit int `json:"limit,omitempty"`
-
-	// Retrieves events with `created_at` < `created_before`.
-	CreatedBefore time.Time `json:"created_before,omitempty"`
-}
-
-func (p *GetFailedWebhookEventsParams) encode() url.Values {
-	if p == nil {
-		return nil
-	}
-	q := url.Values{}
-	if p.Limit != 0 {
-		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
-	}
-	if !p.CreatedBefore.IsZero() {
-		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
-	}
-	return q
-}
-
-// ListFailedEvents retrieve a list of failed webhook events
+// GetFailedWebhookEvents retrieve a list of failed webhook events
 //
 // Docs: https://developer.revolut.com/docs/business/get-failed-webhook-events
-func (s *WebhooksV2) ListFailedEvents(ctx context.Context, webhookID string, opts *GetFailedWebhookEventsParams) ([]WebhookEvent, error) {
+// Required scopes: READ
+func (s *WebhooksV2) GetFailedWebhookEvents(ctx context.Context, webhookID string, opts *GetFailedWebhookEventsParams) ([]WebhookEvent, error) {
 	if webhookID == "" {
 		return nil, errors.New("business: webhook_id is required")
 	}
-	path := "webhooks/" + url.PathEscape(webhookID) + "/failed-events"
+	path := "https://b2b.revolut.com/api/2.0/" + "webhooks/" + url.PathEscape(webhookID) + "/failed-events"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
 	}
@@ -123,14 +104,9 @@ func (s *WebhooksV2) ListFailedEvents(ctx context.Context, webhookID string, opt
 	return out, nil
 }
 
-// ListFailedEventsAll iterates every page of ListFailedEvents, yielding one WebhookEvent per
-// step. The iterator terminates when the underlying endpoint signals
-// an empty page. Break out of the loop to stop early.
-//
-// Pass nil for opts to accept the server's defaults on the first page.
-// A non-nil opts is copied internally so the caller's struct is not
-// mutated as pages advance.
-func (s *WebhooksV2) ListFailedEventsAll(ctx context.Context, webhookID string, opts *GetFailedWebhookEventsParams) iter.Seq2[WebhookEvent, error] {
+// GetFailedWebhookEventsAll iterates every page of GetFailedWebhookEvents, yielding one WebhookEvent per
+// step. Break out of the loop to stop early.
+func (s *WebhooksV2) GetFailedWebhookEventsAll(ctx context.Context, webhookID string, opts *GetFailedWebhookEventsParams) iter.Seq2[WebhookEvent, error] {
 	return func(yield func(WebhookEvent, error) bool) {
 		var p GetFailedWebhookEventsParams
 		if opts != nil {
@@ -138,11 +114,11 @@ func (s *WebhooksV2) ListFailedEventsAll(ctx context.Context, webhookID string, 
 		}
 		if webhookID == "" {
 			var zero WebhookEvent
-			yield(zero, errors.New("business: webhook_id is required"))
+			yield(zero, errors.New("business: webhookID is required"))
 			return
 		}
 		for {
-			resp, err := s.ListFailedEvents(ctx, webhookID, &p)
+			resp, err := s.GetFailedWebhookEvents(ctx, webhookID, &p)
 			if err != nil {
 				var zero WebhookEvent
 				yield(zero, err)
@@ -161,15 +137,16 @@ func (s *WebhooksV2) ListFailedEventsAll(ctx context.Context, webhookID string, 
 	}
 }
 
-// RotateSigningSecret rotate a webhook signing secret
+// RotateWebhookSigningSecret rotate a webhook signing secret
 //
 // Docs: https://developer.revolut.com/docs/business/rotate-webhook-signing-secret
-func (s *WebhooksV2) RotateSigningSecret(ctx context.Context, webhookID string, req WebhookSigningSecretRotateRequest) (*WebhookV2, error) {
+// Required scopes: WRITE
+func (s *WebhooksV2) RotateWebhookSigningSecret(ctx context.Context, webhookID string, req WebhookSigningSecretRotateRequest) (*WebhookV2, error) {
 	if webhookID == "" {
 		return nil, errors.New("business: webhook_id is required")
 	}
 	var out WebhookV2
-	if err := s.t.Do(ctx, http.MethodPost, "webhooks/"+url.PathEscape(webhookID)+"/rotate-signing-secret", req, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodPost, "https://b2b.revolut.com/api/2.0/"+"webhooks/"+url.PathEscape(webhookID)+"/rotate-signing-secret", req, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil

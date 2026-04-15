@@ -5,10 +5,8 @@ package business
 import (
 	"context"
 	"errors"
-	"iter"
 	"net/http"
 	"net/url"
-	"strconv"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -18,79 +16,26 @@ type Accounting struct {
 	t *transport.Transport
 }
 
-// GetAccountingCategoriesParams query parameters for: Retrieve a list of accounting categories
-type GetAccountingCategoriesParams struct {
-	// The page size, that is, the maximum number of accounting categories to return per page.
-	Limit int `json:"limit,omitempty"`
-
-	PageToken PageToken `json:"page_token,omitempty"`
-}
-
-func (p *GetAccountingCategoriesParams) encode() url.Values {
-	if p == nil {
-		return nil
-	}
-	q := url.Values{}
-	if p.Limit != 0 {
-		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
-	}
-	if p.PageToken != "" {
-		q.Set("page_token", string(p.PageToken))
-	}
-	return q
-}
-
 // GetCategories retrieve a list of accounting categories
 //
 // Docs: https://developer.revolut.com/docs/business/get-accounting-categories
-func (s *Accounting) GetCategories(ctx context.Context, opts *GetAccountingCategoriesParams) (*GetAccountingCategoriesResponse, error) {
+// Required scopes: READ
+func (s *Accounting) GetCategories(ctx context.Context, opts *GetAccountingCategoriesParams) (**AccountingResponse, error) {
 	path := "accounting-categories"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
 	}
-	var out GetAccountingCategoriesResponse
+	var out *AccountingResponse
 	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-// GetCategoriesAll iterates every page of GetCategories, yielding one AccountingCategoryResponse per
-// step. The iterator terminates when the underlying endpoint signals
-// no further cursor. Break out of the loop to stop early.
-//
-// Pass nil for opts to accept the server's defaults on the first page.
-// A non-nil opts is copied internally so the caller's struct is not
-// mutated as pages advance.
-func (s *Accounting) GetCategoriesAll(ctx context.Context, opts *GetAccountingCategoriesParams) iter.Seq2[AccountingCategoryResponse, error] {
-	return func(yield func(AccountingCategoryResponse, error) bool) {
-		var p GetAccountingCategoriesParams
-		if opts != nil {
-			p = *opts
-		}
-		for {
-			resp, err := s.GetCategories(ctx, &p)
-			if err != nil {
-				var zero AccountingCategoryResponse
-				yield(zero, err)
-				return
-			}
-			for _, item := range resp.AccountingCategories {
-				if !yield(item, nil) {
-					return
-				}
-			}
-			if resp.NextPageToken == "" {
-				return
-			}
-			p.PageToken = resp.NextPageToken
-		}
-	}
-}
-
 // CreateCategory create an accounting category
 //
 // Docs: https://developer.revolut.com/docs/business/create-accounting-category
+// Required scopes: WRITE
 func (s *Accounting) CreateCategory(ctx context.Context, req CreateAccountingCategoryRequest) (*ResourceCreatedResponse, error) {
 	if req.Code == "" {
 		return nil, errors.New("business: CreateAccountingCategoryRequest.code is required")
@@ -108,6 +53,7 @@ func (s *Accounting) CreateCategory(ctx context.Context, req CreateAccountingCat
 // GetCategory retrieve accounting category details
 //
 // Docs: https://developer.revolut.com/docs/business/get-accounting-category
+// Required scopes: READ
 func (s *Accounting) GetCategory(ctx context.Context, accountingCategoryID string) (*AccountingCategoryResponse, error) {
 	if accountingCategoryID == "" {
 		return nil, errors.New("business: accounting_category_id is required")
@@ -122,6 +68,7 @@ func (s *Accounting) GetCategory(ctx context.Context, accountingCategoryID strin
 // UpdateCategory update accounting category settings
 //
 // Docs: https://developer.revolut.com/docs/business/update-accounting-category
+// Required scopes: WRITE
 func (s *Accounting) UpdateCategory(ctx context.Context, accountingCategoryID string, req UpdateAccountingCategoryRequest) error {
 	if accountingCategoryID == "" {
 		return errors.New("business: accounting_category_id is required")
@@ -132,6 +79,7 @@ func (s *Accounting) UpdateCategory(ctx context.Context, accountingCategoryID st
 // DeleteCategory delete an accounting category
 //
 // Docs: https://developer.revolut.com/docs/business/delete-accounting-category
+// Required scopes: WRITE
 func (s *Accounting) DeleteCategory(ctx context.Context, accountingCategoryID string) error {
 	if accountingCategoryID == "" {
 		return errors.New("business: accounting_category_id is required")
@@ -139,79 +87,26 @@ func (s *Accounting) DeleteCategory(ctx context.Context, accountingCategoryID st
 	return s.t.Do(ctx, http.MethodDelete, "accounting-categories/"+url.PathEscape(accountingCategoryID), nil, nil)
 }
 
-// GetLabelGroupsParams query parameters for: Retrieve a list of label groups
-type GetLabelGroupsParams struct {
-	// The page size, that is, the maximum number of label groups to return per page.
-	Limit int `json:"limit,omitempty"`
-
-	PageToken PageToken `json:"page_token,omitempty"`
-}
-
-func (p *GetLabelGroupsParams) encode() url.Values {
-	if p == nil {
-		return nil
-	}
-	q := url.Values{}
-	if p.Limit != 0 {
-		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
-	}
-	if p.PageToken != "" {
-		q.Set("page_token", string(p.PageToken))
-	}
-	return q
-}
-
 // GetLabelGroups retrieve a list of label groups
 //
 // Docs: https://developer.revolut.com/docs/business/get-label-groups
-func (s *Accounting) GetLabelGroups(ctx context.Context, opts *GetLabelGroupsParams) (*GetLabelGroupsResponse, error) {
+// Required scopes: READ
+func (s *Accounting) GetLabelGroups(ctx context.Context, opts *GetLabelGroupsParams) (**AccountingResponse, error) {
 	path := "label-groups"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
 	}
-	var out GetLabelGroupsResponse
+	var out *AccountingResponse
 	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-// GetLabelGroupsAll iterates every page of GetLabelGroups, yielding one LabelGroupResponse per
-// step. The iterator terminates when the underlying endpoint signals
-// no further cursor. Break out of the loop to stop early.
-//
-// Pass nil for opts to accept the server's defaults on the first page.
-// A non-nil opts is copied internally so the caller's struct is not
-// mutated as pages advance.
-func (s *Accounting) GetLabelGroupsAll(ctx context.Context, opts *GetLabelGroupsParams) iter.Seq2[LabelGroupResponse, error] {
-	return func(yield func(LabelGroupResponse, error) bool) {
-		var p GetLabelGroupsParams
-		if opts != nil {
-			p = *opts
-		}
-		for {
-			resp, err := s.GetLabelGroups(ctx, &p)
-			if err != nil {
-				var zero LabelGroupResponse
-				yield(zero, err)
-				return
-			}
-			for _, item := range resp.LabelGroups {
-				if !yield(item, nil) {
-					return
-				}
-			}
-			if resp.NextPageToken == "" {
-				return
-			}
-			p.PageToken = resp.NextPageToken
-		}
-	}
-}
-
 // CreateLabelGroup create a new label group
 //
 // Docs: https://developer.revolut.com/docs/business/create-label-group
+// Required scopes: WRITE
 func (s *Accounting) CreateLabelGroup(ctx context.Context, req CreateLabelGroupRequest) (*ResourceCreatedResponse, error) {
 	if len(req.Labels) == 0 {
 		return nil, errors.New("business: CreateLabelGroupRequest.labels is required")
@@ -229,6 +124,7 @@ func (s *Accounting) CreateLabelGroup(ctx context.Context, req CreateLabelGroupR
 // GetLabelGroup retrieve label group details
 //
 // Docs: https://developer.revolut.com/docs/business/get-label-group
+// Required scopes: READ
 func (s *Accounting) GetLabelGroup(ctx context.Context, groupID string) (*LabelGroupResponse, error) {
 	if groupID == "" {
 		return nil, errors.New("business: group_id is required")
@@ -243,6 +139,7 @@ func (s *Accounting) GetLabelGroup(ctx context.Context, groupID string) (*LabelG
 // UpdateLabelGroup update label group settings
 //
 // Docs: https://developer.revolut.com/docs/business/update-label-group
+// Required scopes: WRITE
 func (s *Accounting) UpdateLabelGroup(ctx context.Context, groupID string, req UpdateLabelGroupRequest) error {
 	if groupID == "" {
 		return errors.New("business: group_id is required")
@@ -256,6 +153,7 @@ func (s *Accounting) UpdateLabelGroup(ctx context.Context, groupID string, req U
 // DeleteLabelGroup delete a label group
 //
 // Docs: https://developer.revolut.com/docs/business/delete-label-group
+// Required scopes: WRITE
 func (s *Accounting) DeleteLabelGroup(ctx context.Context, groupID string) error {
 	if groupID == "" {
 		return errors.New("business: group_id is required")
@@ -263,32 +161,11 @@ func (s *Accounting) DeleteLabelGroup(ctx context.Context, groupID string) error
 	return s.t.Do(ctx, http.MethodDelete, "label-groups/"+url.PathEscape(groupID), nil, nil)
 }
 
-// GetLabelsParams query parameters for: Retrieve a list of labels from a label group
-type GetLabelsParams struct {
-	// The page size, that is, the maximum number of labels to return per page.
-	Limit int `json:"limit,omitempty"`
-
-	PageToken PageToken `json:"page_token,omitempty"`
-}
-
-func (p *GetLabelsParams) encode() url.Values {
-	if p == nil {
-		return nil
-	}
-	q := url.Values{}
-	if p.Limit != 0 {
-		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
-	}
-	if p.PageToken != "" {
-		q.Set("page_token", string(p.PageToken))
-	}
-	return q
-}
-
 // GetLabels retrieve a list of labels from a label group
 //
 // Docs: https://developer.revolut.com/docs/business/get-labels
-func (s *Accounting) GetLabels(ctx context.Context, groupID string, opts *GetLabelsParams) (*GetLabelsResponse, error) {
+// Required scopes: READ
+func (s *Accounting) GetLabels(ctx context.Context, groupID string, opts *GetLabelsParams) (**AccountingResponse, error) {
 	if groupID == "" {
 		return nil, errors.New("business: group_id is required")
 	}
@@ -296,54 +173,17 @@ func (s *Accounting) GetLabels(ctx context.Context, groupID string, opts *GetLab
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
 	}
-	var out GetLabelsResponse
+	var out *AccountingResponse
 	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-// GetLabelsAll iterates every page of GetLabels, yielding one LabelResponse per
-// step. The iterator terminates when the underlying endpoint signals
-// no further cursor. Break out of the loop to stop early.
-//
-// Pass nil for opts to accept the server's defaults on the first page.
-// A non-nil opts is copied internally so the caller's struct is not
-// mutated as pages advance.
-func (s *Accounting) GetLabelsAll(ctx context.Context, groupID string, opts *GetLabelsParams) iter.Seq2[LabelResponse, error] {
-	return func(yield func(LabelResponse, error) bool) {
-		var p GetLabelsParams
-		if opts != nil {
-			p = *opts
-		}
-		if groupID == "" {
-			var zero LabelResponse
-			yield(zero, errors.New("business: group_id is required"))
-			return
-		}
-		for {
-			resp, err := s.GetLabels(ctx, groupID, &p)
-			if err != nil {
-				var zero LabelResponse
-				yield(zero, err)
-				return
-			}
-			for _, item := range resp.Labels {
-				if !yield(item, nil) {
-					return
-				}
-			}
-			if resp.NextPageToken == "" {
-				return
-			}
-			p.PageToken = resp.NextPageToken
-		}
-	}
-}
-
 // CreateLabel create a new label
 //
 // Docs: https://developer.revolut.com/docs/business/create-label
+// Required scopes: WRITE
 func (s *Accounting) CreateLabel(ctx context.Context, groupID string, req CreateLabelRequest) (*ResourceCreatedResponse, error) {
 	if groupID == "" {
 		return nil, errors.New("business: group_id is required")
@@ -361,6 +201,7 @@ func (s *Accounting) CreateLabel(ctx context.Context, groupID string, req Create
 // UpdateLabel update a label
 //
 // Docs: https://developer.revolut.com/docs/business/update-label
+// Required scopes: WRITE
 func (s *Accounting) UpdateLabel(ctx context.Context, groupID string, labelID string, req UpdateLabelRequest) error {
 	if groupID == "" {
 		return errors.New("business: group_id is required")
@@ -377,6 +218,7 @@ func (s *Accounting) UpdateLabel(ctx context.Context, groupID string, labelID st
 // DeleteLabel delete a label
 //
 // Docs: https://developer.revolut.com/docs/business/delete-label
+// Required scopes: WRITE
 func (s *Accounting) DeleteLabel(ctx context.Context, groupID string, labelID string) error {
 	if groupID == "" {
 		return errors.New("business: group_id is required")
@@ -387,79 +229,26 @@ func (s *Accounting) DeleteLabel(ctx context.Context, groupID string, labelID st
 	return s.t.Do(ctx, http.MethodDelete, "label-groups/"+url.PathEscape(groupID)+"/labels/"+url.PathEscape(labelID), nil, nil)
 }
 
-// GetTaxRatesParams query parameters for: Retrieve a list of tax rates
-type GetTaxRatesParams struct {
-	// The page size, that is, the maximum number of tax rates to return per page.
-	Limit int `json:"limit,omitempty"`
-
-	PageToken PageToken `json:"page_token,omitempty"`
-}
-
-func (p *GetTaxRatesParams) encode() url.Values {
-	if p == nil {
-		return nil
-	}
-	q := url.Values{}
-	if p.Limit != 0 {
-		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
-	}
-	if p.PageToken != "" {
-		q.Set("page_token", string(p.PageToken))
-	}
-	return q
-}
-
 // GetTaxRates retrieve a list of tax rates
 //
 // Docs: https://developer.revolut.com/docs/business/get-tax-rates
-func (s *Accounting) GetTaxRates(ctx context.Context, opts *GetTaxRatesParams) (*GetTaxRatesResponse, error) {
+// Required scopes: READ
+func (s *Accounting) GetTaxRates(ctx context.Context, opts *GetTaxRatesParams) (**AccountingResponse, error) {
 	path := "tax-rates"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
 	}
-	var out GetTaxRatesResponse
+	var out *AccountingResponse
 	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-// GetTaxRatesAll iterates every page of GetTaxRates, yielding one TaxRateResponse per
-// step. The iterator terminates when the underlying endpoint signals
-// no further cursor. Break out of the loop to stop early.
-//
-// Pass nil for opts to accept the server's defaults on the first page.
-// A non-nil opts is copied internally so the caller's struct is not
-// mutated as pages advance.
-func (s *Accounting) GetTaxRatesAll(ctx context.Context, opts *GetTaxRatesParams) iter.Seq2[TaxRateResponse, error] {
-	return func(yield func(TaxRateResponse, error) bool) {
-		var p GetTaxRatesParams
-		if opts != nil {
-			p = *opts
-		}
-		for {
-			resp, err := s.GetTaxRates(ctx, &p)
-			if err != nil {
-				var zero TaxRateResponse
-				yield(zero, err)
-				return
-			}
-			for _, item := range resp.TaxRates {
-				if !yield(item, nil) {
-					return
-				}
-			}
-			if resp.NextPageToken == "" {
-				return
-			}
-			p.PageToken = resp.NextPageToken
-		}
-	}
-}
-
 // CreateTaxRate create a new tax rate
 //
 // Docs: https://developer.revolut.com/docs/business/create-tax-rate
+// Required scopes: WRITE
 func (s *Accounting) CreateTaxRate(ctx context.Context, req CreateTaxRateRequest) (*ResourceCreatedResponse, error) {
 	if req.Name == "" {
 		return nil, errors.New("business: CreateTaxRateRequest.name is required")
@@ -477,6 +266,7 @@ func (s *Accounting) CreateTaxRate(ctx context.Context, req CreateTaxRateRequest
 // GetTaxRate retrieve tax rate details
 //
 // Docs: https://developer.revolut.com/docs/business/get-tax-rate
+// Required scopes: READ
 func (s *Accounting) GetTaxRate(ctx context.Context, taxRateID string) (*TaxRateResponse, error) {
 	if taxRateID == "" {
 		return nil, errors.New("business: tax_rate_id is required")
@@ -491,6 +281,7 @@ func (s *Accounting) GetTaxRate(ctx context.Context, taxRateID string) (*TaxRate
 // UpdateTaxRate update tax rate settings
 //
 // Docs: https://developer.revolut.com/docs/business/update-tax-rate
+// Required scopes: WRITE
 func (s *Accounting) UpdateTaxRate(ctx context.Context, taxRateID string, req UpdateTaxRateRequest) error {
 	if taxRateID == "" {
 		return errors.New("business: tax_rate_id is required")
@@ -501,6 +292,7 @@ func (s *Accounting) UpdateTaxRate(ctx context.Context, taxRateID string, req Up
 // DeleteTaxRate delete a tax rate
 //
 // Docs: https://developer.revolut.com/docs/business/delete-tax-rate
+// Required scopes: WRITE
 func (s *Accounting) DeleteTaxRate(ctx context.Context, taxRateID string) error {
 	if taxRateID == "" {
 		return errors.New("business: tax_rate_id is required")

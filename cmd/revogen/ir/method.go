@@ -26,9 +26,15 @@ const (
 
 // Param is one positional parameter on a generated Go method.
 type Param struct {
-	Name string
+	Name string // Go identifier
 	Type *Type
 	Doc  string
+
+	// WireName is the original spec-side name (e.g. snake_case
+	// "account_id") preserved for error messages and URL templates
+	// where the wire form must round-trip exactly. Empty when the
+	// param has no spec-side counterpart (e.g. ctx).
+	WireName string
 }
 
 // Method is one Go method on a Resource.

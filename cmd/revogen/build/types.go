@@ -109,6 +109,11 @@ func (b *Builder) resolveInlineSchema(s *openapi3.Schema, ctx Context) *ir.Type 
 
 	switch {
 	case schemaTypeIs(s, "string"):
+		// Inline string enums become named types so callers get
+		// exported constants instead of bare strings.
+		if len(s.Enum) > 0 {
+			return ir.Named(b.promoteInlineEnum(s, ctx))
+		}
 		return b.resolveStringType(s)
 	case schemaTypeIs(s, "integer"):
 		return b.resolveIntegerType(s)
@@ -216,6 +221,41 @@ func (b *Builder) additionalValueType(s *openapi3.Schema, ctx Context) *ir.Type 
 	return ir.Prim("any")
 }
 
+// promoteInlineEnum synthesizes an enum Decl from an inline string
+// enum schema, returning the derived Go name (<Parent><Field>).
+// Idempotent on the derived name.
+func (b *Builder) promoteInlineEnum(s *openapi3.Schema, ctx Context) string {
+	parent := ctx.Parent
+	if parent == "" {
+		parent = "Anonymous"
+	}
+	derived := names.TypeName(parent) + names.TypeName(ctx.Field)
+	if _, ok := b.declByName[derived]; ok {
+		return derived
+	}
+	values := make([]ir.EnumValue, 0, len(s.Enum))
+	for _, v := range s.Enum {
+		sv, ok := v.(string)
+		if !ok {
+			continue
+		}
+		values = append(values, ir.EnumValue{
+			GoName: derived + names.TypeName(sv),
+			Value:  sv,
+		})
+	}
+	d := &ir.Decl{
+		Name:       derived,
+		Kind:       ir.DeclEnum,
+		Doc:        s.Description,
+		EnumBase:   ir.Prim("string"),
+		EnumValues: values,
+	}
+	b.declByName[derived] = d
+	b.declOrder = append(b.declOrder, derived)
+	return derived
+}
+
 // promoteInline synthesizes a top-level struct Decl for an inline
 // object schema. The generated name is <Parent><Field> (e.g.
 // ValidateAccountNameRequestUKIndividualName). Idempotent: repeated
@@ -229,7 +269,7 @@ func (b *Builder) promoteInline(s *openapi3.Schema, ctx Context) string {
 	if parent == "" {
 		parent = "Anonymous"
 	}
-	derived := parent + names.TypeName(ctx.Field)
+	derived := names.TypeName(parent) + names.TypeName(ctx.Field)
 	if _, ok := b.declByName[derived]; ok {
 		return derived
 	}

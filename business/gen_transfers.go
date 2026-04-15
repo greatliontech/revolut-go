@@ -15,10 +15,11 @@ type Transfers struct {
 	t *transport.Transport
 }
 
-// Pay create a transfer to another account or card
+// CreatePayment create a transfer to another account or card
 //
 // Docs: https://developer.revolut.com/docs/business/create-payment
-func (s *Transfers) Pay(ctx context.Context, req TransactionPaymentRequest) (*TransferResponse, error) {
+// Required scopes: PAY, READ
+func (s *Transfers) CreatePayment(ctx context.Context, req TransactionPaymentRequest) (*TransferResponse, error) {
 	if req.AccountID == "" {
 		return nil, errors.New("business: TransactionPaymentRequest.account_id is required")
 	}
@@ -41,6 +42,7 @@ func (s *Transfers) Pay(ctx context.Context, req TransactionPaymentRequest) (*Tr
 // Create move money between your accounts
 //
 // Docs: https://developer.revolut.com/docs/business/create-transfer
+// Required scopes: PAY, READ
 func (s *Transfers) Create(ctx context.Context, req TransferRequest) (*TransferResponse, error) {
 	if req.Amount == "" {
 		return nil, errors.New("business: TransferRequest.amount is required")
@@ -64,10 +66,11 @@ func (s *Transfers) Create(ctx context.Context, req TransferRequest) (*TransferR
 	return &out, nil
 }
 
-// ListReasons get transfer reasons
+// GetReasons get transfer reasons
 //
 // Docs: https://developer.revolut.com/docs/business/get-transfer-reasons
-func (s *Transfers) ListReasons(ctx context.Context) ([]TransferReason, error) {
+// Required scopes: READ
+func (s *Transfers) GetReasons(ctx context.Context) ([]TransferReason, error) {
 	var out []TransferReason
 	if err := s.t.Do(ctx, http.MethodGet, "transfer-reasons", nil, &out); err != nil {
 		return nil, err

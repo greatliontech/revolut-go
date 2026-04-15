@@ -2,13 +2,17 @@
 
 package business
 
-import "github.com/greatliontech/revolut-go/internal/transport"
+import (
+	"github.com/greatliontech/revolut-go/internal/transport"
+)
 
-// Client is the generated Revolut API client. Resource fields group
-// endpoints by their Revolut API path prefix.
+// Client is the generated Revolut API client. Resource fields
+// group endpoints by their tag prefix.
 type Client struct {
 	transport *transport.Transport
 
+	// Counterparties groups the related endpoints.
+	Counterparties *Counterparties
 	// Accounting groups the related endpoints.
 	Accounting *Accounting
 	// Accounts groups the related endpoints.
@@ -17,24 +21,22 @@ type Client struct {
 	CardInvitations *CardInvitations
 	// Cards groups the related endpoints.
 	Cards *Cards
-	// Counterparties groups the related endpoints.
-	Counterparties *Counterparties
-	// Expenses groups the related endpoints.
-	Expenses *Expenses
 	// ForeignExchange groups the related endpoints.
 	ForeignExchange *ForeignExchange
+	// Expenses groups the related endpoints.
+	Expenses *Expenses
+	// Transfers groups the related endpoints.
+	Transfers *Transfers
 	// PaymentDrafts groups the related endpoints.
 	PaymentDrafts *PaymentDrafts
 	// PayoutLinks groups the related endpoints.
 	PayoutLinks *PayoutLinks
-	// Simulations groups the related endpoints.
-	Simulations *Simulations
 	// TeamMembers groups the related endpoints.
 	TeamMembers *TeamMembers
+	// Simulations groups the related endpoints.
+	Simulations *Simulations
 	// Transactions groups the related endpoints.
 	Transactions *Transactions
-	// Transfers groups the related endpoints.
-	Transfers *Transfers
 	// WebhooksV2 groups the related endpoints.
 	WebhooksV2 *WebhooksV2
 }
@@ -42,19 +44,19 @@ type Client struct {
 // New wraps an HTTP transport in a Client.
 func New(t *transport.Transport) *Client {
 	c := &Client{transport: t}
+	c.Counterparties = &Counterparties{t: t}
 	c.Accounting = &Accounting{t: t}
 	c.Accounts = &Accounts{t: t}
 	c.CardInvitations = &CardInvitations{t: t}
 	c.Cards = &Cards{t: t}
-	c.Counterparties = &Counterparties{t: t}
-	c.Expenses = &Expenses{t: t}
 	c.ForeignExchange = &ForeignExchange{t: t}
+	c.Expenses = &Expenses{t: t}
+	c.Transfers = &Transfers{t: t}
 	c.PaymentDrafts = &PaymentDrafts{t: t}
 	c.PayoutLinks = &PayoutLinks{t: t}
-	c.Simulations = &Simulations{t: t}
 	c.TeamMembers = &TeamMembers{t: t}
+	c.Simulations = &Simulations{t: t}
 	c.Transactions = &Transactions{t: t}
-	c.Transfers = &Transfers{t: t}
 	c.WebhooksV2 = &WebhooksV2{t: t}
 	return c
 }

@@ -4,17 +4,23 @@ package business
 
 import (
 	"encoding/json"
+	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/greatliontech/revolut-go/internal/core"
 )
 
-// hasKey reports whether every required JSON key of a union variant
-// is present on the wire. Used by the generated decode<Union> helpers.
-func hasKey(m map[string]json.RawMessage, key string) bool {
-	_, ok := m[key]
-	return ok
-}
+// APIVersion is the OpenAPI info.version this client was generated against.
+const APIVersion = "1.0"
+
+// AccountState indicates the state of the account.
+type AccountState string
+
+const (
+	AccountStateActive   AccountState = "active"
+	AccountStateInactive AccountState = "inactive"
+)
 
 type Account struct {
 	// The current balance on the account.
@@ -83,16 +89,6 @@ type AccountBankDetailsItem struct {
 // AccountCurrency [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency code in upper case.
 type AccountCurrency = core.Currency
 
-// AccountNameValidationReasonAU a code which explains why a given result was returned, and the service that returned it.
-// In some cases, it may provide more details about the result.
-type AccountNameValidationReasonAU struct {
-	// The reason code. Possible values for AU:
-	Code AccountNameValidationReasonAUCode `json:"code,omitempty"`
-
-	// The reason type.
-	Type AccountNameValidationReasonAUType `json:"type,omitempty"`
-}
-
 // AccountNameValidationReasonAUCode the reason code. Possible values for AU:
 //   - **`close_match`** (business accounts): The provided name is similar to the account name.
 //     The actual name is returned. Mismatched account type is corrected.
@@ -121,20 +117,20 @@ const (
 type AccountNameValidationReasonAUType string
 
 const (
-	AccountNameValidationReasonAUTypeUKCop AccountNameValidationReasonAUType = "uk_cop"
-	AccountNameValidationReasonAUTypeEuCop AccountNameValidationReasonAUType = "eu_cop"
-	AccountNameValidationReasonAUTypeROCop AccountNameValidationReasonAUType = "ro_cop"
-	AccountNameValidationReasonAUTypeAUCop AccountNameValidationReasonAUType = "au_cop"
+	AccountNameValidationReasonAUTypeUKCOP AccountNameValidationReasonAUType = "uk_cop"
+	AccountNameValidationReasonAUTypeEuCOP AccountNameValidationReasonAUType = "eu_cop"
+	AccountNameValidationReasonAUTypeROCOP AccountNameValidationReasonAUType = "ro_cop"
+	AccountNameValidationReasonAUTypeAUCOP AccountNameValidationReasonAUType = "au_cop"
 )
 
-// AccountNameValidationReasonEUR a code which explains why a given result was returned, and the service that returned it.
-// For example, it might happen that the details you provided match the account details, but you specified the counterparty as an individual, and the account type is business.
-type AccountNameValidationReasonEUR struct {
-	// The reason code. Possible values for EUR:
-	Code AccountNameValidationReasonEURCode `json:"code,omitempty"`
+// AccountNameValidationReasonAU a code which explains why a given result was returned, and the service that returned it.
+// In some cases, it may provide more details about the result.
+type AccountNameValidationReasonAU struct {
+	// The reason code. Possible values for AU:
+	Code AccountNameValidationReasonAUCode `json:"code,omitempty"`
 
 	// The reason type.
-	Type AccountNameValidationReasonEURType `json:"type,omitempty"`
+	Type AccountNameValidationReasonAUType `json:"type,omitempty"`
 }
 
 // AccountNameValidationReasonEURCode the reason code. Possible values for EUR:
@@ -165,19 +161,20 @@ const (
 type AccountNameValidationReasonEURType string
 
 const (
-	AccountNameValidationReasonEURTypeUKCop AccountNameValidationReasonEURType = "uk_cop"
-	AccountNameValidationReasonEURTypeEuCop AccountNameValidationReasonEURType = "eu_cop"
-	AccountNameValidationReasonEURTypeROCop AccountNameValidationReasonEURType = "ro_cop"
-	AccountNameValidationReasonEURTypeAUCop AccountNameValidationReasonEURType = "au_cop"
+	AccountNameValidationReasonEURTypeUKCOP AccountNameValidationReasonEURType = "uk_cop"
+	AccountNameValidationReasonEURTypeEuCOP AccountNameValidationReasonEURType = "eu_cop"
+	AccountNameValidationReasonEURTypeROCOP AccountNameValidationReasonEURType = "ro_cop"
+	AccountNameValidationReasonEURTypeAUCOP AccountNameValidationReasonEURType = "au_cop"
 )
 
-// AccountNameValidationReasonRO a code which explains why a given result was returned, and the service that returned it.
-type AccountNameValidationReasonRO struct {
-	// The reason code. Possible values for RO:
-	Code AccountNameValidationReasonROCode `json:"code,omitempty"`
+// AccountNameValidationReasonEUR a code which explains why a given result was returned, and the service that returned it.
+// For example, it might happen that the details you provided match the account details, but you specified the counterparty as an individual, and the account type is business.
+type AccountNameValidationReasonEUR struct {
+	// The reason code. Possible values for EUR:
+	Code AccountNameValidationReasonEURCode `json:"code,omitempty"`
 
 	// The reason type.
-	Type AccountNameValidationReasonROType `json:"type,omitempty"`
+	Type AccountNameValidationReasonEURType `json:"type,omitempty"`
 }
 
 // AccountNameValidationReasonROCode the reason code. Possible values for RO:
@@ -202,20 +199,19 @@ const (
 type AccountNameValidationReasonROType string
 
 const (
-	AccountNameValidationReasonROTypeUKCop AccountNameValidationReasonROType = "uk_cop"
-	AccountNameValidationReasonROTypeEuCop AccountNameValidationReasonROType = "eu_cop"
-	AccountNameValidationReasonROTypeROCop AccountNameValidationReasonROType = "ro_cop"
-	AccountNameValidationReasonROTypeAUCop AccountNameValidationReasonROType = "au_cop"
+	AccountNameValidationReasonROTypeUKCOP AccountNameValidationReasonROType = "uk_cop"
+	AccountNameValidationReasonROTypeEuCOP AccountNameValidationReasonROType = "eu_cop"
+	AccountNameValidationReasonROTypeROCOP AccountNameValidationReasonROType = "ro_cop"
+	AccountNameValidationReasonROTypeAUCOP AccountNameValidationReasonROType = "au_cop"
 )
 
-// AccountNameValidationReasonUK a code which explains why a given result was returned, and the service that returned it.
-// For example, it might happen that the details you provided match the account details, but you specified the counterparty as an individual, and the account type is business.
-type AccountNameValidationReasonUK struct {
-	// The reason code. Possible values for UK:
-	Code AccountNameValidationReasonUKCode `json:"code,omitempty"`
+// AccountNameValidationReasonRO a code which explains why a given result was returned, and the service that returned it.
+type AccountNameValidationReasonRO struct {
+	// The reason code. Possible values for RO:
+	Code AccountNameValidationReasonROCode `json:"code,omitempty"`
 
 	// The reason type.
-	Type AccountNameValidationReasonUKType `json:"type,omitempty"`
+	Type AccountNameValidationReasonROType `json:"type,omitempty"`
 }
 
 // AccountNameValidationReasonUKCode the reason code. Possible values for UK:
@@ -252,19 +248,21 @@ const (
 type AccountNameValidationReasonUKType string
 
 const (
-	AccountNameValidationReasonUKTypeUKCop AccountNameValidationReasonUKType = "uk_cop"
-	AccountNameValidationReasonUKTypeEuCop AccountNameValidationReasonUKType = "eu_cop"
-	AccountNameValidationReasonUKTypeROCop AccountNameValidationReasonUKType = "ro_cop"
-	AccountNameValidationReasonUKTypeAUCop AccountNameValidationReasonUKType = "au_cop"
+	AccountNameValidationReasonUKTypeUKCOP AccountNameValidationReasonUKType = "uk_cop"
+	AccountNameValidationReasonUKTypeEuCOP AccountNameValidationReasonUKType = "eu_cop"
+	AccountNameValidationReasonUKTypeROCOP AccountNameValidationReasonUKType = "ro_cop"
+	AccountNameValidationReasonUKTypeAUCOP AccountNameValidationReasonUKType = "au_cop"
 )
 
-// AccountState indicates the state of the account.
-type AccountState string
+// AccountNameValidationReasonUK a code which explains why a given result was returned, and the service that returned it.
+// For example, it might happen that the details you provided match the account details, but you specified the counterparty as an individual, and the account type is business.
+type AccountNameValidationReasonUK struct {
+	// The reason code. Possible values for UK:
+	Code AccountNameValidationReasonUKCode `json:"code,omitempty"`
 
-const (
-	AccountStateActive   AccountState = "active"
-	AccountStateInactive AccountState = "inactive"
-)
+	// The reason type.
+	Type AccountNameValidationReasonUKType `json:"type,omitempty"`
+}
 
 type AccountingCategoryResponse struct {
 	// The code of the accounting category.
@@ -369,6 +367,28 @@ type CardCanBeUnlocked = bool
 // CardContact one of the card's contacts.
 type CardContact = string
 
+// CardCreatedResponseSpendingPeriodEndDateAction the action to take after the end date of the spending period.
+type CardCreatedResponseSpendingPeriodEndDateAction string
+
+const (
+	CardCreatedResponseSpendingPeriodEndDateActionLock      CardCreatedResponseSpendingPeriodEndDateAction = "lock"
+	CardCreatedResponseSpendingPeriodEndDateActionTerminate CardCreatedResponseSpendingPeriodEndDateAction = "terminate"
+)
+
+// CardCreatedResponseSpendingPeriod the controls for the card's spending period.
+//
+// They specify the dates when the card becomes available or unavailable for spending, and define what happens after the end date.
+type CardCreatedResponseSpendingPeriod struct {
+	// The end date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
+	EndDate *time.Time `json:"end_date,omitempty"`
+
+	// The action to take after the end date of the spending period.
+	EndDateAction CardCreatedResponseSpendingPeriodEndDateAction `json:"end_date_action,omitempty"`
+
+	// The start date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
+	StartDate *time.Time `json:"start_date,omitempty"`
+}
+
 type CardCreatedResponse struct {
 	// The list of linked accounts.
 	Accounts []string `json:"accounts"`
@@ -413,6 +433,9 @@ type CardCreatedResponse struct {
 
 	SpendingLimits SpendingLimits `json:"spending_limits,omitempty"`
 
+	// The controls for the card's spending period.
+	SpendingPeriod *CardCreatedResponseSpendingPeriod `json:"spending_period,omitempty"`
+
 	// The state that the card is in.
 	State CardState `json:"state"`
 
@@ -430,7 +453,7 @@ type CardCreatedResponse struct {
 type CardInvitationCardID = string
 
 // CardInvitationCreatedAt the date and time the card invitation was created in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
-type CardInvitationCreatedAt = string
+type CardInvitationCreatedAt = time.Time
 
 // CardInvitationCreatedHolderID the ID of the team member to be assigned as the holder of the card after the invitation is claimed.
 type CardInvitationCreatedHolderID = string
@@ -485,7 +508,7 @@ type CardInvitationCreatedResponse struct {
 // For other states, to find out when a card invitation transitioned to its [final state](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-card-invitations#card-invitation-state), check the `updated_at` value.
 // :::
 // ::::::
-type CardInvitationExpiryDate = string
+type CardInvitationExpiryDate = time.Time
 
 // CardInvitationHolderID the ID of the team member to be assigned as the holder of the card after the invitation is claimed.
 //
@@ -500,14 +523,6 @@ type CardInvitationID = string
 // CardInvitationLabel the label of the card.
 type CardInvitationLabel = string
 
-type CardInvitationMerchantControls struct {
-	// The type of control to apply.
-	ControlType CardInvitationMerchantControlsControlType `json:"control_type"`
-
-	// The list of IDs of merchants to which the control applies.
-	MerchantIds []string `json:"merchant_ids"`
-}
-
 // CardInvitationMerchantControlsControlType the type of control to apply.
 type CardInvitationMerchantControlsControlType string
 
@@ -515,6 +530,14 @@ const (
 	CardInvitationMerchantControlsControlTypeBlock CardInvitationMerchantControlsControlType = "block"
 	CardInvitationMerchantControlsControlTypeAllow CardInvitationMerchantControlsControlType = "allow"
 )
+
+type CardInvitationMerchantControls struct {
+	// The type of control to apply.
+	ControlType CardInvitationMerchantControlsControlType `json:"control_type"`
+
+	// The list of IDs of merchants to which the control applies.
+	MerchantIds []string `json:"merchant_ids"`
+}
 
 type CardInvitationResponse struct {
 	// The list of accounts that will be linked to the card.
@@ -548,8 +571,7 @@ type CardInvitationResponse struct {
 
 	// The [spend program](https://help.revolut.com/business/help/making-paymentsbusiness/spend-controls/setting-card-presets-for-my-team-members/) assigned to the card.
 	//
-	// Read-only: populated by the server; any value sent by the
-	// client is ignored.
+	// Read-only: populated by the server; any value sent by the client is ignored.
 	SpendProgram SpendProgram `json:"spend_program,omitempty"`
 
 	SpendingLimits SpendingLimits `json:"spending_limits,omitempty"`
@@ -599,6 +621,14 @@ type CardInvitationSpendingLimits struct {
 	Year SpendingLimitPeriodic `json:"year,omitempty"`
 }
 
+// CardInvitationSpendingPeriodEndDateAction the action to take after the end date of the spending period.
+type CardInvitationSpendingPeriodEndDateAction string
+
+const (
+	CardInvitationSpendingPeriodEndDateActionLock      CardInvitationSpendingPeriodEndDateAction = "lock"
+	CardInvitationSpendingPeriodEndDateActionTerminate CardInvitationSpendingPeriodEndDateAction = "terminate"
+)
+
 // CardInvitationSpendingPeriod the controls for the card's spending period.
 //
 // They specify the dates when the card will become available or unavailable for spending, and define what happens after the end date.
@@ -612,14 +642,6 @@ type CardInvitationSpendingPeriod struct {
 	// The start date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
 	StartDate *time.Time `json:"start_date,omitempty"`
 }
-
-// CardInvitationSpendingPeriodEndDateAction the action to take after the end date of the spending period.
-type CardInvitationSpendingPeriodEndDateAction string
-
-const (
-	CardInvitationSpendingPeriodEndDateActionLock      CardInvitationSpendingPeriodEndDateAction = "lock"
-	CardInvitationSpendingPeriodEndDateActionTerminate CardInvitationSpendingPeriodEndDateAction = "terminate"
-)
 
 // CardInvitationState the current state of the card invitation:
 // - **`created`**: Invitation has been created but not yet claimed.
@@ -638,7 +660,7 @@ const (
 )
 
 // CardInvitationUpdatedAt the date and time the card invitation was last updated in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
-type CardInvitationUpdatedAt = string
+type CardInvitationUpdatedAt = time.Time
 
 type CardInvitationUpdatedResponse struct {
 	// The list of accounts that will be linked to the card.
@@ -669,8 +691,7 @@ type CardInvitationUpdatedResponse struct {
 
 	// The [spend program](https://help.revolut.com/business/help/making-paymentsbusiness/spend-controls/setting-card-presets-for-my-team-members/) assigned to the card.
 	//
-	// Read-only: populated by the server; any value sent by the
-	// client is ignored.
+	// Read-only: populated by the server; any value sent by the client is ignored.
 	SpendProgram SpendProgram `json:"spend_program,omitempty"`
 
 	SpendingLimits SpendingLimits `json:"spending_limits,omitempty"`
@@ -728,6 +749,28 @@ type CardReference struct {
 	Value string `json:"value"`
 }
 
+// CardResponseSpendingPeriodEndDateAction the action to take after the end date of the spending period.
+type CardResponseSpendingPeriodEndDateAction string
+
+const (
+	CardResponseSpendingPeriodEndDateActionLock      CardResponseSpendingPeriodEndDateAction = "lock"
+	CardResponseSpendingPeriodEndDateActionTerminate CardResponseSpendingPeriodEndDateAction = "terminate"
+)
+
+// CardResponseSpendingPeriod the controls for the card's spending period.
+//
+// They specify the dates when the card becomes available or unavailable for spending, and define what happens after the end date.
+type CardResponseSpendingPeriod struct {
+	// The end date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
+	EndDate *time.Time `json:"end_date,omitempty"`
+
+	// The action to take after the end date of the spending period.
+	EndDateAction CardResponseSpendingPeriodEndDateAction `json:"end_date_action,omitempty"`
+
+	// The start date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
+	StartDate *time.Time `json:"start_date,omitempty"`
+}
+
 type CardResponse struct {
 	// The list of linked accounts.
 	Accounts []string `json:"accounts"`
@@ -772,11 +815,13 @@ type CardResponse struct {
 
 	// The [spend program](https://help.revolut.com/business/help/making-paymentsbusiness/spend-controls/setting-card-presets-for-my-team-members/) assigned to the card.
 	//
-	// Read-only: populated by the server; any value sent by the
-	// client is ignored.
+	// Read-only: populated by the server; any value sent by the client is ignored.
 	SpendProgram SpendProgram `json:"spend_program,omitempty"`
 
 	SpendingLimits SpendingLimits `json:"spending_limits,omitempty"`
+
+	// The controls for the card's spending period.
+	SpendingPeriod *CardResponseSpendingPeriod `json:"spending_period,omitempty"`
 
 	// The state that the card is in.
 	State CardState `json:"state"`
@@ -834,6 +879,15 @@ const (
 	ChargeBearerDebtor ChargeBearer = "debtor"
 )
 
+// CounterpartyState indicates the state of the counterparty.
+type CounterpartyState string
+
+const (
+	CounterpartyStateCreated CounterpartyState = "created"
+	CounterpartyStateDraft   CounterpartyState = "draft"
+	CounterpartyStateDeleted CounterpartyState = "deleted"
+)
+
 type Counterparty struct {
 	// The list of public accounts associated with this counterparty.
 	Accounts []CounterpartyAccount `json:"accounts,omitempty"`
@@ -866,6 +920,27 @@ type Counterparty struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// CounterpartyAccountRecipientCharges indicates the possibility of the recipient charges.
+//
+// :::caution
+// This field is deprecated and should be disregarded.
+// It is returned for legacy purposes only.
+// :::
+type CounterpartyAccountRecipientCharges string
+
+const (
+	CounterpartyAccountRecipientChargesNo       CounterpartyAccountRecipientCharges = "no"
+	CounterpartyAccountRecipientChargesExpected CounterpartyAccountRecipientCharges = "expected"
+)
+
+// CounterpartyAccountType indicates the type of account.
+type CounterpartyAccountType string
+
+const (
+	CounterpartyAccountTypeRevolut  CounterpartyAccountType = "revolut"
+	CounterpartyAccountTypeExternal CounterpartyAccountType = "external"
+)
+
 type CounterpartyAccount struct {
 	// The bank account number of the counterparty.
 	AccountNo string `json:"account_no,omitempty"`
@@ -877,7 +952,7 @@ type CounterpartyAccount struct {
 	BIC string `json:"bic,omitempty"`
 
 	// The BSB number of the counterparty's account if applicable.
-	BsbCode string `json:"bsb_code,omitempty"`
+	BSBCode string `json:"bsb_code,omitempty"`
 
 	// The CLABE number of the counterparty's account if applicable.
 	Clabe string `json:"clabe,omitempty"`
@@ -912,25 +987,12 @@ type CounterpartyAccount struct {
 	Type CounterpartyAccountType `json:"type"`
 }
 
-// CounterpartyAccountRecipientCharges indicates the possibility of the recipient charges.
-//
-// :::caution
-// This field is deprecated and should be disregarded.
-// It is returned for legacy purposes only.
-// :::
-type CounterpartyAccountRecipientCharges string
+// CounterpartyCardScheme the card brand.
+type CounterpartyCardScheme string
 
 const (
-	CounterpartyAccountRecipientChargesNo       CounterpartyAccountRecipientCharges = "no"
-	CounterpartyAccountRecipientChargesExpected CounterpartyAccountRecipientCharges = "expected"
-)
-
-// CounterpartyAccountType indicates the type of account.
-type CounterpartyAccountType string
-
-const (
-	CounterpartyAccountTypeRevolut  CounterpartyAccountType = "revolut"
-	CounterpartyAccountTypeExternal CounterpartyAccountType = "external"
+	CounterpartyCardSchemeVisa       CounterpartyCardScheme = "visa"
+	CounterpartyCardSchemeMastercard CounterpartyCardScheme = "mastercard"
 )
 
 type CounterpartyCard struct {
@@ -953,14 +1015,6 @@ type CounterpartyCard struct {
 	Scheme CounterpartyCardScheme `json:"scheme"`
 }
 
-// CounterpartyCardScheme the card brand.
-type CounterpartyCardScheme string
-
-const (
-	CounterpartyCardSchemeVisa       CounterpartyCardScheme = "visa"
-	CounterpartyCardSchemeMastercard CounterpartyCardScheme = "mastercard"
-)
-
 type CounterpartyError struct {
 	// The error code.
 	Code int `json:"code"`
@@ -977,15 +1031,6 @@ type CounterpartyErrorParams struct {
 	// The ID of the Revolut counterparty (i.e. internal counterparty) that already exists.
 	CounterpartyID string `json:"counterparty_id,omitempty"`
 }
-
-// CounterpartyState indicates the state of the counterparty.
-type CounterpartyState string
-
-const (
-	CounterpartyStateCreated CounterpartyState = "created"
-	CounterpartyStateDraft   CounterpartyState = "draft"
-	CounterpartyStateDeleted CounterpartyState = "deleted"
-)
 
 // CountryCode the counterparty's bank country, provided as a 2-letter [ISO 3166](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes) code.
 type CountryCode = string
@@ -1009,6 +1054,16 @@ type CreateAccountingCategoryRequest struct {
 	Name string `json:"name"`
 }
 
+// CreateCounterpartyRequestProfileType the type of the Revolut profile.
+// Indicates whether the counterparty is a personal or business account.
+// Provide it when adding a Revolut counterparty via Revtag.
+type CreateCounterpartyRequestProfileType string
+
+const (
+	CreateCounterpartyRequestProfileTypePersonal CreateCounterpartyRequestProfileType = "personal"
+	CreateCounterpartyRequestProfileTypeBusiness CreateCounterpartyRequestProfileType = "business"
+)
+
 type CreateCounterpartyRequest struct {
 	// The bank account number of the counterparty.
 	AccountNo string `json:"account_no,omitempty"`
@@ -1023,7 +1078,7 @@ type CreateCounterpartyRequest struct {
 	BIC string `json:"bic,omitempty"`
 
 	// The BSB number of the counterparty's account. This field is required for AUD accounts.
-	BsbCode string `json:"bsb_code,omitempty"`
+	BSBCode string `json:"bsb_code,omitempty"`
 
 	// The CLABE number of the counterparty's account. This field is required for SWIFT MX.
 	Clabe string `json:"clabe,omitempty"`
@@ -1058,16 +1113,6 @@ type CreateCounterpartyRequest struct {
 	// The sort code of the counterparty's account. This field is required for GBP accounts.
 	SortCode string `json:"sort_code,omitempty"`
 }
-
-// CreateCounterpartyRequestProfileType the type of the Revolut profile.
-// Indicates whether the counterparty is a personal or business account.
-// Provide it when adding a Revolut counterparty via Revtag.
-type CreateCounterpartyRequestProfileType string
-
-const (
-	CreateCounterpartyRequestProfileTypePersonal CreateCounterpartyRequestProfileType = "personal"
-	CreateCounterpartyRequestProfileTypeBusiness CreateCounterpartyRequestProfileType = "business"
-)
 
 type CreateLabelGroupRequest struct {
 	// The labels to create in the new group.
@@ -1112,6 +1157,8 @@ type CreatePayoutLinkRequest struct {
 	Currency Currency `json:"currency"`
 
 	// The period after which the payout link expires if not claimed before, provided in [ISO 8601 format](https://en.wikipedia.org/wiki/ISO_8601).
+	//
+	// Default: "P7D".
 	ExpiryPeriod PayoutLinkExpiryPeriod `json:"expiry_period,omitempty"`
 
 	// The list of payout methods that the recipient can use to claim the payout, where:
@@ -1124,6 +1171,8 @@ type CreatePayoutLinkRequest struct {
 	RequestID PayoutLinkRequestID `json:"request_id"`
 
 	// Indicates whether to save the recipient as your counterparty upon link claim.
+	//
+	// Default: false.
 	SaveCounterparty bool `json:"save_counterparty,omitempty"`
 
 	// The reason code for the transaction. Transactions to certain countries and currencies might require you to provide a transfer reason.
@@ -1205,6 +1254,14 @@ type ErrorWithStatus struct {
 	Status int `json:"status"`
 }
 
+// EstimatedTimeUnit the estimated time unit of the inbound transfer of the funds.
+type EstimatedTimeUnit string
+
+const (
+	EstimatedTimeUnitDays  EstimatedTimeUnit = "days"
+	EstimatedTimeUnitHours EstimatedTimeUnit = "hours"
+)
+
 // EstimatedTime the estimated time of the inbound transfer of the funds, i.e. when we expect the recipient to receive the transfer.
 type EstimatedTime struct {
 	// The maximum time estimate.
@@ -1216,14 +1273,6 @@ type EstimatedTime struct {
 	// The estimated time unit of the inbound transfer of the funds.
 	Unit EstimatedTimeUnit `json:"unit"`
 }
-
-// EstimatedTimeUnit the estimated time unit of the inbound transfer of the funds.
-type EstimatedTimeUnit string
-
-const (
-	EstimatedTimeUnitDays  EstimatedTimeUnit = "days"
-	EstimatedTimeUnitHours EstimatedTimeUnit = "hours"
-)
 
 // ExchangePartFrom the details of the currency to exchange from.
 type ExchangePartFrom struct {
@@ -1263,14 +1312,6 @@ type ExchangeRateResponse struct {
 	To AmountWithCurrency `json:"to"`
 }
 
-type ExchangeReason struct {
-	// Category code of the reason for the exchange.
-	Code ExchangeReasonCode `json:"code"`
-
-	// Category name of the reason for the exchange.
-	Name string `json:"name"`
-}
-
 // ExchangeReasonCode category code of the reason for the exchange.
 type ExchangeReasonCode string
 
@@ -1294,6 +1335,14 @@ const (
 	ExchangeReasonCodeTravelAndTransportation            ExchangeReasonCode = "travel_and_transportation"
 	ExchangeReasonCodeUtilities                          ExchangeReasonCode = "utilities"
 )
+
+type ExchangeReason struct {
+	// Category code of the reason for the exchange.
+	Code ExchangeReasonCode `json:"code"`
+
+	// Category name of the reason for the exchange.
+	Name string `json:"name"`
+}
 
 // ExchangeRequest the exchange information.
 type ExchangeRequest struct {
@@ -1331,6 +1380,15 @@ type ExchangeResponse struct {
 
 	// The type of the transaction. For money exchange, it is `exchange`.
 	Type string `json:"type,omitempty"`
+}
+
+// ExpenseSpentAmount the expense amount in billed currency.
+type ExpenseSpentAmount struct {
+	// The amount of money.
+	Amount Amount `json:"amount"`
+
+	// [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency code in upper case.
+	Currency Currency `json:"currency"`
 }
 
 type Expense struct {
@@ -1377,13 +1435,13 @@ type Expense struct {
 	TransactionType ExpenseTransactionType `json:"transaction_type"`
 }
 
-// ExpenseSpentAmount the expense amount in billed currency.
-type ExpenseSpentAmount struct {
+// ExpenseSplitAmount the original amount of the expense split.
+type ExpenseSplitAmount struct {
 	// The amount of money.
-	Amount Amount `json:"amount"`
+	Amount Amount `json:"amount,omitempty"`
 
 	// [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency code in upper case.
-	Currency Currency `json:"currency"`
+	Currency Currency `json:"currency,omitempty"`
 }
 
 type ExpenseSplit struct {
@@ -1395,15 +1453,6 @@ type ExpenseSplit struct {
 
 	// The [tax rate](https://developer.revolut.com/docs/business/tax-rates) applied to the expense split.
 	TaxRate TaxRate `json:"tax_rate"`
-}
-
-// ExpenseSplitAmount the original amount of the expense split.
-type ExpenseSplitAmount struct {
-	// The amount of money.
-	Amount Amount `json:"amount,omitempty"`
-
-	// [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency code in upper case.
-	Currency Currency `json:"currency,omitempty"`
 }
 
 // ExpenseState indicates the state of the expense. Possible values:
@@ -1482,48 +1531,6 @@ type Fee struct {
 	Currency Currency `json:"currency,omitempty"`
 }
 
-type GetAccountingCategoriesResponse struct {
-	// The list of accounting categories.
-	AccountingCategories []AccountingCategoryResponse `json:"accounting_categories"`
-
-	// Cursor for the next page.
-	NextPageToken PageToken `json:"next_page_token,omitempty"`
-}
-
-type GetLabelGroupsResponse struct {
-	// List of label groups.
-	LabelGroups []LabelGroupResponse `json:"label_groups"`
-
-	// Cursor for the next page.
-	NextPageToken PageToken `json:"next_page_token,omitempty"`
-}
-
-type GetLabelsResponse struct {
-	// List of labels in the specified group
-	Labels []LabelResponse `json:"labels"`
-
-	// Cursor for the next page.
-	NextPageToken PageToken `json:"next_page_token,omitempty"`
-}
-
-type GetSensitiveCardDetailsResponse struct {
-	// The CVV (Card Verification Value) of the card.
-	Cvv string `json:"cvv"`
-
-	// The card expiration date.
-	Expiry string `json:"expiry"`
-
-	// The PAN (Primary Account Number) of the card.
-	Pan string `json:"pan"`
-}
-
-type GetTaxRatesResponse struct {
-	// Cursor for the next page.
-	NextPageToken PageToken `json:"next_page_token,omitempty"`
-
-	TaxRates []TaxRateResponse `json:"tax_rates"`
-}
-
 // IndividualName the name of the counterparty, provided when the counterparty is an **individual** (personal account type) and is **not** being added via Revtag.
 //
 // If specified, `company_name` and `name` must be empty.
@@ -1535,34 +1542,15 @@ type IndividualName struct {
 	LastName string `json:"last_name,omitempty"`
 }
 
-type InviteTeamMemberResponse struct {
-	// The date and time when the member was created.
-	CreatedAt time.Time `json:"created_at"`
-
-	// The email address of the invited member.
-	Email string `json:"email"`
-
-	// The ID of the invited member.
-	ID string `json:"id"`
-
-	// The ID of the [role](https://developer.revolut.com/docs/business/get-roles) assigned to the member.
-	RoleID string `json:"role_id"`
-
-	// The date and time when the member was last updated.
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
 type LabelGroupResponse struct {
 	// The date and time the label group was created in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
 	//
-	// Read-only: populated by the server; any value sent by the
-	// client is ignored.
+	// Read-only: populated by the server; any value sent by the client is ignored.
 	CreatedAt time.Time `json:"created_at"`
 
 	// The unique ID of the label group.
 	//
-	// Read-only: populated by the server; any value sent by the
-	// client is ignored.
+	// Read-only: populated by the server; any value sent by the client is ignored.
 	ID string `json:"id"`
 
 	// The name of the label group.
@@ -1570,22 +1558,19 @@ type LabelGroupResponse struct {
 
 	// The date and time the label group was last updated in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
 	//
-	// Read-only: populated by the server; any value sent by the
-	// client is ignored.
+	// Read-only: populated by the server; any value sent by the client is ignored.
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type LabelResponse struct {
 	// The date and time the label was created in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
 	//
-	// Read-only: populated by the server; any value sent by the
-	// client is ignored.
+	// Read-only: populated by the server; any value sent by the client is ignored.
 	CreatedAt time.Time `json:"created_at"`
 
 	// The unique ID of the label.
 	//
-	// Read-only: populated by the server; any value sent by the
-	// client is ignored.
+	// Read-only: populated by the server; any value sent by the client is ignored.
 	ID string `json:"id"`
 
 	// The name of the label.
@@ -1593,17 +1578,8 @@ type LabelResponse struct {
 
 	// The date and time the label was last updated in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
 	//
-	// Read-only: populated by the server; any value sent by the
-	// client is ignored.
+	// Read-only: populated by the server; any value sent by the client is ignored.
 	UpdatedAt time.Time `json:"updated_at"`
-}
-
-type MerchantControlsSchema struct {
-	// The type of control to apply.
-	ControlType MerchantControlsSchemaControlType `json:"control_type"`
-
-	// The list of IDs of merchants to which the control applies.
-	MerchantIds []string `json:"merchant_ids"`
 }
 
 // MerchantControlsSchemaControlType the type of control to apply.
@@ -1613,6 +1589,14 @@ const (
 	MerchantControlsSchemaControlTypeBlock MerchantControlsSchemaControlType = "block"
 	MerchantControlsSchemaControlTypeAllow MerchantControlsSchemaControlType = "allow"
 )
+
+type MerchantControlsSchema struct {
+	// The type of control to apply.
+	ControlType MerchantControlsSchemaControlType `json:"control_type"`
+
+	// The list of IDs of merchants to which the control applies.
+	MerchantIds []string `json:"merchant_ids"`
+}
 
 // PageToken cursor for the next page.
 // Used for pagination when the total number of results exceeds the maximum number per page.
@@ -1637,6 +1621,17 @@ type PaymentDraftResponse struct {
 type PaymentDraftsResponse struct {
 	// The list of payment drafts that haven't been sent for processing.
 	PaymentOrders []PaymentOrderInfo `json:"payment_orders"`
+}
+
+// PaymentInfoCurrentChargeOptions the explanation of conversion process.
+type PaymentInfoCurrentChargeOptions struct {
+	Fee AmountWithCurrency `json:"fee,omitempty"`
+
+	From AmountWithCurrency `json:"from"`
+
+	Rate string `json:"rate,omitempty"`
+
+	To AmountWithCurrency `json:"to"`
 }
 
 // PaymentInfo the details of the payment draft.
@@ -1671,17 +1666,6 @@ type PaymentInfo struct {
 	State PaymentState `json:"state"`
 }
 
-// PaymentInfoCurrentChargeOptions the explanation of conversion process.
-type PaymentInfoCurrentChargeOptions struct {
-	Fee AmountWithCurrency `json:"fee,omitempty"`
-
-	From AmountWithCurrency `json:"from"`
-
-	Rate string `json:"rate,omitempty"`
-
-	To AmountWithCurrency `json:"to"`
-}
-
 // PaymentOrderInfo a list of payments.
 type PaymentOrderInfo struct {
 	// The ID of the payment draft.
@@ -1711,6 +1695,26 @@ type PaymentReceiver struct {
 	CounterpartyID string `json:"counterparty_id"`
 }
 
+// PaymentRequestChargeBearer the party that should bear the transaction fees related to the selected transaction route if applied.
+// Possible options are:
+//   - `shared`: Also known as **SHA**. The transaction route fees are split between the sender and the recipient.
+//     The sender pays the fees charged by their bank, while the recipient pays the fees charged by the receiving and any intermediary banks.
+//   - `debtor`: Also known as **OUR**. The sender pays all explicit transaction fees.
+//
+// :::note
+//   - This field is not supported for [bulk payments](https://developer.revolut.com/docs/guides/manage-accounts/transfers/payment-drafts#use-cases).
+//   - Some transactions with fees might not support charge bearer selection.
+//     If this is the case, the request will return error `3287`.
+//     To proceed with the default fee handling, remove this field from your request and try again.
+//
+// :::
+type PaymentRequestChargeBearer string
+
+const (
+	PaymentRequestChargeBearerShared PaymentRequestChargeBearer = "shared"
+	PaymentRequestChargeBearerDebtor PaymentRequestChargeBearer = "debtor"
+)
+
 // PaymentRequest the details of the draft payment.
 type PaymentRequest struct {
 	// The ID of the account to pay from.
@@ -1731,26 +1735,6 @@ type PaymentRequest struct {
 	// The reference for the payment.
 	Reference string `json:"reference"`
 }
-
-// PaymentRequestChargeBearer the party that should bear the transaction fees related to the selected transaction route if applied.
-// Possible options are:
-//   - `shared`: Also known as **SHA**. The transaction route fees are split between the sender and the recipient.
-//     The sender pays the fees charged by their bank, while the recipient pays the fees charged by the receiving and any intermediary banks.
-//   - `debtor`: Also known as **OUR**. The sender pays all explicit transaction fees.
-//
-// :::note
-//   - This field is not supported for [bulk payments](https://developer.revolut.com/docs/guides/manage-accounts/transfers/payment-drafts#use-cases).
-//   - Some transactions with fees might not support charge bearer selection.
-//     If this is the case, the request will return error `3287`.
-//     To proceed with the default fee handling, remove this field from your request and try again.
-//
-// :::
-type PaymentRequestChargeBearer string
-
-const (
-	PaymentRequestChargeBearerShared PaymentRequestChargeBearer = "shared"
-	PaymentRequestChargeBearerDebtor PaymentRequestChargeBearer = "debtor"
-)
 
 // PaymentState indicates the state of the transaction.
 type PaymentState string
@@ -1783,6 +1767,13 @@ const (
 	PaymentSystemSumclearing    PaymentSystem = "sumclearing"
 )
 
+// PayoutLinkCancellationReason the reason for which the payout link was cancelled.
+type PayoutLinkCancellationReason string
+
+const (
+	PayoutLinkCancellationReasonTooManyNameCheckAttempts PayoutLinkCancellationReason = "too_many_name_check_attempts"
+)
+
 type PayoutLink struct {
 	// The ID of the sender's account.
 	AccountID PayoutLinkAccountID `json:"account_id"`
@@ -1792,8 +1783,7 @@ type PayoutLink struct {
 
 	// The reason for which the payout link was cancelled.
 	//
-	// Read-only: populated by the server; any value sent by the
-	// client is ignored.
+	// Read-only: populated by the server; any value sent by the client is ignored.
 	CancellationReason PayoutLinkCancellationReason `json:"cancellation_reason,omitempty"`
 
 	// The ID of the counterparty created based on the recipient's details.
@@ -1809,6 +1799,8 @@ type PayoutLink struct {
 	Currency Currency `json:"currency"`
 
 	// The date and time after which the payout link expires in [ISO 8601 format](https://en.wikipedia.org/wiki/ISO_8601).
+	//
+	// Default: "now + 7 days".
 	ExpiryDate PayoutLinkExpiryDate `json:"expiry_date,omitempty"`
 
 	// The ID of the payout link.
@@ -1824,6 +1816,8 @@ type PayoutLink struct {
 	RequestID PayoutLinkRequestID `json:"request_id"`
 
 	// Indicates whether you chose to save the recipient as your counterparty upon link claim.
+	//
+	// Default: false.
 	SaveCounterparty bool `json:"save_counterparty"`
 
 	// The state that the payout link is in. Possible states are:
@@ -1845,11 +1839,17 @@ type PayoutLink struct {
 // PayoutLinkAccountID the ID of the sender's account.
 type PayoutLinkAccountID = string
 
+// PayoutLinkAdditionalPropsCancellationReason the reason for which the payout link was cancelled.
+type PayoutLinkAdditionalPropsCancellationReason string
+
+const (
+	PayoutLinkAdditionalPropsCancellationReasonTooManyNameCheckAttempts PayoutLinkAdditionalPropsCancellationReason = "too_many_name_check_attempts"
+)
+
 type PayoutLinkAdditionalProps struct {
 	// The reason for which the payout link was cancelled.
 	//
-	// Read-only: populated by the server; any value sent by the
-	// client is ignored.
+	// Read-only: populated by the server; any value sent by the client is ignored.
 	CancellationReason PayoutLinkAdditionalPropsCancellationReason `json:"cancellation_reason,omitempty"`
 
 	// The ID of the counterparty created based on the recipient's details.
@@ -1859,26 +1859,12 @@ type PayoutLinkAdditionalProps struct {
 	TransactionID string `json:"transaction_id,omitempty"`
 }
 
-// PayoutLinkAdditionalPropsCancellationReason the reason for which the payout link was cancelled.
-type PayoutLinkAdditionalPropsCancellationReason string
-
-const (
-	PayoutLinkAdditionalPropsCancellationReasonTooManyNameCheckAttempts PayoutLinkAdditionalPropsCancellationReason = "too_many_name_check_attempts"
-)
-
 // PayoutLinkAmount the amount of money to be transferred.
 //
 // :::note
 // The amount must be between £1 and £2,500, or equivalent in the selected currency.
 // :::
 type PayoutLinkAmount = json.Number
-
-// PayoutLinkCancellationReason the reason for which the payout link was cancelled.
-type PayoutLinkCancellationReason string
-
-const (
-	PayoutLinkCancellationReasonTooManyNameCheckAttempts PayoutLinkCancellationReason = "too_many_name_check_attempts"
-)
 
 // PayoutLinkCounterpartyName the name of the counterparty provided by the sender.
 type PayoutLinkCounterpartyName = string
@@ -1887,7 +1873,7 @@ type PayoutLinkCounterpartyName = string
 // If the recipient doesn't claim the money before then, the payout link expires and is no longer available.
 //
 // The default and maximum value is the date and time of creating the link + 7 days.
-type PayoutLinkExpiryDate = string
+type PayoutLinkExpiryDate = time.Time
 
 // PayoutLinkExpiryPeriod the period after which the payout link expires if not claimed before, provided in [ISO 8601 format](https://en.wikipedia.org/wiki/ISO_8601).
 //
@@ -1911,6 +1897,8 @@ type PayoutLinkInitialProps struct {
 	Currency Currency `json:"currency"`
 
 	// The date and time after which the payout link expires in [ISO 8601 format](https://en.wikipedia.org/wiki/ISO_8601).
+	//
+	// Default: "now + 7 days".
 	ExpiryDate PayoutLinkExpiryDate `json:"expiry_date,omitempty"`
 
 	// The ID of the payout link.
@@ -1926,6 +1914,8 @@ type PayoutLinkInitialProps struct {
 	RequestID PayoutLinkRequestID `json:"request_id"`
 
 	// Indicates whether you chose to save the recipient as your counterparty upon link claim.
+	//
+	// Default: false.
 	SaveCounterparty bool `json:"save_counterparty"`
 
 	// The state that the payout link is in. Possible states are:
@@ -2007,58 +1997,6 @@ type Role struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type SimulateTopUpResponse struct {
-	// The date and time the transaction was completed in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
-	CompletedAt *time.Time `json:"completed_at,omitempty"`
-
-	// The date and time the transaction was created in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
-	CreatedAt time.Time `json:"created_at"`
-
-	// The ID of the account that was topped up.
-	ID string `json:"id"`
-
-	// The state of the top-up transaction.
-	State SimulateTopUpResponseState `json:"state"`
-}
-
-// SimulateTopUpResponseState the state of the top-up transaction.
-type SimulateTopUpResponseState string
-
-const (
-	SimulateTopUpResponseStatePending   SimulateTopUpResponseState = "pending"
-	SimulateTopUpResponseStateCompleted SimulateTopUpResponseState = "completed"
-	SimulateTopUpResponseStateReverted  SimulateTopUpResponseState = "reverted"
-	SimulateTopUpResponseStateFailed    SimulateTopUpResponseState = "failed"
-)
-
-type SimulateTransferStateUpdateResponse struct {
-	// The date and time the transfer was completed in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
-	CompletedAt *time.Time `json:"completed_at,omitempty"`
-
-	// The date and time the transfer was created in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
-	CreatedAt time.Time `json:"created_at"`
-
-	// The ID of the transfer whose state was updated.
-	ID string `json:"id"`
-
-	// Indicates the simulated transaction state. Possible values:
-	State SimulateTransferStateUpdateResponseState `json:"state"`
-}
-
-// SimulateTransferStateUpdateResponseState indicates the simulated transaction state. Possible values:
-// - `completed` - Transaction was successfully processed.
-// - `reverted` - Transaction was reverted by the system or company, but not the user. This can happen for a variety of reasons, for example, the receiver being inaccessible.
-// - `declined` - Transaction was declined to the user for a good reason, such as insufficient account balance, wrong receiver information, etc.
-// - `failed` - Transaction failed during initiation or completion. This can happen for a variety of reasons, for example, invalid API calls, blocked payments, etc.
-type SimulateTransferStateUpdateResponseState string
-
-const (
-	SimulateTransferStateUpdateResponseStateCompleted SimulateTransferStateUpdateResponseState = "completed"
-	SimulateTransferStateUpdateResponseStateReverted  SimulateTransferStateUpdateResponseState = "reverted"
-	SimulateTransferStateUpdateResponseStateDeclined  SimulateTransferStateUpdateResponseState = "declined"
-	SimulateTransferStateUpdateResponseStateFailed    SimulateTransferStateUpdateResponseState = "failed"
-)
-
 // SpendProgram the [spend program](https://help.revolut.com/business/help/making-paymentsbusiness/spend-controls/setting-card-presets-for-my-team-members/) assigned to the card.
 // :::note
 // To use this property, please contact [Revolut API Support](mailto:api-requests@revolut.com).
@@ -2132,6 +2070,14 @@ type SpendingLimitsSchema struct {
 	Year SpendingLimitPeriodic `json:"year,omitempty"`
 }
 
+// SpendingPeriodSchemaEndDateAction the action to take after the end date of the spending period.
+type SpendingPeriodSchemaEndDateAction string
+
+const (
+	SpendingPeriodSchemaEndDateActionLock      SpendingPeriodSchemaEndDateAction = "lock"
+	SpendingPeriodSchemaEndDateActionTerminate SpendingPeriodSchemaEndDateAction = "terminate"
+)
+
 type SpendingPeriodSchema struct {
 	// The end date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
 	EndDate *time.Time `json:"end_date,omitempty"`
@@ -2142,14 +2088,6 @@ type SpendingPeriodSchema struct {
 	// The start date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
 	StartDate *time.Time `json:"start_date,omitempty"`
 }
-
-// SpendingPeriodSchemaEndDateAction the action to take after the end date of the spending period.
-type SpendingPeriodSchemaEndDateAction string
-
-const (
-	SpendingPeriodSchemaEndDateActionLock      SpendingPeriodSchemaEndDateAction = "lock"
-	SpendingPeriodSchemaEndDateActionTerminate SpendingPeriodSchemaEndDateAction = "terminate"
-)
 
 // TaxRate the [tax rate](https://developer.revolut.com/docs/business/tax-rates) applied to the expense split.
 type TaxRate struct {
@@ -2166,14 +2104,12 @@ type TaxRate struct {
 type TaxRateResponse struct {
 	// The date and time the tax rate was created in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
 	//
-	// Read-only: populated by the server; any value sent by the
-	// client is ignored.
+	// Read-only: populated by the server; any value sent by the client is ignored.
 	CreatedAt time.Time `json:"created_at"`
 
 	// The unique ID of the tax rate.
 	//
-	// Read-only: populated by the server; any value sent by the
-	// client is ignored.
+	// Read-only: populated by the server; any value sent by the client is ignored.
 	ID string `json:"id"`
 
 	// The name of the tax.
@@ -2184,8 +2120,7 @@ type TaxRateResponse struct {
 
 	// The date and time the tax rate was last updated in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
 	//
-	// Read-only: populated by the server; any value sent by the
-	// client is ignored.
+	// Read-only: populated by the server; any value sent by the client is ignored.
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
@@ -2436,20 +2371,6 @@ const (
 	TransactionTypeTaxRefund      TransactionType = "tax_refund"
 )
 
-type TransferReason struct {
-	// Category name of the transfer reason.
-	Code TransferReasonCode `json:"code"`
-
-	// The counterparty's bank country, provided as a 2-letter [ISO 3166](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes) code.
-	Country CountryCode `json:"country"`
-
-	// [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency code in upper case.
-	Currency Currency `json:"currency"`
-
-	// The description of the given transfer reason.
-	Description string `json:"description"`
-}
-
 // TransferReasonCode category name of the transfer reason.
 type TransferReasonCode string
 
@@ -2485,6 +2406,20 @@ const (
 	TransferReasonCodeUtilities         TransferReasonCode = "utilities"
 )
 
+type TransferReason struct {
+	// Category name of the transfer reason.
+	Code TransferReasonCode `json:"code"`
+
+	// The counterparty's bank country, provided as a 2-letter [ISO 3166](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes) code.
+	Country CountryCode `json:"country"`
+
+	// [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency code in upper case.
+	Currency Currency `json:"currency"`
+
+	// The description of the given transfer reason.
+	Description string `json:"description"`
+}
+
 // TransferRequest transfer the funds between accounts of the business in the same currency.
 type TransferRequest struct {
 	// The amount of the funds to be transferred.
@@ -2519,9 +2454,6 @@ type TransferResponse struct {
 	// Indicates the transaction state. Possible values:
 	State TransactionState `json:"state"`
 }
-
-// URL a valid webhook URL to which to send event notifications. The supported protocol is `https`.
-type URL = string
 
 // UpdateAccountingCategoryRequest the new settings for the accounting category.
 type UpdateAccountingCategoryRequest struct {
@@ -2561,56 +2493,58 @@ type UpdateWebhookRequest struct {
 	URL URL `json:"url,omitempty"`
 }
 
-// Variants:
-//   - AU → ValidateAccountNameRequestAU
-//   - EUR → ValidateAccountNameRequestEUR
-//   - RO → ValidateAccountNameRequestRO
-//   - UK → ValidateAccountNameRequestUK
-type ValidateAccountNameRequest interface {
-	isValidateAccountNameRequest()
+// URL a valid webhook URL to which to send event notifications. The supported protocol is `https`.
+type URL = string
+
+// ValidateAccountNameRequestIndividualName the name of the individual counterparty, split into first name and last name.
+//
+// **Required** when the account type is personal (`company_name` isn't specified).
+type ValidateAccountNameRequestIndividualName struct {
+	// The first name of the recipient.
+	FirstName string `json:"first_name"`
+
+	// The last name of the recipient.
+	LastName string `json:"last_name"`
 }
 
-// decodeValidateAccountNameRequest parses a JSON payload into one of the union variants.
-// Variants are tried in discriminator-mapping order. If none uniquely
-// match by required-field presence the first mapped variant is used.
-func decodeValidateAccountNameRequest(data []byte) (ValidateAccountNameRequest, error) {
-	var probe map[string]json.RawMessage
-	if err := json.Unmarshal(data, &probe); err != nil {
-		return nil, err
-	}
-	if hasKey(probe, "account_no") && hasKey(probe, "bsb") {
-		var out ValidateAccountNameRequestAU
-		if err := json.Unmarshal(data, &out); err != nil {
-			return nil, err
-		}
-		return out, nil
-	}
-	if hasKey(probe, "iban") && hasKey(probe, "recipient_country") && hasKey(probe, "recipient_currency") {
-		var out ValidateAccountNameRequestEUR
-		if err := json.Unmarshal(data, &out); err != nil {
-			return nil, err
-		}
-		return out, nil
-	}
-	if hasKey(probe, "iban") && hasKey(probe, "recipient_country") && hasKey(probe, "recipient_currency") {
-		var out ValidateAccountNameRequestRO
-		if err := json.Unmarshal(data, &out); err != nil {
-			return nil, err
-		}
-		return out, nil
-	}
-	if hasKey(probe, "account_no") && hasKey(probe, "sort_code") {
-		var out ValidateAccountNameRequestUK
-		if err := json.Unmarshal(data, &out); err != nil {
-			return nil, err
-		}
-		return out, nil
-	}
-	var out ValidateAccountNameRequestAU
-	if err := json.Unmarshal(data, &out); err != nil {
-		return nil, err
-	}
-	return out, nil
+type ValidateAccountNameRequest struct {
+	// The account number of the counterparty.
+	AccountNo string `json:"account_no,omitempty"`
+
+	// The BSB (Bank-State-Branch) number for the counterparty's account.
+	BSB string `json:"bsb,omitempty"`
+
+	// The name of the business counterparty.
+	CompanyName string `json:"company_name,omitempty"`
+
+	// The name of the individual counterparty, split into first name and last name.
+	IndividualName *ValidateAccountNameRequestIndividualName `json:"individual_name,omitempty"`
+
+	// The BIC (Bank Identifier Code) for the counterparty's account.
+	BIC string `json:"bic,omitempty"`
+
+	// The IBAN (International Bank Account Number) for the counterparty's account.
+	IBAN string `json:"iban,omitempty"`
+
+	// The counterparty's bank country, provided as a 2-letter [ISO 3166](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes) code.
+	RecipientCountry string `json:"recipient_country,omitempty"`
+
+	// The counterparty account’s currency, provided as a 3-letter [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) code.
+	RecipientCurrency core.Currency `json:"recipient_currency,omitempty"`
+
+	// The sort code of the counterparty's account.
+	SortCode string `json:"sort_code,omitempty"`
+}
+
+// ValidateAccountNameRequestAUIndividualName the name of the individual counterparty, split into first name and last name.
+//
+// **Required** when the account type is personal (`company_name` isn't specified).
+type ValidateAccountNameRequestAUIndividualName struct {
+	// The first name of the recipient.
+	FirstName string `json:"first_name"`
+
+	// The last name of the recipient.
+	LastName string `json:"last_name"`
 }
 
 type ValidateAccountNameRequestAU struct {
@@ -2618,7 +2552,7 @@ type ValidateAccountNameRequestAU struct {
 	AccountNo string `json:"account_no"`
 
 	// The BSB (Bank-State-Branch) number for the counterparty's account.
-	Bsb string `json:"bsb"`
+	BSB string `json:"bsb"`
 
 	// The name of the business counterparty.
 	CompanyName string `json:"company_name,omitempty"`
@@ -2627,12 +2561,10 @@ type ValidateAccountNameRequestAU struct {
 	IndividualName *ValidateAccountNameRequestAUIndividualName `json:"individual_name,omitempty"`
 }
 
-func (ValidateAccountNameRequestAU) isValidateAccountNameRequest() {}
-
-// ValidateAccountNameRequestAUIndividualName the name of the individual counterparty, split into first name and last name.
+// ValidateAccountNameRequestEURIndividualName the name of the individual counterparty, split into first name and last name.
 //
 // **Required** when the account type is personal (`company_name` isn't specified).
-type ValidateAccountNameRequestAUIndividualName struct {
+type ValidateAccountNameRequestEURIndividualName struct {
 	// The first name of the recipient.
 	FirstName string `json:"first_name"`
 
@@ -2657,15 +2589,17 @@ type ValidateAccountNameRequestEUR struct {
 	RecipientCountry string `json:"recipient_country"`
 
 	// The counterparty account’s currency, provided as a 3-letter [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) code.
-	RecipientCurrency string `json:"recipient_currency"`
+	RecipientCurrency core.Currency `json:"recipient_currency"`
 }
 
-func (ValidateAccountNameRequestEUR) isValidateAccountNameRequest() {}
-
-// ValidateAccountNameRequestEURIndividualName the name of the individual counterparty, split into first name and last name.
+// ValidateAccountNameRequestROIndividualName the name of the individual counterparty, split into first name and last name.
 //
 // **Required** when the account type is personal (`company_name` isn't specified).
-type ValidateAccountNameRequestEURIndividualName struct {
+//
+// ⓘ Note that for [RO](https://developer.revolut.com/docs/guides/manage-accounts/counterparties/confirmation-of-payee#supported-regions-and-services), the name you provide helps identify the request, but is **not** used for the actual check.
+// The API simply returns the partially masked name associated with the IBAN for you to validate.
+// Therefore, the returned name may differ from the one you provide.
+type ValidateAccountNameRequestROIndividualName struct {
 	// The first name of the recipient.
 	FirstName string `json:"first_name"`
 
@@ -2690,19 +2624,13 @@ type ValidateAccountNameRequestRO struct {
 	RecipientCountry string `json:"recipient_country"`
 
 	// The counterparty account’s currency, provided as a 3-letter [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) code.
-	RecipientCurrency string `json:"recipient_currency"`
+	RecipientCurrency core.Currency `json:"recipient_currency"`
 }
 
-func (ValidateAccountNameRequestRO) isValidateAccountNameRequest() {}
-
-// ValidateAccountNameRequestROIndividualName the name of the individual counterparty, split into first name and last name.
+// ValidateAccountNameRequestUKIndividualName the name of the individual counterparty, split into first name and last name.
 //
 // **Required** when the account type is personal (`company_name` isn't specified).
-//
-// ⓘ Note that for [RO](https://developer.revolut.com/docs/guides/manage-accounts/counterparties/confirmation-of-payee#supported-regions-and-services), the name you provide helps identify the request, but is **not** used for the actual check.
-// The API simply returns the partially masked name associated with the IBAN for you to validate.
-// Therefore, the returned name may differ from the one you provide.
-type ValidateAccountNameRequestROIndividualName struct {
+type ValidateAccountNameRequestUKIndividualName struct {
 	// The first name of the recipient.
 	FirstName string `json:"first_name"`
 
@@ -2724,12 +2652,17 @@ type ValidateAccountNameRequestUK struct {
 	SortCode string `json:"sort_code"`
 }
 
-func (ValidateAccountNameRequestUK) isValidateAccountNameRequest() {}
-
-// ValidateAccountNameRequestUKIndividualName the name of the individual counterparty, split into first name and last name.
+// ValidateAccountNameResponseIndividualName the name of the recipient when the account type is personal.
+// Provided only if `company_name` is not specified.
 //
-// **Required** when the account type is personal (`company_name` isn't specified).
-type ValidateAccountNameRequestUKIndividualName struct {
+// When the name is a close match, the actual first and last names are returned.
+// Otherwise, the name you provided is returned.
+//
+// :::tip[Mismatched name type is corrected]
+// The mismatched name type in the request is corrected in the response.
+// This means that, for example, if an individual recipient's name was provided under `company_name`, in the response it is returned under `individual_name`.
+// :::
+type ValidateAccountNameResponseIndividualName struct {
 	// The first name of the recipient.
 	FirstName string `json:"first_name"`
 
@@ -2737,73 +2670,41 @@ type ValidateAccountNameRequestUKIndividualName struct {
 	LastName string `json:"last_name"`
 }
 
-// Variants:
-//   - AU → ValidateAccountNameResponseAU
-//   - EUR → ValidateAccountNameResponseEUR
-//   - RO → ValidateAccountNameResponseRO
-//   - UK → ValidateAccountNameResponseUK
-type ValidateAccountNameResponse interface {
-	isValidateAccountNameResponse()
-}
+// ValidateAccountNameResponseResultCode the result of the check.
+//
+// Possible values for AU:
+//   - **`matched`:** The name matches the provided details.
+//     For personal accounts, this also covers **close matches**, in which case the **actual name** is returned.
+//   - **`close_match` (business account):** The name is similar to the provided value.
+//   - **`not_matched`:** The name doesn't match the provided values.
+//   - **`cannot_be_checked`:** The check cannot be performed and retries won't help.
+//     For example, the recipient's bank doesn't support CoP.
+//   - **`temporarily_unavailable`:** The check cannot be performed right now.
+//     For example, the recipient's bank didn't respond to our request.
+//     You should retry the request later.
+type ValidateAccountNameResponseResultCode string
 
-// decodeValidateAccountNameResponse parses a JSON payload into one of the union variants.
-// Variants are tried in discriminator-mapping order. If none uniquely
-// match by required-field presence the first mapped variant is used.
-func decodeValidateAccountNameResponse(data []byte) (ValidateAccountNameResponse, error) {
-	var probe map[string]json.RawMessage
-	if err := json.Unmarshal(data, &probe); err != nil {
-		return nil, err
-	}
-	if hasKey(probe, "result_code") {
-		var out ValidateAccountNameResponseAU
-		if err := json.Unmarshal(data, &out); err != nil {
-			return nil, err
-		}
-		return out, nil
-	}
-	if hasKey(probe, "result_code") {
-		var out ValidateAccountNameResponseEUR
-		if err := json.Unmarshal(data, &out); err != nil {
-			return nil, err
-		}
-		return out, nil
-	}
-	if hasKey(probe, "result_code") {
-		var out ValidateAccountNameResponseRO
-		if err := json.Unmarshal(data, &out); err != nil {
-			return nil, err
-		}
-		return out, nil
-	}
-	if hasKey(probe, "result_code") {
-		var out ValidateAccountNameResponseUK
-		if err := json.Unmarshal(data, &out); err != nil {
-			return nil, err
-		}
-		return out, nil
-	}
-	var out ValidateAccountNameResponseAU
-	if err := json.Unmarshal(data, &out); err != nil {
-		return nil, err
-	}
-	return out, nil
-}
+const (
+	ValidateAccountNameResponseResultCodeMatched                ValidateAccountNameResponseResultCode = "matched"
+	ValidateAccountNameResponseResultCodeCloseMatch             ValidateAccountNameResponseResultCode = "close_match"
+	ValidateAccountNameResponseResultCodeNotMatched             ValidateAccountNameResponseResultCode = "not_matched"
+	ValidateAccountNameResponseResultCodeCannotBeChecked        ValidateAccountNameResponseResultCode = "cannot_be_checked"
+	ValidateAccountNameResponseResultCodeTemporarilyUnavailable ValidateAccountNameResponseResultCode = "temporarily_unavailable"
+)
 
-type ValidateAccountNameResponseAU struct {
+type ValidateAccountNameResponse struct {
 	// The name of the recipient when the account type is business.
 	CompanyName string `json:"company_name,omitempty"`
 
 	// The name of the recipient when the account type is personal.
-	IndividualName *ValidateAccountNameResponseAUIndividualName `json:"individual_name,omitempty"`
+	IndividualName *ValidateAccountNameResponseIndividualName `json:"individual_name,omitempty"`
 
 	// A code which explains why a given result was returned, and the service that returned it.
 	Reason AccountNameValidationReasonAU `json:"reason,omitempty"`
 
 	// The result of the check.
-	ResultCode ValidateAccountNameResponseAUResultCode `json:"result_code"`
+	ResultCode ValidateAccountNameResponseResultCode `json:"result_code,omitempty"`
 }
-
-func (ValidateAccountNameResponseAU) isValidateAccountNameResponse() {}
 
 // ValidateAccountNameResponseAUIndividualName the name of the recipient when the account type is personal.
 // Provided only if `company_name` is not specified.
@@ -2845,21 +2746,19 @@ const (
 	ValidateAccountNameResponseAUResultCodeTemporarilyUnavailable ValidateAccountNameResponseAUResultCode = "temporarily_unavailable"
 )
 
-type ValidateAccountNameResponseEUR struct {
+type ValidateAccountNameResponseAU struct {
 	// The name of the recipient when the account type is business.
 	CompanyName string `json:"company_name,omitempty"`
 
 	// The name of the recipient when the account type is personal.
-	IndividualName *ValidateAccountNameResponseEURIndividualName `json:"individual_name,omitempty"`
+	IndividualName *ValidateAccountNameResponseAUIndividualName `json:"individual_name,omitempty"`
 
 	// A code which explains why a given result was returned, and the service that returned it.
-	Reason AccountNameValidationReasonEUR `json:"reason,omitempty"`
+	Reason AccountNameValidationReasonAU `json:"reason,omitempty"`
 
 	// The result of the check.
-	ResultCode ValidateAccountNameResponseEURResultCode `json:"result_code"`
+	ResultCode ValidateAccountNameResponseAUResultCode `json:"result_code"`
 }
-
-func (ValidateAccountNameResponseEUR) isValidateAccountNameResponse() {}
 
 // ValidateAccountNameResponseEURIndividualName the name of the recipient when the account type is personal.
 // Provided only if `company_name` is not specified.
@@ -2902,21 +2801,19 @@ const (
 	ValidateAccountNameResponseEURResultCodeTemporarilyUnavailable ValidateAccountNameResponseEURResultCode = "temporarily_unavailable"
 )
 
-type ValidateAccountNameResponseRO struct {
-	// The **partially masked** name of the recipient when the account type is business.
+type ValidateAccountNameResponseEUR struct {
+	// The name of the recipient when the account type is business.
 	CompanyName string `json:"company_name,omitempty"`
 
-	// The partial name of the recipient when the account type is personal, that is, the first name and the last name's initial.
-	IndividualName *ValidateAccountNameResponseROIndividualName `json:"individual_name,omitempty"`
+	// The name of the recipient when the account type is personal.
+	IndividualName *ValidateAccountNameResponseEURIndividualName `json:"individual_name,omitempty"`
 
 	// A code which explains why a given result was returned, and the service that returned it.
-	Reason AccountNameValidationReasonRO `json:"reason,omitempty"`
+	Reason AccountNameValidationReasonEUR `json:"reason,omitempty"`
 
 	// The result of the check.
-	ResultCode ValidateAccountNameResponseROResultCode `json:"result_code"`
+	ResultCode ValidateAccountNameResponseEURResultCode `json:"result_code"`
 }
-
-func (ValidateAccountNameResponseRO) isValidateAccountNameResponse() {}
 
 // ValidateAccountNameResponseROIndividualName the partial name of the recipient when the account type is personal, that is, the first name and the last name's initial.
 // Provided only if `company_name` is not specified.
@@ -2960,21 +2857,19 @@ const (
 	ValidateAccountNameResponseROResultCodeTemporarilyUnavailable ValidateAccountNameResponseROResultCode = "temporarily_unavailable"
 )
 
-type ValidateAccountNameResponseUK struct {
-	// The name of the recipient when the account type is business.
+type ValidateAccountNameResponseRO struct {
+	// The **partially masked** name of the recipient when the account type is business.
 	CompanyName string `json:"company_name,omitempty"`
 
-	// The name of the recipient when the account type is personal.
-	IndividualName *ValidateAccountNameResponseUKIndividualName `json:"individual_name,omitempty"`
+	// The partial name of the recipient when the account type is personal, that is, the first name and the last name's initial.
+	IndividualName *ValidateAccountNameResponseROIndividualName `json:"individual_name,omitempty"`
 
 	// A code which explains why a given result was returned, and the service that returned it.
-	Reason AccountNameValidationReasonUK `json:"reason,omitempty"`
+	Reason AccountNameValidationReasonRO `json:"reason,omitempty"`
 
 	// The result of the check.
-	ResultCode ValidateAccountNameResponseUKResultCode `json:"result_code"`
+	ResultCode ValidateAccountNameResponseROResultCode `json:"result_code"`
 }
-
-func (ValidateAccountNameResponseUK) isValidateAccountNameResponse() {}
 
 // ValidateAccountNameResponseUKIndividualName the name of the recipient when the account type is personal.
 // Provided only if `company_name` is not specified.
@@ -3022,40 +2917,18 @@ const (
 	ValidateAccountNameResponseUKResultCodeTemporarilyUnavailable ValidateAccountNameResponseUKResultCode = "temporarily_unavailable"
 )
 
-// WebhookEvent a webhook event
-type WebhookEvent struct {
-	// The date and time the event was created in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
-	CreatedAt time.Time `json:"created_at"`
+type ValidateAccountNameResponseUK struct {
+	// The name of the recipient when the account type is business.
+	CompanyName string `json:"company_name,omitempty"`
 
-	// The ID of the webhook event.
-	ID string `json:"id"`
+	// The name of the recipient when the account type is personal.
+	IndividualName *ValidateAccountNameResponseUKIndividualName `json:"individual_name,omitempty"`
 
-	// The date and time the last attempt at the event delivery occurred in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
-	LastSentDate *time.Time `json:"last_sent_date,omitempty"`
+	// A code which explains why a given result was returned, and the service that returned it.
+	Reason AccountNameValidationReasonUK `json:"reason,omitempty"`
 
-	// The date and time the event was last updated in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
-	UpdatedAt time.Time `json:"updated_at"`
-
-	// The ID of the webhook for which the event failed.
-	WebhookID string `json:"webhook_id"`
-
-	// The valid webhook URL that event notifications are sent to. The supported protocol is `https`.
-	WebhookURL string `json:"webhook_url"`
-}
-
-// WebhookEventType the type of the webhook event to subscribe to.
-type WebhookEventType string
-
-const (
-	WebhookEventTypeTransactionCreated      WebhookEventType = "TransactionCreated"
-	WebhookEventTypeTransactionStateChanged WebhookEventType = "TransactionStateChanged"
-	WebhookEventTypePayoutLinkCreated       WebhookEventType = "PayoutLinkCreated"
-	WebhookEventTypePayoutLinkStateChanged  WebhookEventType = "PayoutLinkStateChanged"
-)
-
-type WebhookSigningSecretRotateRequest struct {
-	// The expiration period for the signing secret in [ISO 8601 format](https://en.wikipedia.org/wiki/ISO_8601#Durations). If set, when you rotate the secret, it continues to be valid until the expiration period has passed. Otherwise, on rotation, the secret is invalidated immediately. The maximum value is 7 days.
-	ExpirationPeriod string `json:"expiration_period,omitempty"`
+	// The result of the check.
+	ResultCode ValidateAccountNameResponseUKResultCode `json:"result_code"`
 }
 
 type WebhookV1 struct {
@@ -3086,4 +2959,758 @@ type WebhookV2Basic struct {
 
 	// The valid webhook URL that event notifications are sent to. The supported protocol is `https`.
 	URL string `json:"url"`
+}
+
+// WebhookEvent a webhook event
+type WebhookEvent struct {
+	// The date and time the event was created in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
+	CreatedAt time.Time `json:"created_at"`
+
+	// The ID of the webhook event.
+	ID string `json:"id"`
+
+	// The date and time the last attempt at the event delivery occurred in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
+	LastSentDate *time.Time `json:"last_sent_date,omitempty"`
+
+	// The details of the failed event.
+	Payload map[string]any `json:"payload"`
+
+	// The date and time the event was last updated in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
+	UpdatedAt time.Time `json:"updated_at"`
+
+	// The ID of the webhook for which the event failed.
+	WebhookID string `json:"webhook_id"`
+
+	// The valid webhook URL that event notifications are sent to. The supported protocol is `https`.
+	WebhookURL string `json:"webhook_url"`
+}
+
+// WebhookEventType the type of the webhook event to subscribe to.
+type WebhookEventType string
+
+const (
+	WebhookEventTypeTransactionCreated      WebhookEventType = "TransactionCreated"
+	WebhookEventTypeTransactionStateChanged WebhookEventType = "TransactionStateChanged"
+	WebhookEventTypePayoutLinkCreated       WebhookEventType = "PayoutLinkCreated"
+	WebhookEventTypePayoutLinkStateChanged  WebhookEventType = "PayoutLinkStateChanged"
+)
+
+type WebhookSigningSecretRotateRequest struct {
+	// The expiration period for the signing secret in [ISO 8601 format](https://en.wikipedia.org/wiki/ISO_8601#Durations). If set, when you rotate the secret, it continues to be valid until the expiration period has passed. Otherwise, on rotation, the secret is invalidated immediately. The maximum value is 7 days.
+	//
+	// Default: "P0D".
+	ExpirationPeriod string `json:"expiration_period,omitempty"`
+}
+
+// GetAccountingCategoriesParams query parameters for: Retrieve a list of accounting categories
+type GetAccountingCategoriesParams struct {
+	// The page size, that is, the maximum number of accounting categories to return per page.
+	Limit int `json:"limit,omitempty"`
+
+	PageToken PageToken `json:"page_token,omitempty"`
+}
+
+// encode serializes GetAccountingCategoriesParams into a URL query.
+func (p *GetAccountingCategoriesParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	}
+	if p.PageToken != "" {
+		q.Set("page_token", string(p.PageToken))
+	}
+	return q
+}
+
+type AccountingResponse struct {
+	// The list of accounting categories.
+	AccountingCategories []AccountingCategoryResponse `json:"accounting_categories"`
+
+	// Cursor for the next page.
+	NextPageToken PageToken `json:"next_page_token,omitempty"`
+}
+
+// GetCardInvitationsParams query parameters for: Retrieve a list of card invitations
+type GetCardInvitationsParams struct {
+	// Retrieves only card invitations created before this timestamp (`created_at` < `created_before`).
+	CreatedBefore time.Time `json:"created_before,omitempty"`
+
+	// The maximum number of card invitations to return per page.
+	Limit json.Number `json:"limit,omitempty"`
+
+	// Retrieves card invitations filtered by the specified state(s).
+	State []CardInvitationState `json:"state,omitempty"`
+}
+
+// encode serializes GetCardInvitationsParams into a URL query.
+func (p *GetCardInvitationsParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if !p.CreatedBefore.IsZero() {
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
+	}
+	if p.Limit != "" {
+		q.Set("limit", string(p.Limit))
+	}
+	for _, v := range p.State {
+		q.Add("state", string(v))
+	}
+	return q
+}
+
+// CardInvitationsBodySpendingPeriodEndDateAction the action to take after the end date of the spending period.
+type CardInvitationsBodySpendingPeriodEndDateAction string
+
+const (
+	CardInvitationsBodySpendingPeriodEndDateActionLock      CardInvitationsBodySpendingPeriodEndDateAction = "lock"
+	CardInvitationsBodySpendingPeriodEndDateActionTerminate CardInvitationsBodySpendingPeriodEndDateAction = "terminate"
+)
+
+// CardInvitationsBodySpendingPeriod the controls for the card's spending period.
+//
+// They let you set the dates when the card becomes available or unavailable for spending, and define what happens after the end date.
+//
+// If specified, you must provide at least one of these:
+// - `start_date`
+// - `end_date` together with `end_date_action`
+//
+// The dates provided must be in the future.
+type CardInvitationsBodySpendingPeriod struct {
+	// The end date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
+	EndDate *time.Time `json:"end_date,omitempty"`
+
+	// The action to take after the end date of the spending period.
+	EndDateAction CardInvitationsBodySpendingPeriodEndDateAction `json:"end_date_action,omitempty"`
+
+	// The start date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
+	StartDate *time.Time `json:"start_date,omitempty"`
+}
+
+type CardInvitationsBody struct {
+	// The list of accounts to link to the card.
+	Accounts []string `json:"accounts,omitempty"`
+
+	// The list of merchant categories to be available for card spending.
+	Categories []BusinessMerchantCategory `json:"categories,omitempty"`
+
+	// Restricts card use to specified countries, provided as 2-letter [ISO 3166](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes) codes.
+	Countries []string `json:"countries,omitempty"`
+
+	// The period after which the card invitation expires if it hasn't been claimed or cancelled.
+	//
+	// Default: "P90D".
+	ExpiryPeriod string `json:"expiry_period,omitempty"`
+
+	// The ID of the team member who will be assigned as the holder of the card after the invitation is claimed.
+	HolderID string `json:"holder_id"`
+
+	// The label for the card to be issued, displayed in the UI to help distinguish between cards.
+	//
+	// Default: "Virtual".
+	Label string `json:"label,omitempty"`
+
+	MerchantControls MerchantControlsSchema `json:"merchant_controls,omitempty"`
+
+	// A unique ID of the request that you provide.
+	RequestID string `json:"request_id"`
+
+	SpendingLimits SpendingLimitsSchema `json:"spending_limits,omitempty"`
+
+	// The controls for the card's spending period.
+	SpendingPeriod *CardInvitationsBodySpendingPeriod `json:"spending_period,omitempty"`
+
+	// Specifies the type of the card.
+	Virtual bool `json:"virtual"`
+}
+
+// GetCardsParams query parameters for: Retrieve a list of cards
+type GetCardsParams struct {
+	// Retrieves cards with `created_at` < `created_before`.
+	CreatedBefore time.Time `json:"created_before,omitempty"`
+
+	// The maximum number of cards to return per page.
+	Limit json.Number `json:"limit,omitempty"`
+}
+
+// encode serializes GetCardsParams into a URL query.
+func (p *GetCardsParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if !p.CreatedBefore.IsZero() {
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
+	}
+	if p.Limit != "" {
+		q.Set("limit", string(p.Limit))
+	}
+	return q
+}
+
+// CardsBodyProduct the card product offered by the card provider for this card.
+// In other words, the program that the card is issued under.
+//
+// Provided only for virtual cards with no holder ID (`virtual=true`, and `holder_id` not specified):
+// - **Required** for [auto-issued cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards) (`contact_ids` not specified)
+// - Optional for [company cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards) (`contact_ids` specified)
+//
+// Not allowed for [team member cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards) (`holder_id` present).
+//
+// :::note
+// This property is only available to travel intermediaries using our travel solution.
+// To use it, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+type CardsBodyProduct struct {
+	// The code of the card product.
+	Code string `json:"code"`
+}
+
+// CardsBodySpendingPeriodEndDateAction the action to take after the end date of the spending period.
+type CardsBodySpendingPeriodEndDateAction string
+
+const (
+	CardsBodySpendingPeriodEndDateActionLock      CardsBodySpendingPeriodEndDateAction = "lock"
+	CardsBodySpendingPeriodEndDateActionTerminate CardsBodySpendingPeriodEndDateAction = "terminate"
+)
+
+// CardsBodySpendingPeriod the controls for the card's spending period.
+//
+// They let you set the dates when the card becomes available or unavailable for spending, and define what happens after the end date.
+//
+// If specified, you must provide at least one of these:
+// - `start_date`
+// - `end_date` together with `end_date_action`
+//
+// The dates provided must be in the future.
+type CardsBodySpendingPeriod struct {
+	// The end date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
+	EndDate *time.Time `json:"end_date,omitempty"`
+
+	// The action to take after the end date of the spending period.
+	EndDateAction CardsBodySpendingPeriodEndDateAction `json:"end_date_action,omitempty"`
+
+	// The start date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
+	StartDate *time.Time `json:"start_date,omitempty"`
+}
+
+type CardsBody struct {
+	// The list of accounts to link to the card.
+	Accounts []string `json:"accounts,omitempty"`
+
+	// The list of merchant categories to be available for card spending.
+	Categories []BusinessMerchantCategory `json:"categories,omitempty"`
+
+	// The list of [contacts](https://help.revolut.com/business/help/cards/more-on-cards/company-cards/) for the card.
+	ContactIds []string `json:"contact_ids,omitempty"`
+
+	// Restricts card use to specified countries, provided as 2-letter [ISO 3166](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes) codes.
+	Countries []string `json:"countries,omitempty"`
+
+	// The ID of the team member to assign as the holder of the card.
+	HolderID string `json:"holder_id,omitempty"`
+
+	// The label for the issued card, displayed in the UI to help distinguish between cards.
+	Label string `json:"label,omitempty"`
+
+	MerchantControls MerchantControlsSchema `json:"merchant_controls,omitempty"`
+
+	// The card product offered by the card provider for this card.
+	Product *CardsBodyProduct `json:"product,omitempty"`
+
+	// References for the card.
+	References []CardReference `json:"references,omitempty"`
+
+	// A unique ID of the request that you provide.
+	RequestID string `json:"request_id"`
+
+	SpendingLimits SpendingLimitsSchema `json:"spending_limits,omitempty"`
+
+	// The controls for the card's spending period.
+	SpendingPeriod *CardsBodySpendingPeriod `json:"spending_period,omitempty"`
+
+	// Specifies the type of the card.
+	Virtual bool `json:"virtual"`
+}
+
+type CardsResponse struct {
+	// The CVV (Card Verification Value) of the card.
+	Cvv string `json:"cvv"`
+
+	// The card expiration date.
+	Expiry string `json:"expiry"`
+
+	// The PAN (Primary Account Number) of the card.
+	Pan string `json:"pan"`
+}
+
+// GetCounterpartiesParams query parameters for: Retrieve a list of counterparties
+type GetCounterpartiesParams struct {
+	// The name of the counterparty to retrieve. It does not need to be an exact match, partial match is also supported.
+	Name string `json:"name,omitempty"`
+
+	// The exact account number of the counterparty to retrieve.
+	AccountNo string `json:"account_no,omitempty"`
+
+	// The exact sort code of the counterparty to retrieve.
+	SortCode string `json:"sort_code,omitempty"`
+
+	// The exact IBAN of the counterparty to retrieve.
+	IBAN string `json:"iban,omitempty"`
+
+	// The exact BIC of the counterparty to retrieve.
+	BIC string `json:"bic,omitempty"`
+
+	// Retrieves counterparties with `created_at` < `created_before`.
+	CreatedBefore time.Time `json:"created_before,omitempty"`
+
+	// The maximum number of counterparties returned per page.
+	Limit int `json:"limit,omitempty"`
+}
+
+// encode serializes GetCounterpartiesParams into a URL query.
+func (p *GetCounterpartiesParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.Name != "" {
+		q.Set("name", p.Name)
+	}
+	if p.AccountNo != "" {
+		q.Set("account_no", p.AccountNo)
+	}
+	if p.SortCode != "" {
+		q.Set("sort_code", p.SortCode)
+	}
+	if p.IBAN != "" {
+		q.Set("iban", p.IBAN)
+	}
+	if p.BIC != "" {
+		q.Set("bic", p.BIC)
+	}
+	if !p.CreatedBefore.IsZero() {
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
+	}
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	}
+	return q
+}
+
+type ExpensesState string
+
+const (
+	ExpensesStateMissingInfo          ExpensesState = "missing_info"
+	ExpensesStateAwaitingReview       ExpensesState = "awaiting_review"
+	ExpensesStateReverted             ExpensesState = "reverted"
+	ExpensesStatePendingReimbursement ExpensesState = "pending_reimbursement"
+	ExpensesStateRefundRequested      ExpensesState = "refund_requested"
+	ExpensesStateRefunded             ExpensesState = "refunded"
+	ExpensesStateApproved             ExpensesState = "approved"
+	ExpensesStateRejected             ExpensesState = "rejected"
+)
+
+type ExpensesTransactionType string
+
+const (
+	ExpensesTransactionTypeAtm                  ExpensesTransactionType = "atm"
+	ExpensesTransactionTypeCardPayment          ExpensesTransactionType = "card_payment"
+	ExpensesTransactionTypeFee                  ExpensesTransactionType = "fee"
+	ExpensesTransactionTypeTransfer             ExpensesTransactionType = "transfer"
+	ExpensesTransactionTypeExternal             ExpensesTransactionType = "external"
+	ExpensesTransactionTypeMileageReimbursement ExpensesTransactionType = "mileage_reimbursement"
+)
+
+// GetExpensesParams query parameters for: Retrieve a list of expenses
+type GetExpensesParams struct {
+	// The date and time to retrieve the expenses from, including this date-time.
+	From time.Time `json:"from,omitempty"`
+
+	// The date and time to retrieve the expenses to, excluding this date-time.
+	To time.Time `json:"to,omitempty"`
+
+	// The maximum number of the expenses to retrieve per page.
+	Count int `json:"count,omitempty"`
+
+	// Retrieves the expenses in the specified state.
+	State ExpensesState `json:"state,omitempty"`
+
+	// The type of the transaction related to the expense.
+	TransactionType ExpensesTransactionType `json:"transaction_type,omitempty"`
+}
+
+// encode serializes GetExpensesParams into a URL query.
+func (p *GetExpensesParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if !p.From.IsZero() {
+		q.Set("from", p.From.UTC().Format(time.RFC3339Nano))
+	}
+	if !p.To.IsZero() {
+		q.Set("to", p.To.UTC().Format(time.RFC3339Nano))
+	}
+	if p.Count != 0 {
+		q.Set("count", strconv.FormatInt(int64(p.Count), 10))
+	}
+	if p.State != "" {
+		q.Set("state", string(p.State))
+	}
+	if p.TransactionType != "" {
+		q.Set("transaction_type", string(p.TransactionType))
+	}
+	return q
+}
+
+// GetLabelGroupsParams query parameters for: Retrieve a list of label groups
+type GetLabelGroupsParams struct {
+	// The page size, that is, the maximum number of label groups to return per page.
+	Limit int `json:"limit,omitempty"`
+
+	PageToken PageToken `json:"page_token,omitempty"`
+}
+
+// encode serializes GetLabelGroupsParams into a URL query.
+func (p *GetLabelGroupsParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	}
+	if p.PageToken != "" {
+		q.Set("page_token", string(p.PageToken))
+	}
+	return q
+}
+
+// GetLabelsParams query parameters for: Retrieve a list of labels from a label group
+type GetLabelsParams struct {
+	// The page size, that is, the maximum number of labels to return per page.
+	Limit int `json:"limit,omitempty"`
+
+	PageToken PageToken `json:"page_token,omitempty"`
+}
+
+// encode serializes GetLabelsParams into a URL query.
+func (p *GetLabelsParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	}
+	if p.PageToken != "" {
+		q.Set("page_token", string(p.PageToken))
+	}
+	return q
+}
+
+// GetPayoutLinksParams query parameters for: Retrieve a list of payout links
+type GetPayoutLinksParams struct {
+	// Retrieves links in the specified state(s). Possible states are:
+	State []PayoutLinkState `json:"state,omitempty"`
+
+	// Retrieves links with `created_at` < `created_before`.
+	CreatedBefore time.Time `json:"created_before,omitempty"`
+
+	// The maximum number of links returned per page.
+	Limit int `json:"limit,omitempty"`
+}
+
+// encode serializes GetPayoutLinksParams into a URL query.
+func (p *GetPayoutLinksParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	for _, v := range p.State {
+		q.Add("state", string(v))
+	}
+	if !p.CreatedBefore.IsZero() {
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
+	}
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	}
+	return q
+}
+
+// GetRateParams query parameters for: Get an exchange rate
+type GetRateParams struct {
+	// The currency that you exchange from in [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) format.
+	From Currency `json:"from,omitempty"`
+
+	// The amount of the currency to exchange **from**. The default value is `1.00`.
+	Amount json.Number `json:"amount,omitempty"`
+
+	// The currency that you exchange to in [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) format.
+	To Currency `json:"to,omitempty"`
+}
+
+// encode serializes GetRateParams into a URL query.
+func (p *GetRateParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.From != "" {
+		q.Set("from", string(p.From))
+	}
+	if p.Amount != "" {
+		q.Set("amount", string(p.Amount))
+	}
+	if p.To != "" {
+		q.Set("to", string(p.To))
+	}
+	return q
+}
+
+// GetRolesParams query parameters for: Retrieve team roles
+type GetRolesParams struct {
+	// Retrieves roles with `created_at` < `created_before`.
+	CreatedBefore time.Time `json:"created_before,omitempty"`
+
+	// The maximum number of roles returned per page.
+	Limit json.Number `json:"limit,omitempty"`
+}
+
+// encode serializes GetRolesParams into a URL query.
+func (p *GetRolesParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if !p.CreatedBefore.IsZero() {
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
+	}
+	if p.Limit != "" {
+		q.Set("limit", string(p.Limit))
+	}
+	return q
+}
+
+// SimulationsBodyState the state to which you want to set the top-up transaction.
+type SimulationsBodyState string
+
+const (
+	SimulationsBodyStatePending   SimulationsBodyState = "pending"
+	SimulationsBodyStateCompleted SimulationsBodyState = "completed"
+	SimulationsBodyStateReverted  SimulationsBodyState = "reverted"
+	SimulationsBodyStateFailed    SimulationsBodyState = "failed"
+)
+
+type SimulationsBody struct {
+	// The ID of the account that you want to top up.
+	AccountID string `json:"account_id"`
+
+	// The amount with which you want to top up the account.
+	Amount json.Number `json:"amount"`
+
+	// [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency code in upper case.
+	Currency Currency `json:"currency"`
+
+	// A short description for your top up.
+	//
+	// Default: "Test Top-up".
+	Reference string `json:"reference,omitempty"`
+
+	// The state to which you want to set the top-up transaction.
+	//
+	// Default: "completed".
+	State SimulationsBodyState `json:"state,omitempty"`
+}
+
+// SimulationsResponseState the state of the top-up transaction.
+type SimulationsResponseState string
+
+const (
+	SimulationsResponseStatePending   SimulationsResponseState = "pending"
+	SimulationsResponseStateCompleted SimulationsResponseState = "completed"
+	SimulationsResponseStateReverted  SimulationsResponseState = "reverted"
+	SimulationsResponseStateFailed    SimulationsResponseState = "failed"
+)
+
+type SimulationsResponse struct {
+	// The date and time the transaction was completed in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
+
+	// The date and time the transaction was created in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
+	CreatedAt time.Time `json:"created_at"`
+
+	// The ID of the account that was topped up.
+	ID string `json:"id"`
+
+	// The state of the top-up transaction.
+	State SimulationsResponseState `json:"state"`
+}
+
+// GetTaxRatesParams query parameters for: Retrieve a list of tax rates
+type GetTaxRatesParams struct {
+	// The page size, that is, the maximum number of tax rates to return per page.
+	Limit int `json:"limit,omitempty"`
+
+	PageToken PageToken `json:"page_token,omitempty"`
+}
+
+// encode serializes GetTaxRatesParams into a URL query.
+func (p *GetTaxRatesParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	}
+	if p.PageToken != "" {
+		q.Set("page_token", string(p.PageToken))
+	}
+	return q
+}
+
+// GetTeamMembersParams query parameters for: Retrieve a list of team members
+type GetTeamMembersParams struct {
+	// Retrieves team members with `created_at` < `created_before`.
+	CreatedBefore time.Time `json:"created_before,omitempty"`
+
+	// The maximum number of team members returned per page.
+	Limit json.Number `json:"limit,omitempty"`
+}
+
+// encode serializes GetTeamMembersParams into a URL query.
+func (p *GetTeamMembersParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if !p.CreatedBefore.IsZero() {
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
+	}
+	if p.Limit != "" {
+		q.Set("limit", string(p.Limit))
+	}
+	return q
+}
+
+type TeamMembersBody struct {
+	// The email address of the invited member.
+	Email string `json:"email"`
+
+	// The ID of the [role](https://developer.revolut.com/docs/business/get-roles) to assign to the new member.
+	RoleID string `json:"role_id"`
+}
+
+type TeamMembersResponse struct {
+	// The date and time when the member was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// The email address of the invited member.
+	Email string `json:"email"`
+
+	// The ID of the invited member.
+	ID string `json:"id"`
+
+	// The ID of the [role](https://developer.revolut.com/docs/business/get-roles) assigned to the member.
+	RoleID string `json:"role_id"`
+
+	// The date and time when the member was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type TransactionsIDType string
+
+const (
+	TransactionsIDTypeRequestID TransactionsIDType = "request_id"
+)
+
+// GetTransactionParams query parameters for: Retrieve a transaction
+type GetTransactionParams struct {
+	// The type of the ID to retrieve the transaction by.
+	IDType TransactionsIDType `json:"id_type,omitempty"`
+}
+
+// encode serializes GetTransactionParams into a URL query.
+func (p *GetTransactionParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.IDType != "" {
+		q.Set("id_type", string(p.IDType))
+	}
+	return q
+}
+
+// GetTransactionsParams query parameters for: Retrieve a list of transactions
+type GetTransactionsParams struct {
+	// The date and time you retrieve the historical transactions from, including this date-time.
+	From time.Time `json:"from,omitempty"`
+
+	// The date and time you retrieve the historical transactions to, excluding this date-time.
+	To time.Time `json:"to,omitempty"`
+
+	// The ID of the account
+	Account string `json:"account,omitempty"`
+
+	// The maximum number of the historical transactions to retrieve per page.
+	Count int `json:"count,omitempty"`
+
+	// The type of the historical transactions to retrieve.
+	Type TransactionType `json:"type,omitempty"`
+}
+
+// encode serializes GetTransactionsParams into a URL query.
+func (p *GetTransactionsParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if !p.From.IsZero() {
+		q.Set("from", p.From.UTC().Format(time.RFC3339Nano))
+	}
+	if !p.To.IsZero() {
+		q.Set("to", p.To.UTC().Format(time.RFC3339Nano))
+	}
+	if p.Account != "" {
+		q.Set("account", p.Account)
+	}
+	if p.Count != 0 {
+		q.Set("count", strconv.FormatInt(int64(p.Count), 10))
+	}
+	if p.Type != "" {
+		q.Set("type", string(p.Type))
+	}
+	return q
+}
+
+// GetFailedWebhookEventsParams query parameters for: Retrieve a list of failed webhook events
+type GetFailedWebhookEventsParams struct {
+	// The maximum number of events returned per page.
+	Limit int `json:"limit,omitempty"`
+
+	// Retrieves events with `created_at` < `created_before`.
+	CreatedBefore time.Time `json:"created_before,omitempty"`
+}
+
+// encode serializes GetFailedWebhookEventsParams into a URL query.
+func (p *GetFailedWebhookEventsParams) encode() url.Values {
+	if p == nil {
+		return nil
+	}
+	q := url.Values{}
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	}
+	if !p.CreatedBefore.IsZero() {
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
+	}
+	return q
 }

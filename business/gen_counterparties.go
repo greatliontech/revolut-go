@@ -4,13 +4,10 @@ package business
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"iter"
 	"net/http"
 	"net/url"
-	"strconv"
-	"time"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -20,73 +17,22 @@ type Counterparties struct {
 	t *transport.Transport
 }
 
-// AccountNameValidation validate an account name (CoP/VoP)
+// ValidateAccountName validate an account name (CoP/VoP)
 //
 // Docs: https://developer.revolut.com/docs/business/validate-account-name
-func (s *Counterparties) AccountNameValidation(ctx context.Context, req ValidateAccountNameRequest) (ValidateAccountNameResponse, error) {
-	var raw json.RawMessage
-	if err := s.t.Do(ctx, http.MethodPost, "account-name-validation", req, &raw); err != nil {
+// Required scopes: WRITE
+func (s *Counterparties) ValidateAccountName(ctx context.Context, req ValidateAccountNameRequest) (*ValidateAccountNameResponse, error) {
+	var out ValidateAccountNameResponse
+	if err := s.t.Do(ctx, http.MethodPost, "account-name-validation", req, &out); err != nil {
 		return nil, err
 	}
-	return decodeValidateAccountNameResponse(raw)
-}
-
-// GetCounterpartiesParams query parameters for: Retrieve a list of counterparties
-type GetCounterpartiesParams struct {
-	// The name of the counterparty to retrieve. It does not need to be an exact match, partial match is also supported.
-	Name string `json:"name,omitempty"`
-
-	// The exact account number of the counterparty to retrieve.
-	AccountNo string `json:"account_no,omitempty"`
-
-	// The exact sort code of the counterparty to retrieve.
-	SortCode string `json:"sort_code,omitempty"`
-
-	// The exact IBAN of the counterparty to retrieve.
-	IBAN string `json:"iban,omitempty"`
-
-	// The exact BIC of the counterparty to retrieve.
-	BIC string `json:"bic,omitempty"`
-
-	// Retrieves counterparties with `created_at` < `created_before`.
-	CreatedBefore time.Time `json:"created_before,omitempty"`
-
-	// The maximum number of counterparties returned per page.
-	Limit int `json:"limit,omitempty"`
-}
-
-func (p *GetCounterpartiesParams) encode() url.Values {
-	if p == nil {
-		return nil
-	}
-	q := url.Values{}
-	if p.Name != "" {
-		q.Set("name", p.Name)
-	}
-	if p.AccountNo != "" {
-		q.Set("account_no", p.AccountNo)
-	}
-	if p.SortCode != "" {
-		q.Set("sort_code", p.SortCode)
-	}
-	if p.IBAN != "" {
-		q.Set("iban", p.IBAN)
-	}
-	if p.BIC != "" {
-		q.Set("bic", p.BIC)
-	}
-	if !p.CreatedBefore.IsZero() {
-		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
-	}
-	if p.Limit != 0 {
-		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
-	}
-	return q
+	return &out, nil
 }
 
 // List retrieve a list of counterparties
 //
 // Docs: https://developer.revolut.com/docs/business/get-counterparties
+// Required scopes: READ
 func (s *Counterparties) List(ctx context.Context, opts *GetCounterpartiesParams) ([]Counterparty, error) {
 	path := "counterparties"
 	if q := opts.encode().Encode(); q != "" {
@@ -100,12 +46,7 @@ func (s *Counterparties) List(ctx context.Context, opts *GetCounterpartiesParams
 }
 
 // ListAll iterates every page of List, yielding one Counterparty per
-// step. The iterator terminates when the underlying endpoint signals
-// an empty page. Break out of the loop to stop early.
-//
-// Pass nil for opts to accept the server's defaults on the first page.
-// A non-nil opts is copied internally so the caller's struct is not
-// mutated as pages advance.
+// step. Break out of the loop to stop early.
 func (s *Counterparties) ListAll(ctx context.Context, opts *GetCounterpartiesParams) iter.Seq2[Counterparty, error] {
 	return func(yield func(Counterparty, error) bool) {
 		var p GetCounterpartiesParams
@@ -135,6 +76,7 @@ func (s *Counterparties) ListAll(ctx context.Context, opts *GetCounterpartiesPar
 // Create create a counterparty
 //
 // Docs: https://developer.revolut.com/docs/business/add-counterparty
+// Required scopes: READ, WRITE
 func (s *Counterparties) Create(ctx context.Context, req CreateCounterpartyRequest) (*Counterparty, error) {
 	var out Counterparty
 	if err := s.t.Do(ctx, http.MethodPost, "counterparty", req, &out); err != nil {
@@ -146,6 +88,7 @@ func (s *Counterparties) Create(ctx context.Context, req CreateCounterpartyReque
 // Get retrieve a counterparty
 //
 // Docs: https://developer.revolut.com/docs/business/get-counterparty
+// Required scopes: READ
 func (s *Counterparties) Get(ctx context.Context, counterpartyID string) (*Counterparty, error) {
 	if counterpartyID == "" {
 		return nil, errors.New("business: counterparty_id is required")
@@ -160,6 +103,7 @@ func (s *Counterparties) Get(ctx context.Context, counterpartyID string) (*Count
 // Delete delete a counterparty
 //
 // Docs: https://developer.revolut.com/docs/business/delete-counterparty
+// Required scopes: READ, WRITE
 func (s *Counterparties) Delete(ctx context.Context, counterpartyID string) error {
 	if counterpartyID == "" {
 		return errors.New("business: counterparty_id is required")

@@ -4,12 +4,10 @@ package business
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"iter"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -19,33 +17,11 @@ type TeamMembers struct {
 	t *transport.Transport
 }
 
-// GetRolesParams query parameters for: Retrieve team roles
-type GetRolesParams struct {
-	// Retrieves roles with `created_at` < `created_before`.
-	CreatedBefore time.Time `json:"created_before,omitempty"`
-
-	// The maximum number of roles returned per page.
-	Limit json.Number `json:"limit,omitempty"`
-}
-
-func (p *GetRolesParams) encode() url.Values {
-	if p == nil {
-		return nil
-	}
-	q := url.Values{}
-	if !p.CreatedBefore.IsZero() {
-		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
-	}
-	if p.Limit != "" {
-		q.Set("limit", string(p.Limit))
-	}
-	return q
-}
-
-// ListRoles retrieve team roles
+// GetRoles retrieve team roles
 //
 // Docs: https://developer.revolut.com/docs/business/get-roles
-func (s *TeamMembers) ListRoles(ctx context.Context, opts *GetRolesParams) ([]Role, error) {
+// Required scopes: READ
+func (s *TeamMembers) GetRoles(ctx context.Context, opts *GetRolesParams) ([]Role, error) {
 	path := "roles"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
@@ -57,21 +33,16 @@ func (s *TeamMembers) ListRoles(ctx context.Context, opts *GetRolesParams) ([]Ro
 	return out, nil
 }
 
-// ListRolesAll iterates every page of ListRoles, yielding one Role per
-// step. The iterator terminates when the underlying endpoint signals
-// an empty page. Break out of the loop to stop early.
-//
-// Pass nil for opts to accept the server's defaults on the first page.
-// A non-nil opts is copied internally so the caller's struct is not
-// mutated as pages advance.
-func (s *TeamMembers) ListRolesAll(ctx context.Context, opts *GetRolesParams) iter.Seq2[Role, error] {
+// GetRolesAll iterates every page of GetRoles, yielding one Role per
+// step. Break out of the loop to stop early.
+func (s *TeamMembers) GetRolesAll(ctx context.Context, opts *GetRolesParams) iter.Seq2[Role, error] {
 	return func(yield func(Role, error) bool) {
 		var p GetRolesParams
 		if opts != nil {
 			p = *opts
 		}
 		for {
-			resp, err := s.ListRoles(ctx, &p)
+			resp, err := s.GetRoles(ctx, &p)
 			if err != nil {
 				var zero Role
 				yield(zero, err)
@@ -90,32 +61,10 @@ func (s *TeamMembers) ListRolesAll(ctx context.Context, opts *GetRolesParams) it
 	}
 }
 
-// GetTeamMembersParams query parameters for: Retrieve a list of team members
-type GetTeamMembersParams struct {
-	// Retrieves team members with `created_at` < `created_before`.
-	CreatedBefore time.Time `json:"created_before,omitempty"`
-
-	// The maximum number of team members returned per page.
-	Limit json.Number `json:"limit,omitempty"`
-}
-
-func (p *GetTeamMembersParams) encode() url.Values {
-	if p == nil {
-		return nil
-	}
-	q := url.Values{}
-	if !p.CreatedBefore.IsZero() {
-		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
-	}
-	if p.Limit != "" {
-		q.Set("limit", string(p.Limit))
-	}
-	return q
-}
-
 // List retrieve a list of team members
 //
 // Docs: https://developer.revolut.com/docs/business/get-team-members
+// Required scopes: READ
 func (s *TeamMembers) List(ctx context.Context, opts *GetTeamMembersParams) ([]TeamMember, error) {
 	path := "team-members"
 	if q := opts.encode().Encode(); q != "" {
@@ -129,12 +78,7 @@ func (s *TeamMembers) List(ctx context.Context, opts *GetTeamMembersParams) ([]T
 }
 
 // ListAll iterates every page of List, yielding one TeamMember per
-// step. The iterator terminates when the underlying endpoint signals
-// an empty page. Break out of the loop to stop early.
-//
-// Pass nil for opts to accept the server's defaults on the first page.
-// A non-nil opts is copied internally so the caller's struct is not
-// mutated as pages advance.
+// step. Break out of the loop to stop early.
 func (s *TeamMembers) ListAll(ctx context.Context, opts *GetTeamMembersParams) iter.Seq2[TeamMember, error] {
 	return func(yield func(TeamMember, error) bool) {
 		var p GetTeamMembersParams
@@ -161,12 +105,19 @@ func (s *TeamMembers) ListAll(ctx context.Context, opts *GetTeamMembersParams) i
 	}
 }
 
-// Create invite a new member to your business
+// InviteTeamMember invite a new member to your business
 //
 // Docs: https://developer.revolut.com/docs/business/invite-team-member
-func (s *TeamMembers) Create(ctx context.Context) (*InviteTeamMemberResponse, error) {
-	var out InviteTeamMemberResponse
-	if err := s.t.Do(ctx, http.MethodPost, "team-members", nil, &out); err != nil {
+// Required scopes: WRITE
+func (s *TeamMembers) InviteTeamMember(ctx context.Context, req *TeamMembersBody) (**TeamMembersResponse, error) {
+	if req.Email == "" {
+		return nil, errors.New("business: TeamMembersBody.email is required")
+	}
+	if req.RoleID == "" {
+		return nil, errors.New("business: TeamMembersBody.role_id is required")
+	}
+	var out *TeamMembersResponse
+	if err := s.t.Do(ctx, http.MethodPost, "team-members", req, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -175,6 +126,7 @@ func (s *TeamMembers) Create(ctx context.Context) (*InviteTeamMemberResponse, er
 // Delete delete a team member
 //
 // Docs: https://developer.revolut.com/docs/business/delete-team-member
+// Required scopes: WRITE
 func (s *TeamMembers) Delete(ctx context.Context, teamMemberID string) error {
 	if teamMemberID == "" {
 		return errors.New("business: team_member_id is required")

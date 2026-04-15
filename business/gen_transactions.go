@@ -8,8 +8,6 @@ import (
 	"iter"
 	"net/http"
 	"net/url"
-	"strconv"
-	"time"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -19,26 +17,10 @@ type Transactions struct {
 	t *transport.Transport
 }
 
-// GetTransactionParams query parameters for: Retrieve a transaction
-type GetTransactionParams struct {
-	// The type of the ID to retrieve the transaction by.
-	IDType string `json:"id_type,omitempty"`
-}
-
-func (p *GetTransactionParams) encode() url.Values {
-	if p == nil {
-		return nil
-	}
-	q := url.Values{}
-	if p.IDType != "" {
-		q.Set("id_type", p.IDType)
-	}
-	return q
-}
-
 // Get retrieve a transaction
 //
 // Docs: https://developer.revolut.com/docs/business/get-transaction
+// Required scopes: READ
 func (s *Transactions) Get(ctx context.Context, id string, opts *GetTransactionParams) (*Transaction, error) {
 	if id == "" {
 		return nil, errors.New("business: id is required")
@@ -54,50 +36,10 @@ func (s *Transactions) Get(ctx context.Context, id string, opts *GetTransactionP
 	return &out, nil
 }
 
-// GetTransactionsParams query parameters for: Retrieve a list of transactions
-type GetTransactionsParams struct {
-	// The date and time you retrieve the historical transactions from, including this date-time.
-	From time.Time `json:"from,omitempty"`
-
-	// The date and time you retrieve the historical transactions to, excluding this date-time.
-	To time.Time `json:"to,omitempty"`
-
-	// The ID of the account
-	Account string `json:"account,omitempty"`
-
-	// The maximum number of the historical transactions to retrieve per page.
-	Count int `json:"count,omitempty"`
-
-	// The type of the historical transactions to retrieve.
-	Type TransactionType `json:"type,omitempty"`
-}
-
-func (p *GetTransactionsParams) encode() url.Values {
-	if p == nil {
-		return nil
-	}
-	q := url.Values{}
-	if !p.From.IsZero() {
-		q.Set("from", p.From.UTC().Format(time.RFC3339Nano))
-	}
-	if !p.To.IsZero() {
-		q.Set("to", p.To.UTC().Format(time.RFC3339Nano))
-	}
-	if p.Account != "" {
-		q.Set("account", p.Account)
-	}
-	if p.Count != 0 {
-		q.Set("count", strconv.FormatInt(int64(p.Count), 10))
-	}
-	if p.Type != "" {
-		q.Set("type", string(p.Type))
-	}
-	return q
-}
-
 // List retrieve a list of transactions
 //
 // Docs: https://developer.revolut.com/docs/business/get-transactions
+// Required scopes: READ
 func (s *Transactions) List(ctx context.Context, opts *GetTransactionsParams) ([]Transaction, error) {
 	path := "transactions"
 	if q := opts.encode().Encode(); q != "" {
@@ -111,12 +53,7 @@ func (s *Transactions) List(ctx context.Context, opts *GetTransactionsParams) ([
 }
 
 // ListAll iterates every page of List, yielding one Transaction per
-// step. The iterator terminates when the underlying endpoint signals
-// an empty page. Break out of the loop to stop early.
-//
-// Pass nil for opts to accept the server's defaults on the first page.
-// A non-nil opts is copied internally so the caller's struct is not
-// mutated as pages advance.
+// step. Break out of the loop to stop early.
 func (s *Transactions) ListAll(ctx context.Context, opts *GetTransactionsParams) iter.Seq2[Transaction, error] {
 	return func(yield func(Transaction, error) bool) {
 		var p GetTransactionsParams

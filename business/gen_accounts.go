@@ -19,6 +19,7 @@ type Accounts struct {
 // List retrieve all accounts
 //
 // Docs: https://developer.revolut.com/docs/business/get-accounts
+// Required scopes: READ
 func (s *Accounts) List(ctx context.Context) ([]Account, error) {
 	var out []Account
 	if err := s.t.Do(ctx, http.MethodGet, "accounts", nil, &out); err != nil {
@@ -30,6 +31,7 @@ func (s *Accounts) List(ctx context.Context) ([]Account, error) {
 // Get retrieve an account
 //
 // Docs: https://developer.revolut.com/docs/business/get-account
+// Required scopes: READ
 func (s *Accounts) Get(ctx context.Context, accountID string) (*Account, error) {
 	if accountID == "" {
 		return nil, errors.New("business: account_id is required")
@@ -41,10 +43,11 @@ func (s *Accounts) Get(ctx context.Context, accountID string) (*Account, error) 
 	return &out, nil
 }
 
-// ListBankDetails retrieve account's full bank details
+// GetDetails retrieve account's full bank details
 //
 // Docs: https://developer.revolut.com/docs/business/get-account-details
-func (s *Accounts) ListBankDetails(ctx context.Context, accountID string) ([]AccountBankDetailsItem, error) {
+// Required scopes: READ
+func (s *Accounts) GetDetails(ctx context.Context, accountID string) ([]AccountBankDetailsItem, error) {
 	if accountID == "" {
 		return nil, errors.New("business: account_id is required")
 	}

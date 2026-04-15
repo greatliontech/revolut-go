@@ -19,6 +19,7 @@ type PaymentDrafts struct {
 // List retrieve a list of payment drafts
 //
 // Docs: https://developer.revolut.com/docs/business/get-payment-drafts
+// Required scopes: READ
 func (s *PaymentDrafts) List(ctx context.Context) (*PaymentDraftsResponse, error) {
 	var out PaymentDraftsResponse
 	if err := s.t.Do(ctx, http.MethodGet, "payment-drafts", nil, &out); err != nil {
@@ -30,6 +31,7 @@ func (s *PaymentDrafts) List(ctx context.Context) (*PaymentDraftsResponse, error
 // Create create a payment draft
 //
 // Docs: https://developer.revolut.com/docs/business/create-payment-draft
+// Required scopes: READ, WRITE
 func (s *PaymentDrafts) Create(ctx context.Context, req CreatePaymentDraftRequest) (*CreatePaymentDraftResponse, error) {
 	if len(req.Payments) == 0 {
 		return nil, errors.New("business: CreatePaymentDraftRequest.payments is required")
@@ -44,6 +46,7 @@ func (s *PaymentDrafts) Create(ctx context.Context, req CreatePaymentDraftReques
 // Get retrieve a payment draft
 //
 // Docs: https://developer.revolut.com/docs/business/get-payment-draft
+// Required scopes: READ
 func (s *PaymentDrafts) Get(ctx context.Context, paymentDraftID string) (*PaymentDraftResponse, error) {
 	if paymentDraftID == "" {
 		return nil, errors.New("business: payment_draft_id is required")
@@ -58,6 +61,7 @@ func (s *PaymentDrafts) Get(ctx context.Context, paymentDraftID string) (*Paymen
 // Delete delete a payment draft
 //
 // Docs: https://developer.revolut.com/docs/business/delete-payment-draft
+// Required scopes: READ, WRITE
 func (s *PaymentDrafts) Delete(ctx context.Context, paymentDraftID string) error {
 	if paymentDraftID == "" {
 		return errors.New("business: payment_draft_id is required")

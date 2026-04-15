@@ -4,11 +4,9 @@ package business
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -18,38 +16,10 @@ type CardInvitations struct {
 	t *transport.Transport
 }
 
-// GetCardInvitationsParams query parameters for: Retrieve a list of card invitations
-type GetCardInvitationsParams struct {
-	// Retrieves only card invitations created before this timestamp (`created_at` < `created_before`).
-	CreatedBefore time.Time `json:"created_before,omitempty"`
-
-	// The maximum number of card invitations to return per page.
-	Limit json.Number `json:"limit,omitempty"`
-
-	// Retrieves card invitations filtered by the specified state(s).
-	State []CardInvitationState `json:"state,omitempty"`
-}
-
-func (p *GetCardInvitationsParams) encode() url.Values {
-	if p == nil {
-		return nil
-	}
-	q := url.Values{}
-	if !p.CreatedBefore.IsZero() {
-		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
-	}
-	if p.Limit != "" {
-		q.Set("limit", string(p.Limit))
-	}
-	for _, v := range p.State {
-		q.Add("state", string(v))
-	}
-	return q
-}
-
 // List retrieve a list of card invitations
 //
 // Docs: https://developer.revolut.com/docs/business/get-card-invitations
+// Required scopes: READ
 func (s *CardInvitations) List(ctx context.Context, opts *GetCardInvitationsParams) ([]CardInvitationResponse, error) {
 	path := "card-invitations"
 	if q := opts.encode().Encode(); q != "" {
@@ -65,18 +35,26 @@ func (s *CardInvitations) List(ctx context.Context, opts *GetCardInvitationsPara
 // Create create a card invitation
 //
 // Docs: https://developer.revolut.com/docs/business/create-card-invitation
-func (s *CardInvitations) Create(ctx context.Context) (*CardInvitationCreatedResponse, error) {
+// Required scopes: WRITE
+func (s *CardInvitations) Create(ctx context.Context, req *CardInvitationsBody) (*CardInvitationCreatedResponse, error) {
+	if req.HolderID == "" {
+		return nil, errors.New("business: CardInvitationsBody.holder_id is required")
+	}
+	if req.RequestID == "" {
+		return nil, errors.New("business: CardInvitationsBody.request_id is required")
+	}
 	var out CardInvitationCreatedResponse
-	if err := s.t.Do(ctx, http.MethodPost, "card-invitations", nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodPost, "card-invitations", req, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-// Cancel cancel a card invitation
+// CancelCardInvitation cancel a card invitation
 //
 // Docs: https://developer.revolut.com/docs/business/cancel-card-invitation
-func (s *CardInvitations) Cancel(ctx context.Context, cardInvitationID string) error {
+// Required scopes: WRITE
+func (s *CardInvitations) CancelCardInvitation(ctx context.Context, cardInvitationID string) error {
 	if cardInvitationID == "" {
 		return errors.New("business: card_invitation_id is required")
 	}
@@ -86,6 +64,7 @@ func (s *CardInvitations) Cancel(ctx context.Context, cardInvitationID string) e
 // Get retrieve card invitation details
 //
 // Docs: https://developer.revolut.com/docs/business/get-card-invitation
+// Required scopes: READ
 func (s *CardInvitations) Get(ctx context.Context, cardInvitationID string) (*CardInvitationResponse, error) {
 	if cardInvitationID == "" {
 		return nil, errors.New("business: card_invitation_id is required")
@@ -100,12 +79,19 @@ func (s *CardInvitations) Get(ctx context.Context, cardInvitationID string) (*Ca
 // Update update card invitation settings
 //
 // Docs: https://developer.revolut.com/docs/business/update-card-invitation
-func (s *CardInvitations) Update(ctx context.Context, cardInvitationID string) (*CardInvitationUpdatedResponse, error) {
+// Required scopes: WRITE
+func (s *CardInvitations) Update(ctx context.Context, cardInvitationID string, req *CardInvitationsBody) (*CardInvitationUpdatedResponse, error) {
 	if cardInvitationID == "" {
 		return nil, errors.New("business: card_invitation_id is required")
 	}
+	if req.HolderID == "" {
+		return nil, errors.New("business: CardInvitationsBody.holder_id is required")
+	}
+	if req.RequestID == "" {
+		return nil, errors.New("business: CardInvitationsBody.request_id is required")
+	}
 	var out CardInvitationUpdatedResponse
-	if err := s.t.Do(ctx, http.MethodPatch, "card-invitations/"+url.PathEscape(cardInvitationID), nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodPatch, "card-invitations/"+url.PathEscape(cardInvitationID), req, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil

@@ -22,23 +22,85 @@ import "github.com/greatliontech/revolut-go/cmd/revogen/ir"
 //     interface name, propertyName, and the wire value.
 func Unions(spec *ir.Spec) {
 	declByName := indexDecls(spec.Decls)
+
+	// markerImpls collects the full set of union markers each
+	// struct must implement. Computed via transitive closure so a
+	// nested union (interface-of-interfaces) propagates its parents'
+	// markers down to the leaf structs that ultimately satisfy it.
+	markerImpls := map[string][]string{}
+	dispatch := map[string]*ir.UnionLink{}
+
+	var propagate func(unionName string, parentMarkers []string, parentDisc *ir.Discriminator, parentTag string)
+	propagate = func(unionName string, parentMarkers []string, parentDisc *ir.Discriminator, parentTag string) {
+		union := declByName[unionName]
+		if union == nil || union.Kind != ir.DeclInterface {
+			return
+		}
+		// Carry parent markers + this union's marker through to
+		// each variant.
+		myMarkers := append([]string(nil), parentMarkers...)
+		myMarkers = append(myMarkers, union.Name)
+		for _, v := range union.Variants {
+			variant := declByName[v.GoName]
+			if variant == nil {
+				continue
+			}
+			switch variant.Kind {
+			case ir.DeclStruct:
+				for _, m := range myMarkers {
+					markerImpls[v.GoName] = appendUnique(markerImpls[v.GoName], m)
+				}
+				// Wire-tag dispatch only fires for the immediate
+				// parent that's tagged; the spec describes the wire
+				// at that level only.
+				if union.Discriminator != nil {
+					dispatch[v.GoName] = &ir.UnionLink{
+						UnionName:    union.Name,
+						PropertyName: union.Discriminator.PropertyName,
+						Value:        v.Tag,
+					}
+				}
+			case ir.DeclInterface:
+				// Nested union — interface inherits all markers
+				// itself, then we recurse so its leaves do too.
+				for _, m := range myMarkers {
+					variant.ImplementsUnions = appendUnique(variant.ImplementsUnions, m)
+				}
+				propagate(v.GoName, myMarkers, parentDisc, parentTag)
+			}
+		}
+	}
+
+	// Seed the closure from every top-level interface (one whose
+	// name doesn't already appear as a variant of another union).
+	isVariant := map[string]bool{}
 	for _, d := range spec.Decls {
 		if d.Kind != ir.DeclInterface {
 			continue
 		}
 		for _, v := range d.Variants {
-			variant := declByName[v.GoName]
-			if variant == nil || variant.Kind != ir.DeclStruct {
-				continue
-			}
-			variant.ImplementsUnions = appendUnique(variant.ImplementsUnions, d.Name)
-			if d.Discriminator != nil {
-				variant.UnionDispatch = &ir.UnionLink{
-					UnionName:    d.Name,
-					PropertyName: d.Discriminator.PropertyName,
-					Value:        v.Tag,
-				}
-			}
+			isVariant[v.GoName] = true
+		}
+	}
+	for _, d := range spec.Decls {
+		if d.Kind != ir.DeclInterface || isVariant[d.Name] {
+			continue
+		}
+		propagate(d.Name, nil, nil, "")
+	}
+
+	for name, markers := range markerImpls {
+		decl := declByName[name]
+		if decl == nil {
+			continue
+		}
+		for _, m := range markers {
+			decl.ImplementsUnions = appendUnique(decl.ImplementsUnions, m)
+		}
+	}
+	for name, link := range dispatch {
+		if d := declByName[name]; d != nil {
+			d.UnionDispatch = link
 		}
 	}
 }

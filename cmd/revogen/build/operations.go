@@ -3,6 +3,7 @@ package build
 import (
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -81,13 +82,17 @@ func (b *Builder) methodFromOperation(verb, path string, item *openapi3.PathItem
 		Doc:            docLines(op),
 		DocURL:         b.docURL(op.OperationID),
 		Deprecated:     deprecationReason(op),
-		ServerOverride: pickServerOverride(op, item),
+		ServerOverride: b.pickServerOverride(op, item),
 	}
-	b.applyParameters(m, item, op)
+	// Set the HTTP-call envelope before parameter handling so the
+	// query-params struct's synthesized name has a verb + path to
+	// fall back to when operationId is absent.
+	m.HTTPCall.Method = verb
+	m.HTTPCall.PathExpr = path
+	b.applyParameters(m, item, op, verb, path)
 	b.applyRequestBody(m, op)
 	b.applyResponse(m, op)
 	b.applySecurityScopes(m, op)
-	m.HTTPCall.Method = verb
 	return m
 }
 
@@ -95,7 +100,11 @@ func (b *Builder) methodFromOperation(verb, path string, item *openapi3.PathItem
 // operation (merged with any path-level common parameters). Query
 // parameters are gathered into a synthesized `<Op>Params` struct
 // that the emitter renders next to the method.
-func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *openapi3.Operation) {
+//
+// verb and path are forwarded so the synthesized struct's name can
+// fall back to a (verb, path)-derived form when the operation has
+// no operationId.
+func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *openapi3.Operation, verb, path string) {
 	type queryParam struct {
 		wireName string
 		goName   string
@@ -111,9 +120,10 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 		switch p.In {
 		case "path":
 			m.PathParams = append(m.PathParams, ir.Param{
-				Name: names.ParamName(p.Name),
-				Type: ir.Prim("string"),
-				Doc:  firstLine(p.Description),
+				Name:     names.ParamName(p.Name),
+				Type:     ir.Prim("string"),
+				Doc:      firstLine(p.Description),
+				WireName: p.Name,
 			})
 		case "query":
 			typ := b.resolveType(p.Schema, Context{Parent: m.Receiver, Field: p.Name})
@@ -142,11 +152,12 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 	if len(queries) == 0 {
 		return
 	}
-	paramsName := b.synthParamsName(op.OperationID, op, item, m)
+	paramsName := b.synthParamsName(op.OperationID, verb, path)
 	paramsDecl := &ir.Decl{
-		Name: paramsName,
-		Kind: ir.DeclStruct,
-		Doc:  "Query parameters for: " + firstLine(op.Summary),
+		Name:               paramsName,
+		Kind:               ir.DeclStruct,
+		Doc:                "Query parameters for: " + firstLine(op.Summary),
+		QueryParamsEncoder: true,
 	}
 	for _, q := range queries {
 		paramsDecl.Fields = append(paramsDecl.Fields, &ir.Field{
@@ -162,34 +173,32 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 
 // synthParamsName returns a stable Go name for the generated Params
 // struct. Operations with an operationId use it verbatim; the
-// fallback derives a name from the HTTP method and path so two
-// parameterless operations on the same resource don't collide.
-func (b *Builder) synthParamsName(opID string, op *openapi3.Operation, item *openapi3.PathItem, m *ir.Method) string {
+// fallback derives a name from the verb and path. Names that
+// collide with previously registered Decls get a numeric suffix so
+// each operation owns a distinct struct.
+func (b *Builder) synthParamsName(opID, verb, path string) string {
+	var base string
 	if opID != "" {
-		return names.TypeName(opID) + "Params"
+		base = names.TypeName(opID) + "Params"
+	} else {
+		var pathPart string
+		for _, seg := range nonParamSegments(path) {
+			pathPart += names.TypeName(seg)
+		}
+		if pathPart == "" {
+			pathPart = "Root"
+		}
+		base = names.TypeName(strings.ToLower(verb)) + pathPart + "Params"
 	}
-	// Fallback: <Verb><PathSegmentsSansParams>Params.
-	segs := nonParamSegments(m.HTTPCall.Method) // unused — method not set yet
-	_ = segs
-	path := "" // operationId absent is rare; synthesise from the tag-stripped path
-	for _, p := range nonParamSegments(pathFromItem(item, op)) {
-		path += names.TypeName(p)
+	if _, taken := b.declByName[base]; !taken {
+		return base
 	}
-	if path == "" {
-		path = "Path"
+	for i := 2; ; i++ {
+		candidate := base + strconv.Itoa(i)
+		if _, taken := b.declByName[candidate]; !taken {
+			return candidate
+		}
 	}
-	return names.TypeName(m.HTTPCall.Method) + path + "Params"
-}
-
-// pathFromItem is a best-effort reverse map from Operation → path
-// template. kin-openapi doesn't store this link, so we scan the
-// document once per call. Acceptable: the fallback is only hit for
-// operations without an operationId, which the vendored specs don't
-// have today.
-func pathFromItem(item *openapi3.PathItem, op *openapi3.Operation) string {
-	_ = item
-	_ = op
-	return "unknown"
 }
 
 // applyRequestBody inspects the operation's request body, picks a
@@ -360,17 +369,14 @@ func (b *Builder) deriveMethodName(verb, path string, op *openapi3.Operation, ta
 // redundant leading tokens so `validateAccountName` on tag
 // `Counterparties` becomes `ValidateAccountName`, while
 // `listAccounts` on tag `Accounts` becomes `List`.
+//
+// Only HTTP-canonical verbs are stripped — `get`/`list`/... on
+// GET, `create`/`add`/... on POST, etc. Domain verbs like `cancel`
+// or `freeze` survive: an operationId of `cancelCardInvitation` on
+// POST stays as `Cancel`, not `Delete`.
 func stripOperationIDPrefixes(id, verb, tag string) string {
 	tokens := names.SplitWords(id)
 	tagTokens := names.SplitWords(tag)
-	verbSynonyms := map[string]bool{
-		"get": true, "list": true, "fetch": true, "retrieve": true,
-		"create": true, "add": true, "submit": true, "post": true,
-		"update": true, "modify": true, "patch": true, "put": true,
-		"delete": true, "remove": true, "cancel": true,
-	}
-	// Verb → Go verb word; used only when we strip the verb but need
-	// to keep it in the method name.
 	verbToWord := map[string]string{
 		http.MethodGet:    "Get",
 		http.MethodPost:   "Create",
@@ -378,33 +384,47 @@ func stripOperationIDPrefixes(id, verb, tag string) string {
 		http.MethodPatch:  "Update",
 		http.MethodDelete: "Delete",
 	}
+	httpSynonyms := map[string]map[string]bool{
+		http.MethodGet:    {"get": true, "list": true, "fetch": true, "retrieve": true, "read": true},
+		http.MethodPost:   {"create": true, "add": true, "submit": true, "post": true},
+		http.MethodPut:    {"update": true, "replace": true, "put": true, "set": true},
+		http.MethodPatch:  {"update": true, "modify": true, "patch": true},
+		http.MethodDelete: {"delete": true, "remove": true, "destroy": true},
+	}
+	synonyms := httpSynonyms[verb]
 
-	// Find the first token that's NOT a verb synonym; that's where the
-	// noun starts.
+	// Find the first token that's NOT a synonym for this HTTP method.
+	// At most one leading verb gets stripped — `getList...` would only
+	// drop `get`.
 	nounStart := 0
-	for i, tok := range tokens {
-		if !verbSynonyms[strings.ToLower(tok)] {
-			nounStart = i
-			break
-		}
+	if len(tokens) > 0 && synonyms[strings.ToLower(tokens[0])] {
+		nounStart = 1
 	}
 	nouns := tokens[nounStart:]
 
-	// Drop tag-token prefixes (case-insensitive match on lowercase).
-	nouns = dropTagStem(nouns, tagTokens)
+	// Track whether the stripped tag-stem token was plural — i.e.
+	// `getAccounts` has its `Accounts` stem dropped, leaving an
+	// empty noun. The plurality of the dropped token is what
+	// distinguishes "List" (collection) from "Get" (single).
+	nouns, droppedPlural := dropTagStemTracked(nouns, tagTokens)
 
 	// If we end up with only the verb (no noun left), keep the
-	// leading spec verb's Go word so `listAccounts` on tag
-	// `Accounts` stays `List` instead of collapsing to the HTTP verb.
+	// leading spec verb's Go word — but disambiguate
+	// `getAccounts` (List) from `getAccount` (Get) using the
+	// plurality of the dropped tag stem.
 	if len(nouns) == 0 {
 		if nounStart == 0 {
 			return joinPascal(tokens)
 		}
-		switch strings.ToLower(tokens[0]) {
+		leading := strings.ToLower(tokens[0])
+		switch leading {
+		case "get", "retrieve", "fetch":
+			if droppedPlural {
+				return "List"
+			}
+			return "Get"
 		case "list":
 			return "List"
-		case "get", "retrieve", "fetch":
-			return "Get"
 		case "create", "add", "submit", "post":
 			return "Create"
 		case "update", "modify", "patch", "put":
@@ -415,46 +435,53 @@ func stripOperationIDPrefixes(id, verb, tag string) string {
 		return verbToWord[verbSafe(verb)]
 	}
 
-	// Rebuild: if the operation led with a verb that matches the HTTP
-	// method, prepend its Go equivalent; otherwise emit the tokens
-	// as-is (they may start with a domain verb like "capture" we
-	// want to preserve).
+	// Rebuild: if the operation led with a verb that matches the
+	// HTTP method, prepend the canonical Go word for that verb so
+	// `getAccountDetails` becomes `GetDetails`. Domain verbs that
+	// happen to lead an operationId (e.g. POST `cancelInvitation`)
+	// were not stripped above and pass through as the noun.
 	if nounStart > 0 {
 		leadingVerb := strings.ToLower(tokens[0])
-		switch leadingVerb {
-		case "get", "list", "fetch", "retrieve":
+		switch {
+		case verb == http.MethodGet && (leadingVerb == "get" || leadingVerb == "list" || leadingVerb == "fetch" || leadingVerb == "retrieve" || leadingVerb == "read"):
 			return "Get" + joinPascal(nouns)
-		case "create", "add", "submit", "post":
+		case verb == http.MethodPost && (leadingVerb == "create" || leadingVerb == "add" || leadingVerb == "submit" || leadingVerb == "post"):
 			return "Create" + joinPascal(nouns)
-		case "update", "modify", "patch", "put":
+		case (verb == http.MethodPut || verb == http.MethodPatch) && (leadingVerb == "update" || leadingVerb == "replace" || leadingVerb == "modify" || leadingVerb == "patch" || leadingVerb == "put" || leadingVerb == "set"):
 			return "Update" + joinPascal(nouns)
-		case "delete", "remove", "cancel":
+		case verb == http.MethodDelete && (leadingVerb == "delete" || leadingVerb == "remove" || leadingVerb == "destroy"):
 			return "Delete" + joinPascal(nouns)
 		}
 	}
 	return joinPascal(nouns)
 }
 
-// dropTagStem removes leading tokens from nouns that duplicate the
-// tag's tokens. Comparison is case-insensitive and singular-aware
-// so "Accounts" tag drops a leading "account" or "accounts" noun.
-func dropTagStem(nouns, tagTokens []string) []string {
+// dropTagStemTracked is dropTagStem that also reports whether the
+// LAST consumed token was the plural form of its tag counterpart.
+// The flag drives `getAccounts` → List / `getAccount` → Get
+// disambiguation when the stem fully consumes the noun.
+func dropTagStemTracked(nouns, tagTokens []string) ([]string, bool) {
 	if len(nouns) == 0 || len(tagTokens) == 0 {
-		return nouns
+		return nouns, false
 	}
 	lowerEq := func(a, b string) bool { return strings.EqualFold(a, b) }
 	singular := func(s string) string { return names.Singularise(strings.ToLower(s)) }
 	i := 0
+	lastDroppedPlural := false
 	for i < len(nouns) && i < len(tagTokens) {
 		n := nouns[i]
 		t := tagTokens[i]
-		if lowerEq(n, t) || singular(n) == singular(t) {
-			i++
-			continue
+		switch {
+		case lowerEq(n, t):
+			lastDroppedPlural = !names.LooksSingular(strings.ToLower(n))
+		case singular(n) == singular(t):
+			lastDroppedPlural = !names.LooksSingular(strings.ToLower(n))
+		default:
+			return nouns[i:], lastDroppedPlural
 		}
-		break
+		i++
 	}
-	return nouns[i:]
+	return nouns[i:], lastDroppedPlural
 }
 
 func joinPascal(tokens []string) string {
@@ -559,22 +586,18 @@ func nonParamSegments(path string) []string {
 	return out
 }
 
-// docLines renders the operation's summary + description as godoc
-// lines with the generator's preferred structure.
+// docLines returns the godoc lines for an operation. We keep only
+// the summary line — descriptions in Revolut's specs run to many
+// paragraphs of prose that bloat method godocs without adding
+// signal beyond the operation's name + URL.
 func docLines(op *openapi3.Operation) []string {
-	var out []string
 	if s := firstLine(op.Summary); s != "" {
-		out = append(out, s)
+		return []string{s}
 	}
-	if d := op.Description; d != "" {
-		if len(out) > 0 {
-			out = append(out, "")
-		}
-		for _, line := range strings.Split(d, "\n") {
-			out = append(out, strings.TrimRight(line, " \t"))
-		}
+	if d := firstLine(op.Description); d != "" {
+		return []string{d}
 	}
-	return out
+	return nil
 }
 
 func deprecationReason(op *openapi3.Operation) string {
@@ -622,14 +645,27 @@ func pickOperation(item *openapi3.PathItem, verb string) *openapi3.Operation {
 	return nil
 }
 
-func pickServerOverride(op *openapi3.Operation, item *openapi3.PathItem) string {
+// pickServerOverride returns the operation's server URL only when
+// it differs from the document-level default. Many specs (Revolut
+// included) repeat the root server on every PathItem; that's
+// noise, not an override, and we'd otherwise inject the full URL
+// into every emitted call.
+func (b *Builder) pickServerOverride(op *openapi3.Operation, item *openapi3.PathItem) string {
+	candidate := ""
 	if op.Servers != nil && len(*op.Servers) > 0 {
-		return (*op.Servers)[0].URL
+		candidate = (*op.Servers)[0].URL
+	} else if len(item.Servers) > 0 {
+		candidate = item.Servers[0].URL
 	}
-	if len(item.Servers) > 0 {
-		return item.Servers[0].URL
+	if candidate == "" {
+		return ""
 	}
-	return ""
+	for _, root := range b.doc.Servers {
+		if root != nil && root.URL == candidate {
+			return ""
+		}
+	}
+	return candidate
 }
 
 // pickRawContent chooses the preferred non-JSON content entry for a

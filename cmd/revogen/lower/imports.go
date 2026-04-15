@@ -56,6 +56,15 @@ func FileImports(spec *ir.Spec) map[string][]string {
 		if d.ExtraMap != nil {
 			typesSet["encoding/json"] = struct{}{}
 		}
+		if d.QueryParamsEncoder {
+			typesSet["net/url"] = struct{}{}
+			// Field-type-driven additions: strconv for ints/bools,
+			// time for time.Time, fmt only as a fallback for shapes
+			// the explicit cases miss.
+			for _, f := range d.Fields {
+				addQueryFieldImports(f.Type, typesSet)
+			}
+		}
 	}
 	out["gen_types.go"] = ir.SortedImports(typesSet)
 
@@ -72,14 +81,13 @@ func FileImports(spec *ir.Spec) map[string][]string {
 		needsIter := false
 		for _, m := range r.Methods {
 			if len(m.PathParams) > 0 {
+				// renderPathExpr emits url.PathEscape(...) for each
+				// path param.
 				needsURL = true
 				needsErrors = true
 			}
 			if len(m.Validators) > 0 {
 				needsErrors = true
-			}
-			if m.OptsParam != nil {
-				needsURL = true
 			}
 			collectMethodImports(m, set)
 			if m.Pagination != nil {
@@ -111,6 +119,39 @@ func FileImports(spec *ir.Spec) map[string][]string {
 	out["gen_client.go"] = []string{transportPkg}
 
 	return out
+}
+
+// addQueryFieldImports examines a query-param field's Go type and
+// records the stdlib packages its serialiser needs. Mirrors the
+// switch in emit.queryStringify so the import list never lies.
+func addQueryFieldImports(t *ir.Type, set map[string]struct{}) {
+	if t == nil {
+		return
+	}
+	if t.IsSlice() {
+		addQueryFieldImports(t.Elem, set)
+		return
+	}
+	if t.IsPointer() {
+		addQueryFieldImports(t.Elem, set)
+		return
+	}
+	if t.Kind == ir.KindPrim {
+		switch t.Name {
+		case "int", "int32", "int64", "bool":
+			set["strconv"] = struct{}{}
+		case "time.Time":
+			set["time"] = struct{}{}
+		}
+		return
+	}
+	if t.IsNamed() {
+		// Named string-backed types stringify with `string(v)`; no
+		// imports.
+		return
+	}
+	// Unknown / map / raw: fall back to fmt.Sprint.
+	set["fmt"] = struct{}{}
 }
 
 func collectDeclImports(d *ir.Decl, set map[string]struct{}) {

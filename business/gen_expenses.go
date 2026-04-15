@@ -7,8 +7,6 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
-	"strconv"
-	"time"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -18,50 +16,10 @@ type Expenses struct {
 	t *transport.Transport
 }
 
-// GetExpensesParams query parameters for: Retrieve a list of expenses
-type GetExpensesParams struct {
-	// The date and time to retrieve the expenses from, including this date-time.
-	From time.Time `json:"from,omitempty"`
-
-	// The date and time to retrieve the expenses to, excluding this date-time.
-	To time.Time `json:"to,omitempty"`
-
-	// The maximum number of the expenses to retrieve per page.
-	Count int `json:"count,omitempty"`
-
-	// Retrieves the expenses in the specified state.
-	State string `json:"state,omitempty"`
-
-	// The type of the transaction related to the expense.
-	TransactionType string `json:"transaction_type,omitempty"`
-}
-
-func (p *GetExpensesParams) encode() url.Values {
-	if p == nil {
-		return nil
-	}
-	q := url.Values{}
-	if !p.From.IsZero() {
-		q.Set("from", p.From.UTC().Format(time.RFC3339Nano))
-	}
-	if !p.To.IsZero() {
-		q.Set("to", p.To.UTC().Format(time.RFC3339Nano))
-	}
-	if p.Count != 0 {
-		q.Set("count", strconv.FormatInt(int64(p.Count), 10))
-	}
-	if p.State != "" {
-		q.Set("state", p.State)
-	}
-	if p.TransactionType != "" {
-		q.Set("transaction_type", p.TransactionType)
-	}
-	return q
-}
-
 // List retrieve a list of expenses
 //
 // Docs: https://developer.revolut.com/docs/business/get-expenses
+// Required scopes: READ
 func (s *Expenses) List(ctx context.Context, opts *GetExpensesParams) ([]Expense, error) {
 	path := "expenses"
 	if q := opts.encode().Encode(); q != "" {
@@ -74,10 +32,11 @@ func (s *Expenses) List(ctx context.Context, opts *GetExpensesParams) ([]Expense
 	return out, nil
 }
 
-// Get retrieve an expense
+// GetExpense retrieve an expense
 //
 // Docs: https://developer.revolut.com/docs/business/get-expense
-func (s *Expenses) Get(ctx context.Context, expenseID string) (*Expense, error) {
+// Required scopes: READ
+func (s *Expenses) GetExpense(ctx context.Context, expenseID string) (*Expense, error) {
 	if expenseID == "" {
 		return nil, errors.New("business: expense_id is required")
 	}
@@ -88,10 +47,11 @@ func (s *Expenses) Get(ctx context.Context, expenseID string) (*Expense, error) 
 	return &out, nil
 }
 
-// ListContent retrieve a receipt related to an expense
+// GetExpenseReceipt retrieve a receipt related to an expense
 //
 // Docs: https://developer.revolut.com/docs/business/get-expense-receipt
-func (s *Expenses) ListContent(ctx context.Context, expenseID string, receiptID string) ([]byte, error) {
+// Required scopes: READ
+func (s *Expenses) GetExpenseReceipt(ctx context.Context, expenseID string, receiptID string) ([]byte, error) {
 	if expenseID == "" {
 		return nil, errors.New("business: expense_id is required")
 	}

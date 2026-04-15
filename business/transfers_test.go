@@ -99,7 +99,7 @@ func TestTransfers_Pay(t *testing.T) {
 		_, _ = io.WriteString(w, `{"id":"tx2","state":"pending","created_at":"2026-04-15T10:00:00Z"}`)
 	}))
 
-	got, err := client.Transfers.Pay(context.Background(), TransactionPaymentRequest{
+	got, err := client.Transfers.CreatePayment(context.Background(), TransactionPaymentRequest{
 		RequestID:    "req-2",
 		AccountID:    "src",
 		Receiver:     PaymentReceiver{CounterpartyID: "cp-1", AccountID: "acct-1"},
@@ -134,7 +134,7 @@ func TestTransfers_Pay_Validation(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			if _, err := client.Transfers.Pay(context.Background(), tc.req); err == nil {
+			if _, err := client.Transfers.CreatePayment(context.Background(), tc.req); err == nil {
 				t.Fatal("want error, got nil")
 			}
 		})

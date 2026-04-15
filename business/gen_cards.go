@@ -4,12 +4,10 @@ package business
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"iter"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -19,32 +17,10 @@ type Cards struct {
 	t *transport.Transport
 }
 
-// GetCardsParams query parameters for: Retrieve a list of cards
-type GetCardsParams struct {
-	// Retrieves cards with `created_at` < `created_before`.
-	CreatedBefore time.Time `json:"created_before,omitempty"`
-
-	// The maximum number of cards to return per page.
-	Limit json.Number `json:"limit,omitempty"`
-}
-
-func (p *GetCardsParams) encode() url.Values {
-	if p == nil {
-		return nil
-	}
-	q := url.Values{}
-	if !p.CreatedBefore.IsZero() {
-		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
-	}
-	if p.Limit != "" {
-		q.Set("limit", string(p.Limit))
-	}
-	return q
-}
-
 // List retrieve a list of cards
 //
 // Docs: https://developer.revolut.com/docs/business/get-cards
+// Required scopes: READ
 func (s *Cards) List(ctx context.Context, opts *GetCardsParams) ([]CardResponse, error) {
 	path := "cards"
 	if q := opts.encode().Encode(); q != "" {
@@ -58,12 +34,7 @@ func (s *Cards) List(ctx context.Context, opts *GetCardsParams) ([]CardResponse,
 }
 
 // ListAll iterates every page of List, yielding one CardResponse per
-// step. The iterator terminates when the underlying endpoint signals
-// an empty page. Break out of the loop to stop early.
-//
-// Pass nil for opts to accept the server's defaults on the first page.
-// A non-nil opts is copied internally so the caller's struct is not
-// mutated as pages advance.
+// step. Break out of the loop to stop early.
 func (s *Cards) ListAll(ctx context.Context, opts *GetCardsParams) iter.Seq2[CardResponse, error] {
 	return func(yield func(CardResponse, error) bool) {
 		var p GetCardsParams
@@ -93,9 +64,13 @@ func (s *Cards) ListAll(ctx context.Context, opts *GetCardsParams) iter.Seq2[Car
 // Create create a card
 //
 // Docs: https://developer.revolut.com/docs/business/create-card
-func (s *Cards) Create(ctx context.Context) (*CardCreatedResponse, error) {
+// Required scopes: WRITE
+func (s *Cards) Create(ctx context.Context, req *CardsBody) (*CardCreatedResponse, error) {
+	if req.RequestID == "" {
+		return nil, errors.New("business: CardsBody.request_id is required")
+	}
 	var out CardCreatedResponse
-	if err := s.t.Do(ctx, http.MethodPost, "cards", nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodPost, "cards", req, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -104,6 +79,7 @@ func (s *Cards) Create(ctx context.Context) (*CardCreatedResponse, error) {
 // Get retrieve card details
 //
 // Docs: https://developer.revolut.com/docs/business/get-card
+// Required scopes: READ
 func (s *Cards) Get(ctx context.Context, cardID string) (*CardResponse, error) {
 	if cardID == "" {
 		return nil, errors.New("business: card_id is required")
@@ -118,12 +94,16 @@ func (s *Cards) Get(ctx context.Context, cardID string) (*CardResponse, error) {
 // Update update card settings
 //
 // Docs: https://developer.revolut.com/docs/business/update-card
-func (s *Cards) Update(ctx context.Context, cardID string) (*CardResponse, error) {
+// Required scopes: WRITE
+func (s *Cards) Update(ctx context.Context, cardID string, req *CardsBody) (*CardResponse, error) {
 	if cardID == "" {
 		return nil, errors.New("business: card_id is required")
 	}
+	if req.RequestID == "" {
+		return nil, errors.New("business: CardsBody.request_id is required")
+	}
 	var out CardResponse
-	if err := s.t.Do(ctx, http.MethodPatch, "cards/"+url.PathEscape(cardID), nil, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodPatch, "cards/"+url.PathEscape(cardID), req, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -132,6 +112,7 @@ func (s *Cards) Update(ctx context.Context, cardID string) (*CardResponse, error
 // Delete terminate a card
 //
 // Docs: https://developer.revolut.com/docs/business/delete-card
+// Required scopes: WRITE
 func (s *Cards) Delete(ctx context.Context, cardID string) error {
 	if cardID == "" {
 		return errors.New("business: card_id is required")
@@ -142,6 +123,7 @@ func (s *Cards) Delete(ctx context.Context, cardID string) error {
 // UpdateContacts update card contacts
 //
 // Docs: https://developer.revolut.com/docs/business/update-card-contacts
+// Required scopes: WRITE
 func (s *Cards) UpdateContacts(ctx context.Context, cardID string, req []CardContact) ([]CardContact, error) {
 	if cardID == "" {
 		return nil, errors.New("business: card_id is required")
@@ -153,20 +135,22 @@ func (s *Cards) UpdateContacts(ctx context.Context, cardID string, req []CardCon
 	return out, nil
 }
 
-// Freeze freeze a card
+// FreezeCard freeze a card
 //
 // Docs: https://developer.revolut.com/docs/business/freeze-card
-func (s *Cards) Freeze(ctx context.Context, cardID string) error {
+// Required scopes: WRITE
+func (s *Cards) FreezeCard(ctx context.Context, cardID string) error {
 	if cardID == "" {
 		return errors.New("business: card_id is required")
 	}
 	return s.t.Do(ctx, http.MethodPost, "cards/"+url.PathEscape(cardID)+"/freeze", nil, nil)
 }
 
-// Lock lock a card
+// LockCard lock a card
 //
 // Docs: https://developer.revolut.com/docs/business/lock-card
-func (s *Cards) Lock(ctx context.Context, cardID string) error {
+// Required scopes: WRITE
+func (s *Cards) LockCard(ctx context.Context, cardID string) error {
 	if cardID == "" {
 		return errors.New("business: card_id is required")
 	}
@@ -176,6 +160,7 @@ func (s *Cards) Lock(ctx context.Context, cardID string) error {
 // UpdateReferences update card references
 //
 // Docs: https://developer.revolut.com/docs/business/update-card-references
+// Required scopes: WRITE
 func (s *Cards) UpdateReferences(ctx context.Context, cardID string, req []CardReference) ([]CardReference, error) {
 	if cardID == "" {
 		return nil, errors.New("business: card_id is required")
@@ -187,34 +172,37 @@ func (s *Cards) UpdateReferences(ctx context.Context, cardID string, req []CardR
 	return out, nil
 }
 
-// GetSensitiveDetails retrieve sensitive card details
+// GetSensitiveCardDetails retrieve sensitive card details
 //
 // Docs: https://developer.revolut.com/docs/business/get-sensitive-card-details
-func (s *Cards) GetSensitiveDetails(ctx context.Context, cardID string) (*GetSensitiveCardDetailsResponse, error) {
+// Required scopes: READ_SENSITIVE_CARD_DATA
+func (s *Cards) GetSensitiveCardDetails(ctx context.Context, cardID string) (**CardsResponse, error) {
 	if cardID == "" {
 		return nil, errors.New("business: card_id is required")
 	}
-	var out GetSensitiveCardDetailsResponse
+	var out *CardsResponse
 	if err := s.t.Do(ctx, http.MethodGet, "cards/"+url.PathEscape(cardID)+"/sensitive-details", nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-// Unfreeze unfreeze a card
+// UnfreezeCard unfreeze a card
 //
 // Docs: https://developer.revolut.com/docs/business/unfreeze-card
-func (s *Cards) Unfreeze(ctx context.Context, cardID string) error {
+// Required scopes: WRITE
+func (s *Cards) UnfreezeCard(ctx context.Context, cardID string) error {
 	if cardID == "" {
 		return errors.New("business: card_id is required")
 	}
 	return s.t.Do(ctx, http.MethodPost, "cards/"+url.PathEscape(cardID)+"/unfreeze", nil, nil)
 }
 
-// Unlock unlock a card
+// UnlockCard unlock a card
 //
 // Docs: https://developer.revolut.com/docs/business/unlock-card
-func (s *Cards) Unlock(ctx context.Context, cardID string) error {
+// Required scopes: WRITE
+func (s *Cards) UnlockCard(ctx context.Context, cardID string) error {
 	if cardID == "" {
 		return errors.New("business: card_id is required")
 	}

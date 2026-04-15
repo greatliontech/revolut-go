@@ -16,28 +16,39 @@ type Simulations struct {
 	t *transport.Transport
 }
 
-// Topup simulate an account top-up (Sandbox only)
+// SimulateTopUp simulate an account top-up (Sandbox only)
 //
 // Docs: https://developer.revolut.com/docs/business/simulate-top-up
-func (s *Simulations) Topup(ctx context.Context) (*SimulateTopUpResponse, error) {
-	var out SimulateTopUpResponse
-	if err := s.t.Do(ctx, http.MethodPost, "sandbox/topup", nil, &out); err != nil {
+// Required scopes: WRITE
+func (s *Simulations) SimulateTopUp(ctx context.Context, req *SimulationsBody) (**SimulationsResponse, error) {
+	if req.AccountID == "" {
+		return nil, errors.New("business: SimulationsBody.account_id is required")
+	}
+	if req.Amount == "" {
+		return nil, errors.New("business: SimulationsBody.amount is required")
+	}
+	if req.Currency == "" {
+		return nil, errors.New("business: SimulationsBody.currency is required")
+	}
+	var out *SimulationsResponse
+	if err := s.t.Do(ctx, http.MethodPost, "sandbox/topup", req, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-// CreateTransaction simulate a transfer state update (Sandbox only)
+// SimulateTransferStateUpdate simulate a transfer state update (Sandbox only)
 //
 // Docs: https://developer.revolut.com/docs/business/simulate-transfer-state-update
-func (s *Simulations) CreateTransaction(ctx context.Context, id string, action string) (*SimulateTransferStateUpdateResponse, error) {
+// Required scopes: WRITE
+func (s *Simulations) SimulateTransferStateUpdate(ctx context.Context, id string, action string) (**SimulationsResponse, error) {
 	if id == "" {
 		return nil, errors.New("business: id is required")
 	}
 	if action == "" {
 		return nil, errors.New("business: action is required")
 	}
-	var out SimulateTransferStateUpdateResponse
+	var out *SimulationsResponse
 	if err := s.t.Do(ctx, http.MethodPost, "sandbox/transactions/"+url.PathEscape(id)+"/"+url.PathEscape(action), nil, &out); err != nil {
 		return nil, err
 	}

@@ -334,31 +334,24 @@ func TestSandbox_AccountNameValidation(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	req := business.ValidateAccountNameRequestUK{
+	// The spec uses discriminator.mapping without propertyName: it's
+	// editorial grouping, not a wire-tagged union. The generator
+	// flattens variants into a single ValidateAccountNameRequest /
+	// Response struct; callers fill the fields relevant to their
+	// counterparty's country.
+	req := business.ValidateAccountNameRequest{
 		AccountNo:   "12345678",
 		SortCode:    "04-00-75",
 		CompanyName: "John Smith Co.",
 	}
-	got, err := client.Counterparties.AccountNameValidation(ctx, req)
+	got, err := client.Counterparties.ValidateAccountName(ctx, req)
 	if err != nil {
-		t.Fatalf("AccountNameValidation: %v", err)
+		t.Fatalf("ValidateAccountName: %v", err)
 	}
 	if got == nil {
 		t.Fatal("nil response")
 	}
-	// Verify the probe decoder returned a concrete variant that
-	// implements the union interface. Variants share structure, so the
-	// decoder may select any of them; what matters is that a typed
-	// variant came back (not a map).
-	switch v := got.(type) {
-	case business.ValidateAccountNameResponseUK,
-		business.ValidateAccountNameResponseAU,
-		business.ValidateAccountNameResponseRO,
-		business.ValidateAccountNameResponseEUR:
-		t.Logf("variant %T: %+v", v, v)
-	default:
-		t.Fatalf("unknown variant %T", v)
-	}
+	t.Logf("response: %+v", got)
 }
 
 func TestSandbox_AccountsGet(t *testing.T) {

@@ -56,7 +56,7 @@ func TestRequiredFieldValidation_Nested(t *testing.T) {
 	}))
 	// ExchangeRequest requires .from.{account_id, currency} — exercise
 	// the nested-struct recursion path in walkRequired.
-	_, err := client.ForeignExchange.Exchange(context.Background(), ExchangeRequest{
+	_, err := client.ForeignExchange.ExchangeMoney(context.Background(), ExchangeRequest{
 		RequestID: "r",
 		From:      ExchangePartFrom{Currency: "GBP"}, // missing account_id
 		To:        ExchangePartTo{AccountID: "t", Currency: "EUR"},
@@ -175,8 +175,8 @@ func TestUnionRequestMarshal(t *testing.T) {
 		// overlap — it's enough that decoding succeeds.
 		_, _ = io.WriteString(w, `{"result_code":"matched"}`)
 	}))
-	_, err := client.Counterparties.AccountNameValidation(context.Background(),
-		ValidateAccountNameRequestUK{
+	_, err := client.Counterparties.ValidateAccountName(context.Background(),
+		ValidateAccountNameRequest{
 			AccountNo:   "1234",
 			SortCode:    "11-22-33",
 			CompanyName: "Widgets Ltd",

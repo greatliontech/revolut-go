@@ -34,6 +34,7 @@ type Decl struct {
 	UnionDispatch       *UnionLink   // non-nil when the struct is a wire-tagged variant
 	FormEncoder         bool         // emit encodeForm() helper
 	MultipartEncoder    bool         // emit encodeMultipart() helper
+	QueryParamsEncoder  bool         // emit encode() url.Values for an *<Op>Params struct
 	ExtraMap            *Type        // map[string]T catch-all when properties + additionalProperties coexist
 
 	// DeclEnum ------------------------------------------------------

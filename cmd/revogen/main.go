@@ -1,15 +1,18 @@
-// revogen generates the Revolut Go SDK resource files from the vendored
-// OpenAPI specifications.
+// revogen generates the Revolut Go SDK resource files from the
+// vendored OpenAPI specifications.
 //
 // Pipeline:
 //
-//  1. Load and $ref-resolve the spec via kin-openapi.
-//  2. Build a normalized IR: operations grouped into resources by tag,
-//     schemas flattened to a deterministic list of Go-friendly type
-//     definitions.
-//  3. Render Go source via text/template and go/format, writing one
-//     gen_<resource>.go file per resource plus a shared gen_types.go
-//     for types referenced by more than one resource.
+//  1. loader/  — read YAML, scrub Revolut-specific violations, hand
+//     the cleaned bytes to kin-openapi.
+//  2. build/   — single-entry resolveType walks the openapi3.T and
+//     produces an ir.Spec with every Decl, Resource, Method,
+//     Callback, and the picked error type.
+//  3. lower/   — IR-on-IR passes: union variant wiring,
+//     readonly-field stripping for shared schemas, validators
+//     emission, name-collision resolution, per-file imports.
+//  4. emit/    — mechanical text rendering of the final IR into
+//     gen_*.go source files, gofmt-validated.
 //
 // Run via `task gen` (see Taskfile.yml).
 package main
@@ -22,6 +25,12 @@ import (
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
+
+	"github.com/greatliontech/revolut-go/cmd/revogen/build"
+	"github.com/greatliontech/revolut-go/cmd/revogen/emit"
+	"github.com/greatliontech/revolut-go/cmd/revogen/ir"
+	"github.com/greatliontech/revolut-go/cmd/revogen/loader"
+	"github.com/greatliontech/revolut-go/cmd/revogen/lower"
 )
 
 type flags struct {
@@ -69,15 +78,15 @@ func main() {
 }
 
 func run(f flags) error {
-	doc, err := loadSpec(f.spec)
+	doc, err := loader.Load(f.spec)
 	if err != nil {
 		return fmt.Errorf("load spec: %w", err)
 	}
 	if f.verbose {
 		summarize(doc)
 	}
-	spec, err := buildSpec(doc, buildConfig{
-		PackageName:       f.pkg,
+	spec, err := build.FromOpenAPI(doc, build.Config{
+		Package:           f.pkg,
 		ResourceAllow:     f.resources,
 		IncludeDeprecated: f.includeDeprecated,
 		ErrPrefix:         f.errPrefix,
@@ -86,29 +95,33 @@ func run(f flags) error {
 	if err != nil {
 		return fmt.Errorf("build IR: %w", err)
 	}
+	lower.Unions(spec)
+	lower.ReadOnly(spec)
+	lower.Validators(spec)
+	lower.ResolveNames(spec)
 	if f.verbose {
 		dumpIR(spec)
 	}
-	if err := emit(spec, f.out); err != nil {
+	if err := emit.Spec(spec, f.out); err != nil {
 		return fmt.Errorf("emit: %w", err)
 	}
 	return nil
 }
 
-func dumpIR(spec *Spec) {
+func dumpIR(spec *ir.Spec) {
 	fmt.Fprintf(os.Stderr, "\nnormalized IR:\n")
-	fmt.Fprintf(os.Stderr, "  %d resources, %d named types\n", len(spec.Resources), len(spec.Types))
+	fmt.Fprintf(os.Stderr, "  %d resources, %d decls, %d callbacks\n",
+		len(spec.Resources), len(spec.Decls), len(spec.Callbacks))
 	for _, r := range spec.Resources {
-		fmt.Fprintf(os.Stderr, "  resource %s (%d ops)\n", r.GoName, len(r.Ops))
-		for _, op := range r.Ops {
-			fmt.Fprintf(os.Stderr, "    %s %-7s %-40s req=%-20s resp=%s\n",
-				op.GoMethod, op.HTTPMethod, op.PathTemplate, op.RequestType, op.ResponseType)
+		fmt.Fprintf(os.Stderr, "  resource %s (%d methods)\n", r.Name, len(r.Methods))
+		for _, m := range r.Methods {
+			fmt.Fprintf(os.Stderr, "    %s\n", m.Name)
 		}
 	}
 }
 
-// summarize prints operation counts grouped by tag to stderr. Used to
-// verify the loader sees the spec the way the generator will.
+// summarize prints operation counts grouped by tag to stderr. Used
+// to verify the loader sees the spec the way the generator will.
 func summarize(doc *openapi3.T) {
 	byTag := map[string]int{}
 	total := 0

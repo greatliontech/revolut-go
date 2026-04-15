@@ -38,6 +38,8 @@ func defaultInitialisms() map[string]bool {
 		"IP":    true,
 		"TLS":   true,
 		"FAPI":  true,
+		"BSB":   true,
+		"COP":   true,
 
 		// Region / discriminator codes observed across vendored specs.
 		"UK":  true,

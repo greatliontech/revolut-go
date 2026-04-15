@@ -142,10 +142,20 @@ func (b *Builder) limitPagination(m *ir.Method, params *ir.Decl) *ir.Pagination 
 	}
 	hasLimit := false
 	var pageField string
+	var limitField string
 	for _, f := range params.Fields {
 		switch f.JSONName {
 		case "limit", "per_page", "page_size":
-			hasLimit = true
+			// Only int-typed limit fields support the
+			// "exhaust on a short page" heuristic. A
+			// json.Number-shaped limit doesn't compare against
+			// `int64(len(resp))` cleanly, so we skip pagination
+			// for that case rather than emit broken iterator
+			// code.
+			if isIntType(f.Type) {
+				hasLimit = true
+				limitField = f.JSONName
+			}
 		case "page", "offset":
 			pageField = f.GoName
 		}
@@ -156,9 +166,28 @@ func (b *Builder) limitPagination(m *ir.Method, params *ir.Decl) *ir.Pagination 
 	return &ir.Pagination{
 		Shape:         ir.PaginationLimit,
 		ItemType:      itemType,
-		PageSizeParam: "limit",
+		PageSizeParam: limitField,
 		PageParam:     pageField,
 	}
+}
+
+// isIntType reports whether t is one of Go's integer primitives,
+// optionally pointer-wrapped.
+func isIntType(t *ir.Type) bool {
+	if t == nil {
+		return false
+	}
+	if t.IsPointer() {
+		t = t.Elem
+	}
+	if t == nil || t.Kind != ir.KindPrim {
+		return false
+	}
+	switch t.Name {
+	case "int", "int32", "int64":
+		return true
+	}
+	return false
 }
 
 // isTimeType tests whether a Type expresses a time value (plain or

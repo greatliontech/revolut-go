@@ -8,8 +8,6 @@ import (
 	"iter"
 	"net/http"
 	"net/url"
-	"strconv"
-	"time"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -19,38 +17,10 @@ type PayoutLinks struct {
 	t *transport.Transport
 }
 
-// GetPayoutLinksParams query parameters for: Retrieve a list of payout links
-type GetPayoutLinksParams struct {
-	// Retrieves links in the specified state(s). Possible states are:
-	State []PayoutLinkState `json:"state,omitempty"`
-
-	// Retrieves links with `created_at` < `created_before`.
-	CreatedBefore time.Time `json:"created_before,omitempty"`
-
-	// The maximum number of links returned per page.
-	Limit int `json:"limit,omitempty"`
-}
-
-func (p *GetPayoutLinksParams) encode() url.Values {
-	if p == nil {
-		return nil
-	}
-	q := url.Values{}
-	for _, v := range p.State {
-		q.Add("state", string(v))
-	}
-	if !p.CreatedBefore.IsZero() {
-		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
-	}
-	if p.Limit != 0 {
-		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
-	}
-	return q
-}
-
 // List retrieve a list of payout links
 //
 // Docs: https://developer.revolut.com/docs/business/get-payout-links
+// Required scopes: READ
 func (s *PayoutLinks) List(ctx context.Context, opts *GetPayoutLinksParams) ([]PayoutLink, error) {
 	path := "payout-links"
 	if q := opts.encode().Encode(); q != "" {
@@ -64,12 +34,7 @@ func (s *PayoutLinks) List(ctx context.Context, opts *GetPayoutLinksParams) ([]P
 }
 
 // ListAll iterates every page of List, yielding one PayoutLink per
-// step. The iterator terminates when the underlying endpoint signals
-// an empty page. Break out of the loop to stop early.
-//
-// Pass nil for opts to accept the server's defaults on the first page.
-// A non-nil opts is copied internally so the caller's struct is not
-// mutated as pages advance.
+// step. Break out of the loop to stop early.
 func (s *PayoutLinks) ListAll(ctx context.Context, opts *GetPayoutLinksParams) iter.Seq2[PayoutLink, error] {
 	return func(yield func(PayoutLink, error) bool) {
 		var p GetPayoutLinksParams
@@ -99,6 +64,7 @@ func (s *PayoutLinks) ListAll(ctx context.Context, opts *GetPayoutLinksParams) i
 // Create create a payout link
 //
 // Docs: https://developer.revolut.com/docs/business/create-payout-link
+// Required scopes: PAY, WRITE
 func (s *PayoutLinks) Create(ctx context.Context, req CreatePayoutLinkRequest) (*PayoutLinkInitialProps, error) {
 	if req.AccountID == "" {
 		return nil, errors.New("business: CreatePayoutLinkRequest.account_id is required")
@@ -128,6 +94,7 @@ func (s *PayoutLinks) Create(ctx context.Context, req CreatePayoutLinkRequest) (
 // Get retrieve a payout link
 //
 // Docs: https://developer.revolut.com/docs/business/get-payout-link
+// Required scopes: READ
 func (s *PayoutLinks) Get(ctx context.Context, payoutLinkID string) (*PayoutLink, error) {
 	if payoutLinkID == "" {
 		return nil, errors.New("business: payout_link_id is required")
@@ -139,10 +106,11 @@ func (s *PayoutLinks) Get(ctx context.Context, payoutLinkID string) (*PayoutLink
 	return &out, nil
 }
 
-// Cancel cancel a payout link
+// CancelPayoutLink cancel a payout link
 //
 // Docs: https://developer.revolut.com/docs/business/cancel-payout-link
-func (s *PayoutLinks) Cancel(ctx context.Context, payoutLinkID string) error {
+// Required scopes: READ, WRITE
+func (s *PayoutLinks) CancelPayoutLink(ctx context.Context, payoutLinkID string) error {
 	if payoutLinkID == "" {
 		return errors.New("business: payout_link_id is required")
 	}
