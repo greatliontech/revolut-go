@@ -76,6 +76,13 @@ type Builder struct {
 	// unknown response header the allowlist doesn't cover) without
 	// panicking mid-walk.
 	buildErr error
+
+	// currentBuildSpec is the spec name of the component schema
+	// whose Decl is currently under construction. resolveNamedRef
+	// consults it to break direct self-references by wrapping the
+	// ref in a pointer — `type Node struct { Child Node }` is
+	// invalid Go, `type Node struct { Child *Node }` is the fix.
+	currentBuildSpec string
 }
 
 // resolvedName returns the Go identifier a spec schema name resolves

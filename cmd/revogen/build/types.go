@@ -81,7 +81,7 @@ func (b *Builder) resolveType(ref *openapi3.SchemaRef, ctx Context) *ir.Type {
 func (b *Builder) resolveNamedRef(specName string) *ir.Type {
 	target := b.doc.Components.Schemas[specName]
 	if target == nil || target.Value == nil {
-		return ir.Named(b.resolvedName(specName))
+		return b.maybePointerForSelfRef(specName, ir.Named(b.resolvedName(specName)))
 	}
 	v := target.Value
 	if isArray(v) {
@@ -95,7 +95,22 @@ func (b *Builder) resolveNamedRef(specName string) *ir.Type {
 		}
 		return ir.Slice(elem)
 	}
-	return ir.Named(b.resolvedName(specName))
+	return b.maybePointerForSelfRef(specName, ir.Named(b.resolvedName(specName)))
+}
+
+// maybePointerForSelfRef wraps t in a pointer when specName is the
+// schema whose Decl is currently under construction. Breaks direct
+// recursive types that would otherwise compile into `type X struct
+// { Field X }` — invalid per Go's size rule. Slice/map references
+// don't need pointer indirection because they're already indirect.
+func (b *Builder) maybePointerForSelfRef(specName string, t *ir.Type) *ir.Type {
+	if b.currentBuildSpec == "" || specName != b.currentBuildSpec {
+		return t
+	}
+	if t.IsPointer() || t.IsSlice() || t.Kind == ir.KindMap {
+		return t
+	}
+	return ir.Pointer(t)
 }
 
 // resolveInlineSchema handles every non-$ref shape. allOf is merged

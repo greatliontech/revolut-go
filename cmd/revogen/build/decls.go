@@ -37,7 +37,9 @@ func (b *Builder) buildDecls() {
 			// already resolved).
 			continue
 		}
+		b.currentBuildSpec = specName
 		decl := b.declFromSchema(goName, ref.Value)
+		b.currentBuildSpec = ""
 		if decl == nil {
 			continue
 		}

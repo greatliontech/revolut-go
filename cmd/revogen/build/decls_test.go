@@ -172,6 +172,50 @@ func TestBuildDecls_EnumDedupsByValue(t *testing.T) {
 	}
 }
 
+// TestBuildDecls_DirectSelfReferenceWrapsPointer: a schema that
+// references itself by $ref on a property would emit an invalid
+// recursive Go type (`type Node struct { Child Node }`). The
+// generator must wrap the self-ref in a pointer at the cycle
+// break so the type is finite-size and compiles.
+func TestBuildDecls_DirectSelfReferenceWrapsPointer(t *testing.T) {
+	b := newTestBuilder()
+	// Seed Node first with an inline value, then mutate its
+	// properties to include a self-ref whose Value is already
+	// populated — production-loaded specs have .Value resolved by
+	// kin-openapi, which the hand-built test scaffolding has to
+	// mimic explicitly.
+	nodeSchema := &openapi3.Schema{
+		Type: &openapi3.Types{"object"},
+		Properties: openapi3.Schemas{
+			"name": inline(primSchema("string", "")),
+		},
+	}
+	nodeRef := inline(nodeSchema)
+	seedSchemas(b, "Node", nodeRef)
+	nodeSchema.Properties["child"] = &openapi3.SchemaRef{
+		Ref:   "#/components/schemas/Node",
+		Value: nodeSchema,
+	}
+	b.buildDecls()
+	d := b.declByName["Node"]
+	if d == nil {
+		t.Fatal("no Node decl")
+	}
+	var child *ir.Field
+	for _, f := range d.Fields {
+		if f.JSONName == "child" {
+			child = f
+			break
+		}
+	}
+	if child == nil {
+		t.Fatal("no child field")
+	}
+	if !child.Type.IsPointer() {
+		t.Errorf("self-reference not wrapped in pointer: %s", child.Type.GoExpr())
+	}
+}
+
 func TestBuildDecls_ReadOnlyField(t *testing.T) {
 	b := newTestBuilder()
 	prop := inline(primSchema("string", "uuid"))
