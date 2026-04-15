@@ -9,6 +9,13 @@ import (
 	"github.com/greatliontech/revolut-go/internal/core"
 )
 
+// hasKey reports whether every required JSON key of a union variant
+// is present on the wire. Used by the generated decode<Union> helpers.
+func hasKey(m map[string]json.RawMessage, key string) bool {
+	_, ok := m[key]
+	return ok
+}
+
 type Account struct {
 	// The current balance on the account.
 	Balance json.Number `json:"balance"`
@@ -2083,7 +2090,57 @@ type UpdateWebhookRequest struct {
 	URL URL `json:"url,omitempty"`
 }
 
-type ValidateAccountNameRequest = any
+// Variants:
+//   - AU → ValidateAccountNameRequestAu
+//   - EUR → ValidateAccountNameRequestEur
+//   - RO → ValidateAccountNameRequestRo
+//   - UK → ValidateAccountNameRequestUk
+type ValidateAccountNameRequest interface {
+	isValidateAccountNameRequest()
+}
+
+// decodeValidateAccountNameRequest parses a JSON payload into one of the union variants.
+// Variants are tried in discriminator-mapping order. If none uniquely
+// match by required-field presence the first mapped variant is used.
+func decodeValidateAccountNameRequest(data []byte) (ValidateAccountNameRequest, error) {
+	var probe map[string]json.RawMessage
+	if err := json.Unmarshal(data, &probe); err != nil {
+		return nil, err
+	}
+	if hasKey(probe, "account_no") && hasKey(probe, "bsb") {
+		var out ValidateAccountNameRequestAu
+		if err := json.Unmarshal(data, &out); err != nil {
+			return nil, err
+		}
+		return out, nil
+	}
+	if hasKey(probe, "iban") && hasKey(probe, "recipient_country") && hasKey(probe, "recipient_currency") {
+		var out ValidateAccountNameRequestEur
+		if err := json.Unmarshal(data, &out); err != nil {
+			return nil, err
+		}
+		return out, nil
+	}
+	if hasKey(probe, "iban") && hasKey(probe, "recipient_country") && hasKey(probe, "recipient_currency") {
+		var out ValidateAccountNameRequestRo
+		if err := json.Unmarshal(data, &out); err != nil {
+			return nil, err
+		}
+		return out, nil
+	}
+	if hasKey(probe, "account_no") && hasKey(probe, "sort_code") {
+		var out ValidateAccountNameRequestUk
+		if err := json.Unmarshal(data, &out); err != nil {
+			return nil, err
+		}
+		return out, nil
+	}
+	var out ValidateAccountNameRequestAu
+	if err := json.Unmarshal(data, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
 
 type ValidateAccountNameRequestAu struct {
 	// The account number of the counterparty.
@@ -2093,6 +2150,8 @@ type ValidateAccountNameRequestAu struct {
 	// The name of the business counterparty.
 	CompanyName string `json:"company_name,omitempty"`
 }
+
+func (ValidateAccountNameRequestAu) isValidateAccountNameRequest() {}
 
 type ValidateAccountNameRequestEur struct {
 	// The BIC (Bank Identifier Code) for the counterparty's account.
@@ -2107,6 +2166,8 @@ type ValidateAccountNameRequestEur struct {
 	RecipientCurrency string `json:"recipient_currency"`
 }
 
+func (ValidateAccountNameRequestEur) isValidateAccountNameRequest() {}
+
 type ValidateAccountNameRequestRo struct {
 	// The BIC (Bank Identifier Code) for the counterparty's account.
 	BIC string `json:"bic,omitempty"`
@@ -2120,6 +2181,8 @@ type ValidateAccountNameRequestRo struct {
 	RecipientCurrency string `json:"recipient_currency"`
 }
 
+func (ValidateAccountNameRequestRo) isValidateAccountNameRequest() {}
+
 type ValidateAccountNameRequestUk struct {
 	// The account number of the counterparty.
 	AccountNo string `json:"account_no"`
@@ -2129,7 +2192,59 @@ type ValidateAccountNameRequestUk struct {
 	SortCode string `json:"sort_code"`
 }
 
-type ValidateAccountNameResponse = any
+func (ValidateAccountNameRequestUk) isValidateAccountNameRequest() {}
+
+// Variants:
+//   - AU → ValidateAccountNameResponseAu
+//   - EUR → ValidateAccountNameResponseEur
+//   - RO → ValidateAccountNameResponseRo
+//   - UK → ValidateAccountNameResponseUk
+type ValidateAccountNameResponse interface {
+	isValidateAccountNameResponse()
+}
+
+// decodeValidateAccountNameResponse parses a JSON payload into one of the union variants.
+// Variants are tried in discriminator-mapping order. If none uniquely
+// match by required-field presence the first mapped variant is used.
+func decodeValidateAccountNameResponse(data []byte) (ValidateAccountNameResponse, error) {
+	var probe map[string]json.RawMessage
+	if err := json.Unmarshal(data, &probe); err != nil {
+		return nil, err
+	}
+	if hasKey(probe, "result_code") {
+		var out ValidateAccountNameResponseAu
+		if err := json.Unmarshal(data, &out); err != nil {
+			return nil, err
+		}
+		return out, nil
+	}
+	if hasKey(probe, "result_code") {
+		var out ValidateAccountNameResponseEur
+		if err := json.Unmarshal(data, &out); err != nil {
+			return nil, err
+		}
+		return out, nil
+	}
+	if hasKey(probe, "result_code") {
+		var out ValidateAccountNameResponseRo
+		if err := json.Unmarshal(data, &out); err != nil {
+			return nil, err
+		}
+		return out, nil
+	}
+	if hasKey(probe, "result_code") {
+		var out ValidateAccountNameResponseUk
+		if err := json.Unmarshal(data, &out); err != nil {
+			return nil, err
+		}
+		return out, nil
+	}
+	var out ValidateAccountNameResponseAu
+	if err := json.Unmarshal(data, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
 
 type ValidateAccountNameResponseAu struct {
 	// The name of the recipient when the account type is business.
@@ -2139,6 +2254,8 @@ type ValidateAccountNameResponseAu struct {
 	// The result of the check.
 	ResultCode ValidateAccountNameResponseAuResultCode `json:"result_code"`
 }
+
+func (ValidateAccountNameResponseAu) isValidateAccountNameResponse() {}
 
 // ValidateAccountNameResponseAuResultCode the result of the check.
 //
@@ -2170,6 +2287,8 @@ type ValidateAccountNameResponseEur struct {
 	// The result of the check.
 	ResultCode ValidateAccountNameResponseEurResultCode `json:"result_code"`
 }
+
+func (ValidateAccountNameResponseEur) isValidateAccountNameResponse() {}
 
 // ValidateAccountNameResponseEurResultCode the result of the check.
 //
@@ -2203,6 +2322,8 @@ type ValidateAccountNameResponseRo struct {
 	ResultCode ValidateAccountNameResponseRoResultCode `json:"result_code"`
 }
 
+func (ValidateAccountNameResponseRo) isValidateAccountNameResponse() {}
+
 // ValidateAccountNameResponseRoResultCode the result of the check.
 //
 // For RO CoP, the API **checks if an account exists for the provided IBAN**.
@@ -2233,6 +2354,8 @@ type ValidateAccountNameResponseUk struct {
 	// The result of the check.
 	ResultCode ValidateAccountNameResponseUkResultCode `json:"result_code"`
 }
+
+func (ValidateAccountNameResponseUk) isValidateAccountNameResponse() {}
 
 // ValidateAccountNameResponseUkResultCode the result of the check.
 //

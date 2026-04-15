@@ -71,6 +71,33 @@ func (b *builder) buildTypes() {
 func (b *builder) typeFromSchema(name string, s *openapi3.Schema) *NamedType {
 	goName := goTypeName(name)
 
+	// Discriminated union. Must be detected before allOf/object fall-through
+	// since Revolut sometimes combines a `discriminator` with an empty-properties
+	// object shape.
+	if s.Discriminator != nil && len(s.Discriminator.Mapping) > 0 {
+		variants := make([]UnionVariant, 0, len(s.Discriminator.Mapping))
+		for _, tag := range sortedKeys(s.Discriminator.Mapping) {
+			ref := s.Discriminator.Mapping[tag].Ref
+			const prefix = "#/components/schemas/"
+			if !strings.HasPrefix(ref, prefix) {
+				continue
+			}
+			variantName := strings.TrimPrefix(ref, prefix)
+			variants = append(variants, UnionVariant{
+				Tag:    tag,
+				GoName: goTypeName(variantName),
+			})
+		}
+		if len(variants) > 0 {
+			return &NamedType{
+				GoName:        goName,
+				Kind:          KindUnion,
+				Doc:           s.Description,
+				UnionVariants: variants,
+			}
+		}
+	}
+
 	// allOf composition: flatten by merging the object branches.
 	if len(s.AllOf) > 0 {
 		merged := mergeAllOf(s)

@@ -15,6 +15,13 @@ func emit(spec *Spec, outDir string) error {
 		return err
 	}
 
+	unionTypes := map[string]bool{}
+	for _, t := range spec.Types {
+		if t.Kind == KindUnion {
+			unionTypes[t.GoName] = true
+		}
+	}
+
 	// gen_types.go: every named type.
 	typesPath := filepath.Join(outDir, "gen_types.go")
 	if err := writeFormatted(typesPath, emitTypes(spec)); err != nil {
@@ -25,7 +32,7 @@ func emit(spec *Spec, outDir string) error {
 	for _, r := range spec.Resources {
 		name := "gen_" + strings.ToLower(r.GoName) + ".go"
 		path := filepath.Join(outDir, name)
-		if err := writeFormatted(path, emitResource(spec, r)); err != nil {
+		if err := writeFormatted(path, emitResource(spec, r, unionTypes)); err != nil {
 			return fmt.Errorf("emit %s: %w", r.GoName, err)
 		}
 	}
@@ -80,6 +87,10 @@ func emitTypes(spec *Spec) string {
 		if t.Kind == KindAlias && strings.HasPrefix(t.AliasTarget, "core.") {
 			needsCore = true
 		}
+		if t.Kind == KindUnion {
+			// Union decoder helpers use encoding/json to probe variants.
+			needsJSON = true
+		}
 		for _, f := range t.Fields {
 			if strings.Contains(f.GoType, "json.Number") {
 				needsJSON = true
@@ -90,6 +101,18 @@ func emitTypes(spec *Spec) string {
 			if strings.Contains(f.GoType, "core.") {
 				needsCore = true
 			}
+		}
+	}
+
+	// Index unions by the variant structs they claim, so we can emit a
+	// marker method right after each variant's struct declaration.
+	unionMarkers := map[string][]string{} // variantGoName -> []unionGoName
+	for _, t := range spec.Types {
+		if t.Kind != KindUnion {
+			continue
+		}
+		for _, v := range t.UnionVariants {
+			unionMarkers[v.GoName] = append(unionMarkers[v.GoName], t.GoName)
 		}
 	}
 
@@ -108,13 +131,38 @@ func emitTypes(spec *Spec) string {
 	}
 	buf.WriteString(")\n\n")
 
+	typesByName := map[string]*NamedType{}
+	hasUnion := false
 	for _, t := range spec.Types {
-		writeType(&buf, t)
+		typesByName[t.GoName] = t
+		if t.Kind == KindUnion {
+			hasUnion = true
+		}
+	}
+	if hasUnion {
+		buf.WriteString("// hasKey reports whether every required JSON key of a union variant\n")
+		buf.WriteString("// is present on the wire. Used by the generated decode<Union> helpers.\n")
+		buf.WriteString("func hasKey(m map[string]json.RawMessage, key string) bool {\n")
+		buf.WriteString("\t_, ok := m[key]\n")
+		buf.WriteString("\treturn ok\n")
+		buf.WriteString("}\n\n")
+	}
+
+	for _, t := range spec.Types {
+		writeType(&buf, t, typesByName)
+		// Emit marker methods on variant structs so they implement
+		// any unions they belong to. Placed next to the struct so
+		// it's discoverable via godoc.
+		if t.Kind == KindStruct {
+			for _, union := range unionMarkers[t.GoName] {
+				fmt.Fprintf(&buf, "func (%s) is%s() {}\n\n", t.GoName, union)
+			}
+		}
 	}
 	return buf.String()
 }
 
-func writeType(buf *bytes.Buffer, t *NamedType) {
+func writeType(buf *bytes.Buffer, t *NamedType, typesByName map[string]*NamedType) {
 	if t.Doc != "" {
 		writeDoc(buf, t.Doc, t.GoName)
 	}
@@ -142,17 +190,93 @@ func writeType(buf *bytes.Buffer, t *NamedType) {
 			fmt.Fprintf(buf, "\t%s %s `json:\"%s\"`\n", f.GoName, f.GoType, jsonTag(f))
 		}
 		buf.WriteString("}\n\n")
+	case KindUnion:
+		// Sealed interface. Variants (emitted elsewhere as structs) add
+		// the marker method to satisfy the interface.
+		//
+		// Revolut's unions carry a `discriminator.mapping` but no
+		// `propertyName`, so there is no wire-level tag. Request bodies
+		// are marshaled naturally via the concrete variant; response
+		// bodies are buffered and decoded via decode<Parent>, which
+		// probes variants in mapping order.
+		fmt.Fprintf(buf, "// Variants:\n")
+		for _, v := range t.UnionVariants {
+			fmt.Fprintf(buf, "//   - %s → %s\n", v.Tag, v.GoName)
+		}
+		fmt.Fprintf(buf, "type %s interface {\n", t.GoName)
+		fmt.Fprintf(buf, "\tis%s()\n", t.GoName)
+		buf.WriteString("}\n\n")
+		writeUnionDecoder(buf, t, typesByName)
 	}
 }
 
+// writeUnionDecoder emits a decode<Parent>(data []byte) (<Parent>, error)
+// helper. Since Revolut's unions lack a wire discriminator, the helper
+// probes variants in mapping order by checking that every required JSON
+// field of the variant is present in the payload. First match wins; if
+// nothing matches (e.g. variants share required fields), the first
+// mapped variant is decoded.
+func writeUnionDecoder(buf *bytes.Buffer, t *NamedType, typesByName map[string]*NamedType) {
+	fmt.Fprintf(buf, "// decode%s parses a JSON payload into one of the union variants.\n", t.GoName)
+	buf.WriteString("// Variants are tried in discriminator-mapping order. If none uniquely\n")
+	buf.WriteString("// match by required-field presence the first mapped variant is used.\n")
+	fmt.Fprintf(buf, "func decode%s(data []byte) (%s, error) {\n", t.GoName, t.GoName)
+	buf.WriteString("\tvar probe map[string]json.RawMessage\n")
+	buf.WriteString("\tif err := json.Unmarshal(data, &probe); err != nil {\n")
+	buf.WriteString("\t\treturn nil, err\n")
+	buf.WriteString("\t}\n")
+	for _, v := range t.UnionVariants {
+		reqs := variantRequiredJSONKeys(typesByName, v.GoName)
+		if len(reqs) == 0 {
+			continue
+		}
+		cond := "true"
+		parts := make([]string, 0, len(reqs))
+		for _, k := range reqs {
+			parts = append(parts, fmt.Sprintf("hasKey(probe, %q)", k))
+		}
+		cond = strings.Join(parts, " && ")
+		fmt.Fprintf(buf, "\tif %s {\n", cond)
+		fmt.Fprintf(buf, "\t\tvar out %s\n", v.GoName)
+		buf.WriteString("\t\tif err := json.Unmarshal(data, &out); err != nil {\n")
+		buf.WriteString("\t\t\treturn nil, err\n")
+		buf.WriteString("\t\t}\n")
+		buf.WriteString("\t\treturn out, nil\n")
+		buf.WriteString("\t}\n")
+	}
+	first := t.UnionVariants[0]
+	fmt.Fprintf(buf, "\tvar out %s\n", first.GoName)
+	buf.WriteString("\tif err := json.Unmarshal(data, &out); err != nil {\n")
+	buf.WriteString("\t\treturn nil, err\n")
+	buf.WriteString("\t}\n")
+	buf.WriteString("\treturn out, nil\n")
+	buf.WriteString("}\n\n")
+}
+
+// variantRequiredJSONKeys returns the JSON names of required fields on a
+// variant struct type. Used by the union probe decoder.
+func variantRequiredJSONKeys(typesByName map[string]*NamedType, name string) []string {
+	t, ok := typesByName[name]
+	if !ok || t.Kind != KindStruct {
+		return nil
+	}
+	var out []string
+	for _, f := range t.Fields {
+		if f.Required {
+			out = append(out, f.JSONName)
+		}
+	}
+	return out
+}
+
 // emitResource produces gen_<resource>.go.
-func emitResource(spec *Spec, r *Resource) string {
+func emitResource(spec *Spec, r *Resource, unionTypes map[string]bool) string {
 	var buf bytes.Buffer
 	buf.WriteString(genHeader)
 	fmt.Fprintf(&buf, "package %s\n\n", spec.PackageName)
 
 	// Imports — compute from what the methods reference.
-	imports := resourceImports(r)
+	imports := resourceImports(r, unionTypes)
 
 	buf.WriteString("import (\n")
 	buf.WriteString("\t\"context\"\n")
@@ -185,10 +309,10 @@ func emitResource(spec *Spec, r *Resource) string {
 
 	for _, op := range r.Ops {
 		if op.ParamsStruct != nil {
-			writeType(&buf, op.ParamsStruct)
+			writeType(&buf, op.ParamsStruct, nil)
 			writeParamsEncode(&buf, op)
 		}
-		writeMethod(&buf, r, op)
+		writeMethod(&buf, r, op, unionTypes)
 		if op.Pagination != nil {
 			writePaginationMethod(&buf, r, op)
 		}
@@ -287,7 +411,7 @@ type resourceImportSet struct {
 	iter    bool
 }
 
-func resourceImports(r *Resource) resourceImportSet {
+func resourceImports(r *Resource, unionTypes map[string]bool) resourceImportSet {
 	var s resourceImportSet
 	for _, op := range r.Ops {
 		if len(op.PathParams) > 0 {
@@ -314,6 +438,10 @@ func resourceImports(r *Resource) resourceImportSet {
 		}
 		if op.Pagination != nil {
 			s.iter = true
+		}
+		if unionTypes[op.ResponseType] {
+			// Union response → buffered raw decode via json.RawMessage.
+			s.json = true
 		}
 	}
 	return s
@@ -374,7 +502,7 @@ func emitQueryField(buf *bytes.Buffer, f *StructField, wireName string) {
 	}
 }
 
-func writeMethod(buf *bytes.Buffer, r *Resource, op *Operation) {
+func writeMethod(buf *bytes.Buffer, r *Resource, op *Operation, unionTypes map[string]bool) {
 	// godoc
 	if op.Summary != "" {
 		fmt.Fprintf(buf, "// %s %s\n", op.GoMethod, lower1(op.Summary))
@@ -399,9 +527,13 @@ func writeMethod(buf *bytes.Buffer, r *Resource, op *Operation) {
 	}
 
 	retType := "error"
+	respIsUnion := unionTypes[op.ResponseType]
 	switch {
 	case op.ResponseType == "":
 		// void
+	case respIsUnion:
+		// Union → return the interface type directly; no pointer.
+		retType = op.ResponseType + ", error"
 	case strings.HasPrefix(op.ResponseType, "[]"):
 		retType = op.ResponseType + ", error"
 	default:
@@ -439,9 +571,17 @@ func writeMethod(buf *bytes.Buffer, r *Resource, op *Operation) {
 	}
 	httpMethod := "http.Method" + strings.ToUpper(op.HTTPMethod[:1]) + strings.ToLower(op.HTTPMethod[1:])
 
-	if op.ResponseType == "" {
+	switch {
+	case op.ResponseType == "":
 		fmt.Fprintf(buf, "\treturn s.t.Do(ctx, %s, %s, %s, nil)\n", httpMethod, pathExpr, bodyArg)
-	} else {
+	case respIsUnion:
+		// Buffer the raw body, then probe-decode into a variant.
+		buf.WriteString("\tvar raw json.RawMessage\n")
+		fmt.Fprintf(buf, "\tif err := s.t.Do(ctx, %s, %s, %s, &raw); err != nil {\n", httpMethod, pathExpr, bodyArg)
+		buf.WriteString("\t\treturn nil, err\n")
+		buf.WriteString("\t}\n")
+		fmt.Fprintf(buf, "\treturn decode%s(raw)\n", op.ResponseType)
+	default:
 		fmt.Fprintf(buf, "\tvar out %s\n", op.ResponseType)
 		fmt.Fprintf(buf, "\tif err := s.t.Do(ctx, %s, %s, %s, &out); err != nil {\n", httpMethod, pathExpr, bodyArg)
 		fmt.Fprintf(buf, "\t\treturn %serr\n", ifZero(zero))

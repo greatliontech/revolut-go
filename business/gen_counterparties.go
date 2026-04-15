@@ -4,6 +4,7 @@ package business
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"iter"
 	"net/http"
@@ -22,12 +23,12 @@ type Counterparties struct {
 // AccountNameValidation validate an account name (CoP/VoP)
 //
 // Docs: https://developer.revolut.com/docs/business/validate-account-name
-func (s *Counterparties) AccountNameValidation(ctx context.Context, req ValidateAccountNameRequest) (*ValidateAccountNameResponse, error) {
-	var out ValidateAccountNameResponse
-	if err := s.t.Do(ctx, http.MethodPost, "account-name-validation", req, &out); err != nil {
+func (s *Counterparties) AccountNameValidation(ctx context.Context, req ValidateAccountNameRequest) (ValidateAccountNameResponse, error) {
+	var raw json.RawMessage
+	if err := s.t.Do(ctx, http.MethodPost, "account-name-validation", req, &raw); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return decodeValidateAccountNameResponse(raw)
 }
 
 // GetCounterpartiesParams query parameters for: Retrieve a list of counterparties

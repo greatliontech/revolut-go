@@ -103,6 +103,13 @@ const (
 	KindStruct TypeKind = iota
 	KindEnum
 	KindAlias
+	// KindUnion: a schema with `discriminator.mapping` that maps
+	// nominal tags to sibling variant schemas. Rendered as a sealed Go
+	// interface; variants add a marker method. Revolut's specs do not
+	// set `discriminator.propertyName`, so the union has no wire-level
+	// discriminator — decoding probes variants by required-field
+	// presence in mapping order.
+	KindUnion
 )
 
 // NamedType is a top-level Go type emitted into the output package.
@@ -120,6 +127,15 @@ type NamedType struct {
 
 	// KindAlias
 	AliasTarget string // Go type the alias resolves to (e.g. "core.Currency")
+
+	// KindUnion
+	UnionVariants []UnionVariant // ordered by discriminator mapping key
+}
+
+// UnionVariant is one mapped variant of a KindUnion.
+type UnionVariant struct {
+	Tag    string // discriminator mapping key (e.g. "UK"), preserved for docs
+	GoName string // Go type name of the variant struct (e.g. "ValidateAccountNameRequestUK")
 }
 
 // EnumValue is one entry in a string-enum type.

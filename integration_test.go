@@ -263,6 +263,38 @@ func TestSandbox_TransactionsListAll(t *testing.T) {
 	t.Logf("ListAll yielded %d unique transactions (full list: %d, pageSize=2)", len(seen), len(full))
 }
 
+func TestSandbox_AccountNameValidation(t *testing.T) {
+	client := newSandboxClient(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	req := business.ValidateAccountNameRequestUk{
+		AccountNo:   "12345678",
+		SortCode:    "04-00-75",
+		CompanyName: "John Smith Co.",
+	}
+	got, err := client.Counterparties.AccountNameValidation(ctx, req)
+	if err != nil {
+		t.Fatalf("AccountNameValidation: %v", err)
+	}
+	if got == nil {
+		t.Fatal("nil response")
+	}
+	// Verify the probe decoder returned a concrete variant that
+	// implements the union interface. Variants share structure, so the
+	// decoder may select any of them; what matters is that a typed
+	// variant came back (not a map).
+	switch v := got.(type) {
+	case business.ValidateAccountNameResponseUk,
+		business.ValidateAccountNameResponseAu,
+		business.ValidateAccountNameResponseRo,
+		business.ValidateAccountNameResponseEur:
+		t.Logf("variant %T: %+v", v, v)
+	default:
+		t.Fatalf("unknown variant %T", v)
+	}
+}
+
 func TestSandbox_AccountsGet(t *testing.T) {
 	client := newSandboxClient(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
