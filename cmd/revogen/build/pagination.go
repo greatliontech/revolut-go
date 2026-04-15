@@ -105,18 +105,33 @@ func (b *Builder) timeWindowPagination(m *ir.Method, params *ir.Decl) *ir.Pagina
 	if itemDecl == nil || itemDecl.Kind != ir.DeclStruct {
 		return nil
 	}
-	var fromItem string
+	// Pick the item field the iterator advances off. The `created_at`
+	// convention wins when present; otherwise fall back to the sole
+	// required non-pointer time-typed field on the item (Expense's
+	// `expense_date` fits this — the spec's prose explicitly tells
+	// callers to echo that value back as `to`).
+	fromItem := ""
+	var fallback []string
 	for _, f := range itemDecl.Fields {
-		if f.JSONName == "created_at" && isTimeType(f.Type) {
+		if !isPlainTimeType(f.Type) {
+			continue
+		}
+		if f.JSONName == "created_at" {
 			fromItem = f.GoName
 			break
 		}
+		if f.Required {
+			fallback = append(fallback, f.GoName)
+		}
+	}
+	if fromItem == "" && len(fallback) == 1 {
+		fromItem = fallback[0]
 	}
 	if fromItem == "" {
 		return nil
 	}
 	for _, f := range params.Fields {
-		if (f.JSONName == "to" || f.JSONName == "created_before") && isTimeType(f.Type) {
+		if (f.JSONName == "to" || f.JSONName == "created_before") && isPlainTimeType(f.Type) {
 			return &ir.Pagination{
 				Shape:           ir.PaginationTimeWindow,
 				ItemType:        itemType,
@@ -126,6 +141,13 @@ func (b *Builder) timeWindowPagination(m *ir.Method, params *ir.Decl) *ir.Pagina
 		}
 	}
 	return nil
+}
+
+// isPlainTimeType reports whether t is an unwrapped time.Time — the
+// iterator emits `p.Param = resp[...].Field` without dereference, so
+// a *time.Time on either side would be a type error.
+func isPlainTimeType(t *ir.Type) bool {
+	return t != nil && t.Kind == ir.KindPrim && t.Name == "time.Time"
 }
 
 // limitPagination detects params with a bare `limit` field (no

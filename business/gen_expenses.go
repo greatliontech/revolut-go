@@ -5,6 +5,7 @@ package business
 import (
 	"context"
 	"errors"
+	"iter"
 	"net/http"
 	"net/url"
 
@@ -30,6 +31,34 @@ func (s *Expenses) List(ctx context.Context, opts *GetExpensesParams) ([]Expense
 		return nil, err
 	}
 	return out, nil
+}
+
+// ListAll iterates every page of List, yielding one Expense per
+// step. Break out of the loop to stop early.
+func (s *Expenses) ListAll(ctx context.Context, opts *GetExpensesParams) iter.Seq2[Expense, error] {
+	return func(yield func(Expense, error) bool) {
+		var p GetExpensesParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.List(ctx, &p)
+			if err != nil {
+				var zero Expense
+				yield(zero, err)
+				return
+			}
+			if len(resp) == 0 {
+				return
+			}
+			for _, item := range resp {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			p.To = resp[len(resp)-1].ExpenseDate
+		}
+	}
 }
 
 // GetExpense retrieve an expense
