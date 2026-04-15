@@ -236,6 +236,85 @@ func TestNew_ValidatesBaseURL(t *testing.T) {
 	}
 }
 
+// TestDo_HeaderSinkCapturesResponseHeaders: when ctx carries a
+// sink via WithHeaderSink, a 2xx response populates the sink with
+// the server's response headers so callers can read correlation
+// IDs / rate-limit hints without a signature change.
+func TestDo_HeaderSinkCapturesResponseHeaders(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Fapi-Interaction-Id", "corr-42")
+		w.Header().Set("Retry-After", "30")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	defer srv.Close()
+	tr := newTransport(t, srv, nil)
+
+	var sink http.Header
+	ctx := WithHeaderSink(context.Background(), &sink)
+	if err := tr.Do(ctx, http.MethodGet, "ping", nil, &struct{}{}); err != nil {
+		t.Fatalf("Do: %v", err)
+	}
+	if got := sink.Get("X-Fapi-Interaction-Id"); got != "corr-42" {
+		t.Errorf("X-Fapi-Interaction-Id=%q", got)
+	}
+	if got := sink.Get("Retry-After"); got != "30" {
+		t.Errorf("Retry-After=%q", got)
+	}
+}
+
+// TestDo_HeaderSinkUntouchedOnError: a non-2xx response does not
+// overwrite the sink, so callers can't mistake error-path headers
+// for success-path metadata.
+func TestDo_HeaderSinkUntouchedOnError(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Fapi-Interaction-Id", "err-headers")
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"code":1,"message":"nope"}`))
+	}))
+	defer srv.Close()
+	tr := newTransport(t, srv, nil)
+
+	sink := http.Header{"X-Pre-Existing": []string{"seeded"}}
+	ctx := WithHeaderSink(context.Background(), &sink)
+	if err := tr.Do(ctx, http.MethodGet, "ping", nil, &struct{}{}); err == nil {
+		t.Fatal("want error for 4xx")
+	}
+	if sink.Get("X-Fapi-Interaction-Id") != "" {
+		t.Errorf("sink should be untouched on error; got %v", sink)
+	}
+	if sink.Get("X-Pre-Existing") != "seeded" {
+		t.Errorf("sink was clobbered on error path: %v", sink)
+	}
+}
+
+// TestDoRaw_HeaderSinkCaptures: DoRaw, which was always returning
+// headers as a third value, now ALSO fills the context sink so
+// callers using the raw path can use the same opt-in pattern as
+// the typed Do callers.
+func TestDoRaw_HeaderSinkCaptures(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Test", "ok")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`ok`))
+	}))
+	defer srv.Close()
+	tr := newTransport(t, srv, nil)
+
+	var sink http.Header
+	ctx := WithHeaderSink(context.Background(), &sink)
+	_, hdr, err := tr.DoRaw(ctx, http.MethodGet, "ping", RawRequest{Accept: "text/plain"})
+	if err != nil {
+		t.Fatalf("DoRaw: %v", err)
+	}
+	if sink.Get("X-Test") != "ok" {
+		t.Errorf("sink missing header: %v", sink)
+	}
+	if hdr.Get("X-Test") != "ok" {
+		t.Errorf("return header missing: %v", hdr)
+	}
+}
+
 // TestDo_HostAliasRewrites_AbsoluteURL pins the rewrite behaviour:
 // a generator-embedded absolute URL whose host matches a configured
 // alias is redirected to the aliased host; relative paths routed
