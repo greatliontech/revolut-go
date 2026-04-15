@@ -12,3 +12,6 @@
 # Tool binaries accidentally built in the repo root.
 /auth-bootstrap
 /revogen
+
+# Scratch output from `task test:gen-all`.
+/.revogen-scratch

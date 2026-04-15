@@ -54,6 +54,34 @@ tasks:
       - go run ./cmd/revogen -package business -out business
       - task: build
 
+  test:gen-all:
+    desc: Regenerate every vendored spec into a scratch dir and run go vet on each output. Catches cross-spec regressions before they reach committed code.
+    cmds:
+      - |
+        set -euo pipefail
+        scratch=.revogen-scratch
+        rm -rf "$scratch"
+        mkdir -p "$scratch"
+        fail=0
+        for pair in {{.SPEC_FILES}}; do
+          local="${pair##*:}"
+          base="${local%.yaml}"
+          base="${base%.yml}"
+          pkg=$(printf '%s' "$base" | tr -d '-')
+          out="$scratch/$pkg"
+          echo ">> $local -> $out (package $pkg)"
+          if ! go run ./cmd/revogen -spec "{{.SPECS_DIR}}/$local" -package "$pkg" -out "$out"; then
+            echo "   GENERATE FAILED for $local"
+            fail=1
+            continue
+          fi
+          if ! go vet "./$out/..."; then
+            echo "   VET FAILED for $pkg"
+            fail=1
+          fi
+        done
+        exit $fail
+
   auth:bootstrap:
     desc: Run the one-time Revolut Business OAuth consent flow and capture a refresh token.
     summary: |
