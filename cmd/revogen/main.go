@@ -25,11 +25,12 @@ import (
 )
 
 type flags struct {
-	spec      string
-	pkg       string
-	out       string
-	resources stringList
-	verbose   bool
+	spec              string
+	pkg               string
+	out               string
+	resources         stringList
+	includeDeprecated bool
+	verbose           bool
 }
 
 type stringList []string
@@ -43,6 +44,7 @@ func parseFlags() flags {
 	flag.StringVar(&f.pkg, "package", "business", "Go package name for generated files")
 	flag.StringVar(&f.out, "out", "business", "directory to emit gen_*.go files into")
 	flag.Var(&f.resources, "resource", "resource tag to emit (repeatable; omit to emit all)")
+	flag.BoolVar(&f.includeDeprecated, "include-deprecated", false, "emit operations/resources the spec marks as deprecated")
 	flag.BoolVar(&f.verbose, "v", false, "verbose output")
 	flag.Parse()
 	return f
@@ -64,7 +66,7 @@ func run(f flags) error {
 	if f.verbose {
 		summarize(doc)
 	}
-	spec, err := buildSpec(doc, f.pkg, f.resources)
+	spec, err := buildSpec(doc, f.pkg, f.resources, f.includeDeprecated)
 	if err != nil {
 		return fmt.Errorf("build IR: %w", err)
 	}

@@ -35,8 +35,6 @@ type Client struct {
 	Transactions *Transactions
 	// Transfers groups the related endpoints.
 	Transfers *Transfers
-	// WebhooksV1Deprecated groups the related endpoints.
-	WebhooksV1Deprecated *WebhooksV1Deprecated
 	// WebhooksV2 groups the related endpoints.
 	WebhooksV2 *WebhooksV2
 }
@@ -57,7 +55,6 @@ func New(t *transport.Transport) *Client {
 	c.TeamMembers = &TeamMembers{t: t}
 	c.Transactions = &Transactions{t: t}
 	c.Transfers = &Transfers{t: t}
-	c.WebhooksV1Deprecated = &WebhooksV1Deprecated{t: t}
 	c.WebhooksV2 = &WebhooksV2{t: t}
 	return c
 }

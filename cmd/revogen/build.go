@@ -17,13 +17,14 @@ import (
 // operation or type to be skipped with a warning — not an error —
 // so the generator can still emit a partial package while we expand
 // coverage.
-func buildSpec(doc *openapi3.T, packageName string, resourceAllow []string) (*Spec, error) {
+func buildSpec(doc *openapi3.T, packageName string, resourceAllow []string, includeDeprecated bool) (*Spec, error) {
 	b := &builder{
-		doc:      doc,
-		pkg:      packageName,
-		allow:    stringSet(resourceAllow),
-		emitted:  map[string]bool{},
-		typesByName: map[string]*NamedType{},
+		doc:               doc,
+		pkg:               packageName,
+		allow:             stringSet(resourceAllow),
+		includeDeprecated: includeDeprecated,
+		emitted:           map[string]bool{},
+		typesByName:       map[string]*NamedType{},
 	}
 	b.buildTypes()
 	b.buildResources()
@@ -31,13 +32,14 @@ func buildSpec(doc *openapi3.T, packageName string, resourceAllow []string) (*Sp
 }
 
 type builder struct {
-	doc         *openapi3.T
-	pkg         string
-	allow       map[string]bool // empty = allow all
-	resources   []*Resource
-	types       []*NamedType
-	typesByName map[string]*NamedType
-	emitted     map[string]bool
+	doc               *openapi3.T
+	pkg               string
+	allow             map[string]bool // empty = allow all
+	includeDeprecated bool
+	resources         []*Resource
+	types             []*NamedType
+	typesByName       map[string]*NamedType
+	emitted           map[string]bool
 }
 
 func (b *builder) spec(pkg string) *Spec {
@@ -389,6 +391,14 @@ func (b *builder) buildResources() {
 			if len(b.allow) > 0 && !b.allow[tag] {
 				continue
 			}
+			if op.Deprecated && !b.includeDeprecated {
+				continue
+			}
+			// Tags ending in "(deprecated)" signal a whole resource
+			// being retired; skip unless the caller opts in.
+			if !b.includeDeprecated && containsDeprecatedMarker(op.Tags) {
+				continue
+			}
 			built := b.buildOperation(httpMethod, path, op)
 			if built == nil {
 				continue
@@ -570,6 +580,18 @@ func (b *builder) methodName(o *Operation, op *openapi3.Operation) string {
 		return "Delete" + suffix
 	}
 	return ""
+}
+
+// containsDeprecatedMarker reports whether any tag on an operation
+// mentions deprecation (Revolut labels whole resources this way,
+// e.g. "Webhooks (v1) (deprecated)").
+func containsDeprecatedMarker(tags []string) bool {
+	for _, t := range tags {
+		if strings.Contains(strings.ToLower(t), "deprecated") {
+			return true
+		}
+	}
+	return false
 }
 
 // stripTagPrefix removes any leading URL segments that are redundant
