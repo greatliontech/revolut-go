@@ -34,7 +34,7 @@ func (p *GetCardInvitationsParams) encode() url.Values {
 	}
 	q := url.Values{}
 	if !p.CreatedBefore.IsZero() {
-		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339))
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
 	}
 	if p.Limit != "" {
 		q.Set("limit", string(p.Limit))

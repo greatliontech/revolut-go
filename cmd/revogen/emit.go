@@ -350,7 +350,7 @@ func emitQueryField(buf *bytes.Buffer, f *StructField, wireName string) {
 		case "bool":
 			valueExpr = "strconv.FormatBool(v)"
 		case "time.Time":
-			valueExpr = "v.UTC().Format(time.RFC3339)"
+			valueExpr = "v.UTC().Format(time.RFC3339Nano)"
 		default:
 			valueExpr = "string(v)"
 		}
@@ -365,7 +365,7 @@ func emitQueryField(buf *bytes.Buffer, f *StructField, wireName string) {
 	case "bool":
 		fmt.Fprintf(buf, "\tif %s {\n\t\tq.Set(%q, strconv.FormatBool(%s))\n\t}\n", expr, wireName, expr)
 	case "time.Time":
-		fmt.Fprintf(buf, "\tif !%s.IsZero() {\n\t\tq.Set(%q, %s.UTC().Format(time.RFC3339))\n\t}\n", expr, wireName, expr)
+		fmt.Fprintf(buf, "\tif !%s.IsZero() {\n\t\tq.Set(%q, %s.UTC().Format(time.RFC3339Nano))\n\t}\n", expr, wireName, expr)
 	case "json.Number":
 		fmt.Fprintf(buf, "\tif %s != \"\" {\n\t\tq.Set(%q, string(%s))\n\t}\n", expr, wireName, expr)
 	default:

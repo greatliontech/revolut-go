@@ -38,10 +38,10 @@ func (p *GetExpensesParams) encode() url.Values {
 	}
 	q := url.Values{}
 	if !p.From.IsZero() {
-		q.Set("from", p.From.UTC().Format(time.RFC3339))
+		q.Set("from", p.From.UTC().Format(time.RFC3339Nano))
 	}
 	if !p.To.IsZero() {
-		q.Set("to", p.To.UTC().Format(time.RFC3339))
+		q.Set("to", p.To.UTC().Format(time.RFC3339Nano))
 	}
 	if p.Count != 0 {
 		q.Set("count", strconv.FormatInt(int64(p.Count), 10))

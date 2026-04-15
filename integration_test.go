@@ -229,34 +229,38 @@ func TestSandbox_TransactionsListAll(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// With count=2, any sandbox account that has more than 2 transactions
-	// will force the iterator to do multiple round trips, proving the
-	// cursor advance works. We verify:
-	//   * at least one item yielded,
-	//   * no error on any step,
-	//   * ids are all distinct (no page overlap from a bad cursor).
-	const pageSize = 2
+	// Baseline: full list in one call (server default count=100).
+	full, err := client.Transactions.List(ctx, nil)
+	if err != nil {
+		t.Fatalf("full List: %v", err)
+	}
+	if len(full) == 0 {
+		t.Skip("sandbox returned 0 transactions — nothing to paginate")
+	}
+
+	// Iterate with a deliberately small page so the cursor is
+	// exercised. All items must be seen, exactly once, regardless of
+	// page size. Nanosecond-precise cursor advance guarantees no
+	// timestamp-tie data loss (would have been broken with second
+	// precision).
 	seen := map[string]bool{}
-	count := 0
-	for tx, err := range client.Transactions.ListAll(ctx, &business.GetTransactionsParams{Count: pageSize}) {
+	for tx, err := range client.Transactions.ListAll(ctx, &business.GetTransactionsParams{Count: 2}) {
 		if err != nil {
-			t.Fatalf("ListAll yielded err at item %d: %v", count, err)
+			t.Fatalf("ListAll error at item %d: %v", len(seen), err)
 		}
-		count++
 		if seen[tx.ID] {
-			t.Fatalf("duplicate transaction id %s at step %d — cursor advance is overlapping pages", tx.ID, count)
+			t.Fatalf("duplicate transaction id %s — cursor overlapping pages", tx.ID)
 		}
 		seen[tx.ID] = true
-		// Hard stop so a bug in termination doesn't run forever.
-		if count > 500 {
-			t.Fatalf("iterator emitted %d items, which exceeds sanity cap", count)
+		if len(seen) > len(full)+32 {
+			t.Fatalf("iterator emitted %d items, expected <= %d + margin", len(seen), len(full))
 		}
 	}
 
-	if count == 0 {
-		t.Skip("sandbox returned 0 transactions — nothing to paginate")
+	if len(seen) != len(full) {
+		t.Fatalf("ListAll saw %d items, full list has %d — pagination dropped items", len(seen), len(full))
 	}
-	t.Logf("ListAll yielded %d unique transactions with pageSize=%d", count, pageSize)
+	t.Logf("ListAll yielded %d unique transactions (full list: %d, pageSize=2)", len(seen), len(full))
 }
 
 func TestSandbox_AccountsGet(t *testing.T) {

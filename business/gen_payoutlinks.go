@@ -38,7 +38,7 @@ func (p *GetPayoutLinksParams) encode() url.Values {
 		q.Add("state", string(v))
 	}
 	if !p.CreatedBefore.IsZero() {
-		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339))
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
 	}
 	if p.Limit != 0 {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))

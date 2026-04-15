@@ -99,7 +99,7 @@ func (p *GetFailedWebhookEventsParams) encode() url.Values {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
 	}
 	if !p.CreatedBefore.IsZero() {
-		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339))
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
 	}
 	return q
 }
