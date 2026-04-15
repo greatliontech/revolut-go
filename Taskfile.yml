@@ -1,0 +1,78 @@
+version: '3'
+
+vars:
+  UPSTREAM_REPO: revolut-engineering/revolut-openapi
+  UPSTREAM_TAG: '2026-04-14#1'
+  SPECS_DIR: specs
+  # Space-separated mapping of "upstream:local" pairs. Upstream paths are
+  # relative to the yaml/ directory in the upstream repo. For versioned APIs
+  # we pin to the latest variant and rename to an unversioned local name.
+  # Edit this list to add or drop specs.
+  SPEC_FILES: >-
+    business.yaml:business.yaml
+    merchant-2025-12-04.yaml:merchant.yaml
+    open-banking.yaml:open-banking.yaml
+    crypto-ramp-2.0.yaml:crypto-ramp.yaml
+    revolut-x.yml:revolut-x.yaml
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  specs:update:
+    desc: Fetch vendored OpenAPI specs from the pinned upstream tag.
+    cmds:
+      - |
+        set -euo pipefail
+        mkdir -p {{.SPECS_DIR}}
+        printf '%s\n' '{{.UPSTREAM_TAG}}' > {{.SPECS_DIR}}/VERSION
+        tag_enc=$(printf '%s' '{{.UPSTREAM_TAG}}' | sed 's/#/%23/g')
+        for pair in {{.SPEC_FILES}}; do
+          upstream="${pair%%:*}"
+          local="${pair##*:}"
+          echo ">> $upstream -> {{.SPECS_DIR}}/$local"
+          curl -fsSL \
+            "https://raw.githubusercontent.com/{{.UPSTREAM_REPO}}/${tag_enc}/yaml/${upstream}" \
+            -o "{{.SPECS_DIR}}/${local}"
+        done
+
+  specs:check:
+    desc: Verify vendored specs match upstream at the pinned tag.
+    cmds:
+      - |
+        set -euo pipefail
+        tag_enc=$(printf '%s' '{{.UPSTREAM_TAG}}' | sed 's/#/%23/g')
+        fail=0
+        for pair in {{.SPEC_FILES}}; do
+          upstream="${pair%%:*}"
+          local="${pair##*:}"
+          local_path="{{.SPECS_DIR}}/${local}"
+          if [ ! -f "$local_path" ]; then
+            echo "MISSING: $local_path (run: task specs:update)" >&2
+            fail=1
+            continue
+          fi
+          remote_sum=$(curl -fsSL \
+            "https://raw.githubusercontent.com/{{.UPSTREAM_REPO}}/${tag_enc}/yaml/${upstream}" \
+            | sha256sum | awk '{print $1}')
+          local_sum=$(sha256sum "$local_path" | awk '{print $1}')
+          if [ "$remote_sum" != "$local_sum" ]; then
+            echo "DRIFT: $local_path differs from upstream ${upstream}@{{.UPSTREAM_TAG}}" >&2
+            fail=1
+          else
+            echo "OK: $local"
+          fi
+        done
+        exit $fail
+
+  specs:clean:
+    desc: Remove vendored specs (keeps VERSION file for reference).
+    cmds:
+      - |
+        set -euo pipefail
+        for pair in {{.SPEC_FILES}}; do
+          local="${pair##*:}"
+          rm -f "{{.SPECS_DIR}}/${local}"
+        done
