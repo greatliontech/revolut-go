@@ -1,0 +1,635 @@
+const APIVersion = "1.0"
+const AccountNameValidationReasonAUCodeAccountDoesNotExist AccountNameValidationReasonAUCode = "account_does_not_exist"
+const AccountNameValidationReasonAUCodeAccountSwitched AccountNameValidationReasonAUCode = "account_switched"
+const AccountNameValidationReasonAUCodeCannotBeChecked AccountNameValidationReasonAUCode = "cannot_be_checked"
+const AccountNameValidationReasonAUCodeCloseMatch AccountNameValidationReasonAUCode = "close_match"
+const AccountNameValidationReasonAUCodeCompanyAccountCloseMatch AccountNameValidationReasonAUCode = "company_account_close_match"
+const AccountNameValidationReasonAUCodeCompanyAccountNameMatched AccountNameValidationReasonAUCode = "company_account_name_matched"
+const AccountNameValidationReasonAUCodeIndividualAccountCloseMatch AccountNameValidationReasonAUCode = "individual_account_close_match"
+const AccountNameValidationReasonAUCodeIndividualAccountNameMatched AccountNameValidationReasonAUCode = "individual_account_name_matched"
+const AccountNameValidationReasonAUCodeNotMatched AccountNameValidationReasonAUCode = "not_matched"
+const AccountNameValidationReasonAUTypeAUCOP AccountNameValidationReasonAUType = "au_cop"
+const AccountNameValidationReasonAUTypeEuCOP AccountNameValidationReasonAUType = "eu_cop"
+const AccountNameValidationReasonAUTypeROCOP AccountNameValidationReasonAUType = "ro_cop"
+const AccountNameValidationReasonAUTypeUKCOP AccountNameValidationReasonAUType = "uk_cop"
+const AccountNameValidationReasonEURCodeAccountDoesNotExist AccountNameValidationReasonEURCode = "account_does_not_exist"
+const AccountNameValidationReasonEURCodeAccountSwitched AccountNameValidationReasonEURCode = "account_switched"
+const AccountNameValidationReasonEURCodeCannotBeChecked AccountNameValidationReasonEURCode = "cannot_be_checked"
+const AccountNameValidationReasonEURCodeCloseMatch AccountNameValidationReasonEURCode = "close_match"
+const AccountNameValidationReasonEURCodeCompanyAccountCloseMatch AccountNameValidationReasonEURCode = "company_account_close_match"
+const AccountNameValidationReasonEURCodeCompanyAccountNameMatched AccountNameValidationReasonEURCode = "company_account_name_matched"
+const AccountNameValidationReasonEURCodeIndividualAccountCloseMatch AccountNameValidationReasonEURCode = "individual_account_close_match"
+const AccountNameValidationReasonEURCodeIndividualAccountNameMatched AccountNameValidationReasonEURCode = "individual_account_name_matched"
+const AccountNameValidationReasonEURCodeNotMatched AccountNameValidationReasonEURCode = "not_matched"
+const AccountNameValidationReasonEURTypeAUCOP AccountNameValidationReasonEURType = "au_cop"
+const AccountNameValidationReasonEURTypeEuCOP AccountNameValidationReasonEURType = "eu_cop"
+const AccountNameValidationReasonEURTypeROCOP AccountNameValidationReasonEURType = "ro_cop"
+const AccountNameValidationReasonEURTypeUKCOP AccountNameValidationReasonEURType = "uk_cop"
+const AccountNameValidationReasonROCodeAccountDoesNotExist AccountNameValidationReasonROCode = "account_does_not_exist"
+const AccountNameValidationReasonROCodeAccountSwitched AccountNameValidationReasonROCode = "account_switched"
+const AccountNameValidationReasonROCodeCannotBeChecked AccountNameValidationReasonROCode = "cannot_be_checked"
+const AccountNameValidationReasonROCodeCloseMatch AccountNameValidationReasonROCode = "close_match"
+const AccountNameValidationReasonROCodeCompanyAccountCloseMatch AccountNameValidationReasonROCode = "company_account_close_match"
+const AccountNameValidationReasonROCodeCompanyAccountNameMatched AccountNameValidationReasonROCode = "company_account_name_matched"
+const AccountNameValidationReasonROCodeIndividualAccountCloseMatch AccountNameValidationReasonROCode = "individual_account_close_match"
+const AccountNameValidationReasonROCodeIndividualAccountNameMatched AccountNameValidationReasonROCode = "individual_account_name_matched"
+const AccountNameValidationReasonROCodeNotMatched AccountNameValidationReasonROCode = "not_matched"
+const AccountNameValidationReasonROTypeAUCOP AccountNameValidationReasonROType = "au_cop"
+const AccountNameValidationReasonROTypeEuCOP AccountNameValidationReasonROType = "eu_cop"
+const AccountNameValidationReasonROTypeROCOP AccountNameValidationReasonROType = "ro_cop"
+const AccountNameValidationReasonROTypeUKCOP AccountNameValidationReasonROType = "uk_cop"
+const AccountNameValidationReasonUKCodeAccountDoesNotExist AccountNameValidationReasonUKCode = "account_does_not_exist"
+const AccountNameValidationReasonUKCodeAccountSwitched AccountNameValidationReasonUKCode = "account_switched"
+const AccountNameValidationReasonUKCodeCannotBeChecked AccountNameValidationReasonUKCode = "cannot_be_checked"
+const AccountNameValidationReasonUKCodeCloseMatch AccountNameValidationReasonUKCode = "close_match"
+const AccountNameValidationReasonUKCodeCompanyAccountCloseMatch AccountNameValidationReasonUKCode = "company_account_close_match"
+const AccountNameValidationReasonUKCodeCompanyAccountNameMatched AccountNameValidationReasonUKCode = "company_account_name_matched"
+const AccountNameValidationReasonUKCodeIndividualAccountCloseMatch AccountNameValidationReasonUKCode = "individual_account_close_match"
+const AccountNameValidationReasonUKCodeIndividualAccountNameMatched AccountNameValidationReasonUKCode = "individual_account_name_matched"
+const AccountNameValidationReasonUKCodeNotMatched AccountNameValidationReasonUKCode = "not_matched"
+const AccountNameValidationReasonUKTypeAUCOP AccountNameValidationReasonUKType = "au_cop"
+const AccountNameValidationReasonUKTypeEuCOP AccountNameValidationReasonUKType = "eu_cop"
+const AccountNameValidationReasonUKTypeROCOP AccountNameValidationReasonUKType = "ro_cop"
+const AccountNameValidationReasonUKTypeUKCOP AccountNameValidationReasonUKType = "uk_cop"
+const AccountStateActive AccountState = "active"
+const AccountStateInactive AccountState = "inactive"
+const BusinessMerchantCategoryAccommodation BusinessMerchantCategory = "accommodation"
+const BusinessMerchantCategoryAdvertising BusinessMerchantCategory = "advertising"
+const BusinessMerchantCategoryAirlines BusinessMerchantCategory = "airlines"
+const BusinessMerchantCategoryCash BusinessMerchantCategory = "cash"
+const BusinessMerchantCategoryEducation BusinessMerchantCategory = "education"
+const BusinessMerchantCategoryEntertainment BusinessMerchantCategory = "entertainment"
+const BusinessMerchantCategoryFinancial BusinessMerchantCategory = "financial"
+const BusinessMerchantCategoryFuel BusinessMerchantCategory = "fuel"
+const BusinessMerchantCategoryFurniture BusinessMerchantCategory = "furniture"
+const BusinessMerchantCategoryGeneral BusinessMerchantCategory = "general"
+const BusinessMerchantCategoryGovernment BusinessMerchantCategory = "government"
+const BusinessMerchantCategoryGroceries BusinessMerchantCategory = "groceries"
+const BusinessMerchantCategoryHardware BusinessMerchantCategory = "hardware"
+const BusinessMerchantCategoryHealth BusinessMerchantCategory = "health"
+const BusinessMerchantCategoryRestaurants BusinessMerchantCategory = "restaurants"
+const BusinessMerchantCategoryServices BusinessMerchantCategory = "services"
+const BusinessMerchantCategoryShopping BusinessMerchantCategory = "shopping"
+const BusinessMerchantCategorySoftware BusinessMerchantCategory = "software"
+const BusinessMerchantCategoryTransport BusinessMerchantCategory = "transport"
+const BusinessMerchantCategoryUtilities BusinessMerchantCategory = "utilities"
+const CardCreatedResponseSpendingPeriodEndDateActionLock CardCreatedResponseSpendingPeriodEndDateAction = "lock"
+const CardCreatedResponseSpendingPeriodEndDateActionTerminate CardCreatedResponseSpendingPeriodEndDateAction = "terminate"
+const CardInvitationMerchantControlsControlTypeAllow CardInvitationMerchantControlsControlType = "allow"
+const CardInvitationMerchantControlsControlTypeBlock CardInvitationMerchantControlsControlType = "block"
+const CardInvitationSpendingPeriodEndDateActionLock CardInvitationSpendingPeriodEndDateAction = "lock"
+const CardInvitationSpendingPeriodEndDateActionTerminate CardInvitationSpendingPeriodEndDateAction = "terminate"
+const CardInvitationStateCreated CardInvitationState = "created"
+const CardInvitationStateExpired CardInvitationState = "expired"
+const CardInvitationStateFailed CardInvitationState = "failed"
+const CardInvitationStateRedeemed CardInvitationState = "redeemed"
+const CardInvitationsBodySpendingPeriodEndDateActionLock CardInvitationsBodySpendingPeriodEndDateAction = "lock"
+const CardInvitationsBodySpendingPeriodEndDateActionTerminate CardInvitationsBodySpendingPeriodEndDateAction = "terminate"
+const CardResponseSpendingPeriodEndDateActionLock CardResponseSpendingPeriodEndDateAction = "lock"
+const CardResponseSpendingPeriodEndDateActionTerminate CardResponseSpendingPeriodEndDateAction = "terminate"
+const CardStateActive CardState = "active"
+const CardStateCreated CardState = "created"
+const CardStateFrozen CardState = "frozen"
+const CardStateLocked CardState = "locked"
+const CardStatePending CardState = "pending"
+const CardsBodySpendingPeriodEndDateActionLock CardsBodySpendingPeriodEndDateAction = "lock"
+const CardsBodySpendingPeriodEndDateActionTerminate CardsBodySpendingPeriodEndDateAction = "terminate"
+const ChargeBearerDebtor ChargeBearer = "debtor"
+const ChargeBearerShared ChargeBearer = "shared"
+const CounterpartyAccountRecipientChargesExpected CounterpartyAccountRecipientCharges = "expected"
+const CounterpartyAccountRecipientChargesNo CounterpartyAccountRecipientCharges = "no"
+const CounterpartyAccountTypeExternal CounterpartyAccountType = "external"
+const CounterpartyAccountTypeRevolut CounterpartyAccountType = "revolut"
+const CounterpartyCardSchemeMastercard CounterpartyCardScheme = "mastercard"
+const CounterpartyCardSchemeVisa CounterpartyCardScheme = "visa"
+const CounterpartyStateCreated CounterpartyState = "created"
+const CounterpartyStateDeleted CounterpartyState = "deleted"
+const CounterpartyStateDraft CounterpartyState = "draft"
+const CreateCounterpartyRequestProfileTypeBusiness CreateCounterpartyRequestProfileType = "business"
+const CreateCounterpartyRequestProfileTypePersonal CreateCounterpartyRequestProfileType = "personal"
+const EstimatedTimeUnitDays EstimatedTimeUnit = "days"
+const EstimatedTimeUnitHours EstimatedTimeUnit = "hours"
+const ExchangeReasonCodeBusinessExpenseAndClaims ExchangeReasonCode = "business_expense_and_claims"
+const ExchangeReasonCodeFeesAndCharges ExchangeReasonCode = "fees_and_charges"
+const ExchangeReasonCodeFundTransferAndIntracompanyPayment ExchangeReasonCode = "fund_transfer_and_intracompany_payment"
+const ExchangeReasonCodeGiftsAndDonations ExchangeReasonCode = "gifts_and_donations"
+const ExchangeReasonCodeGovernmentServicesAndTax ExchangeReasonCode = "government_services_and_tax"
+const ExchangeReasonCodeInsurance ExchangeReasonCode = "insurance"
+const ExchangeReasonCodeInventory ExchangeReasonCode = "inventory"
+const ExchangeReasonCodeInvestmentDividendAndInterest ExchangeReasonCode = "investment_dividend_and_interest"
+const ExchangeReasonCodeLoanAndLoanRepayment ExchangeReasonCode = "loan_and_loan_repayment"
+const ExchangeReasonCodeMarketing ExchangeReasonCode = "marketing"
+const ExchangeReasonCodePaymentForGoodsAndServices ExchangeReasonCode = "payment_for_goods_and_services"
+const ExchangeReasonCodePayroll ExchangeReasonCode = "payroll"
+const ExchangeReasonCodeRefund ExchangeReasonCode = "refund"
+const ExchangeReasonCodeRentalAndProperty ExchangeReasonCode = "rental_and_property"
+const ExchangeReasonCodeSales ExchangeReasonCode = "sales"
+const ExchangeReasonCodeServiceProviderAndSoftware ExchangeReasonCode = "service_provider_and_software"
+const ExchangeReasonCodeTravelAndTransportation ExchangeReasonCode = "travel_and_transportation"
+const ExchangeReasonCodeUtilities ExchangeReasonCode = "utilities"
+const ExpenseStateApproved ExpenseState = "approved"
+const ExpenseStateAwaitingReview ExpenseState = "awaiting_review"
+const ExpenseStateMissingInfo ExpenseState = "missing_info"
+const ExpenseStatePendingReimbursement ExpenseState = "pending_reimbursement"
+const ExpenseStateRefundRequested ExpenseState = "refund_requested"
+const ExpenseStateRefunded ExpenseState = "refunded"
+const ExpenseStateRejected ExpenseState = "rejected"
+const ExpenseStateReverted ExpenseState = "reverted"
+const ExpenseTransactionTypeAtm ExpenseTransactionType = "atm"
+const ExpenseTransactionTypeCardPayment ExpenseTransactionType = "card_payment"
+const ExpenseTransactionTypeExternal ExpenseTransactionType = "external"
+const ExpenseTransactionTypeFee ExpenseTransactionType = "fee"
+const ExpenseTransactionTypeMileageReimbursement ExpenseTransactionType = "mileage_reimbursement"
+const ExpenseTransactionTypeTransfer ExpenseTransactionType = "transfer"
+const ExpensesStateApproved ExpensesState = "approved"
+const ExpensesStateAwaitingReview ExpensesState = "awaiting_review"
+const ExpensesStateMissingInfo ExpensesState = "missing_info"
+const ExpensesStatePendingReimbursement ExpensesState = "pending_reimbursement"
+const ExpensesStateRefundRequested ExpensesState = "refund_requested"
+const ExpensesStateRefunded ExpensesState = "refunded"
+const ExpensesStateRejected ExpensesState = "rejected"
+const ExpensesStateReverted ExpensesState = "reverted"
+const ExpensesTransactionTypeAtm ExpensesTransactionType = "atm"
+const ExpensesTransactionTypeCardPayment ExpensesTransactionType = "card_payment"
+const ExpensesTransactionTypeExternal ExpensesTransactionType = "external"
+const ExpensesTransactionTypeFee ExpensesTransactionType = "fee"
+const ExpensesTransactionTypeMileageReimbursement ExpensesTransactionType = "mileage_reimbursement"
+const ExpensesTransactionTypeTransfer ExpensesTransactionType = "transfer"
+const MerchantControlsSchemaControlTypeAllow MerchantControlsSchemaControlType = "allow"
+const MerchantControlsSchemaControlTypeBlock MerchantControlsSchemaControlType = "block"
+const PaymentRequestChargeBearerDebtor PaymentRequestChargeBearer = "debtor"
+const PaymentRequestChargeBearerShared PaymentRequestChargeBearer = "shared"
+const PaymentStateCancelled PaymentState = "CANCELLED"
+const PaymentStateCompleted PaymentState = "COMPLETED"
+const PaymentStateCreated PaymentState = "CREATED"
+const PaymentStateDeclined PaymentState = "DECLINED"
+const PaymentStateDeleted PaymentState = "DELETED"
+const PaymentStateFailed PaymentState = "FAILED"
+const PaymentStatePending PaymentState = "PENDING"
+const PaymentStateReverted PaymentState = "REVERTED"
+const PaymentSystemACH PaymentSystem = "ach"
+const PaymentSystemBacs PaymentSystem = "bacs"
+const PaymentSystemChaps PaymentSystem = "chaps"
+const PaymentSystemElixir PaymentSystem = "elixir"
+const PaymentSystemFasterPayments PaymentSystem = "faster_payments"
+const PaymentSystemNics PaymentSystem = "nics"
+const PaymentSystemRix PaymentSystem = "rix"
+const PaymentSystemSEPA PaymentSystem = "sepa"
+const PaymentSystemSWIFT PaymentSystem = "swift"
+const PaymentSystemSorbnet PaymentSystem = "sorbnet"
+const PaymentSystemSumclearing PaymentSystem = "sumclearing"
+const PayoutLinkAdditionalPropsCancellationReasonTooManyNameCheckAttempts PayoutLinkAdditionalPropsCancellationReason = "too_many_name_check_attempts"
+const PayoutLinkCancellationReasonTooManyNameCheckAttempts PayoutLinkCancellationReason = "too_many_name_check_attempts"
+const PayoutLinkStateActive PayoutLinkState = "active"
+const PayoutLinkStateAwaiting PayoutLinkState = "awaiting"
+const PayoutLinkStateCancelled PayoutLinkState = "cancelled"
+const PayoutLinkStateCreated PayoutLinkState = "created"
+const PayoutLinkStateExpired PayoutLinkState = "expired"
+const PayoutLinkStateFailed PayoutLinkState = "failed"
+const PayoutLinkStateProcessed PayoutLinkState = "processed"
+const PayoutLinkStateProcessing PayoutLinkState = "processing"
+const PayoutMethodBankAccount PayoutMethod = "bank_account"
+const PayoutMethodCard PayoutMethod = "card"
+const PayoutMethodRevolut PayoutMethod = "revolut"
+const ProfileTypeBusiness ProfileType = "business"
+const ProfileTypePersonal ProfileType = "personal"
+const SimulateTopUpResponseStateCompleted SimulateTopUpResponseState = "completed"
+const SimulateTopUpResponseStateFailed SimulateTopUpResponseState = "failed"
+const SimulateTopUpResponseStatePending SimulateTopUpResponseState = "pending"
+const SimulateTopUpResponseStateReverted SimulateTopUpResponseState = "reverted"
+const SimulateTransferStateUpdateResponseStateCompleted SimulateTransferStateUpdateResponseState = "completed"
+const SimulateTransferStateUpdateResponseStateDeclined SimulateTransferStateUpdateResponseState = "declined"
+const SimulateTransferStateUpdateResponseStateFailed SimulateTransferStateUpdateResponseState = "failed"
+const SimulateTransferStateUpdateResponseStateReverted SimulateTransferStateUpdateResponseState = "reverted"
+const SimulationsBodyStateCompleted SimulationsBodyState = "completed"
+const SimulationsBodyStateFailed SimulationsBodyState = "failed"
+const SimulationsBodyStatePending SimulationsBodyState = "pending"
+const SimulationsBodyStateReverted SimulationsBodyState = "reverted"
+const SpendingPeriodSchemaEndDateActionLock SpendingPeriodSchemaEndDateAction = "lock"
+const SpendingPeriodSchemaEndDateActionTerminate SpendingPeriodSchemaEndDateAction = "terminate"
+const TeamMemberStateActive TeamMemberState = "active"
+const TeamMemberStateConfirmed TeamMemberState = "confirmed"
+const TeamMemberStateCreated TeamMemberState = "created"
+const TeamMemberStateDisabled TeamMemberState = "disabled"
+const TeamMemberStateLocked TeamMemberState = "locked"
+const TeamMemberStateWaiting TeamMemberState = "waiting"
+const TransactionCounterpartyAccountTypeExternal TransactionCounterpartyAccountType = "external"
+const TransactionCounterpartyAccountTypeRevolut TransactionCounterpartyAccountType = "revolut"
+const TransactionCounterpartyAccountTypeSelf TransactionCounterpartyAccountType = "self"
+const TransactionStateCompleted TransactionState = "completed"
+const TransactionStateCreated TransactionState = "created"
+const TransactionStateDeclined TransactionState = "declined"
+const TransactionStateFailed TransactionState = "failed"
+const TransactionStatePending TransactionState = "pending"
+const TransactionStateReverted TransactionState = "reverted"
+const TransactionTypeAtm TransactionType = "atm"
+const TransactionTypeCardChargeback TransactionType = "card_chargeback"
+const TransactionTypeCardCredit TransactionType = "card_credit"
+const TransactionTypeCardPayment TransactionType = "card_payment"
+const TransactionTypeCardRefund TransactionType = "card_refund"
+const TransactionTypeCharge TransactionType = "charge"
+const TransactionTypeChargeRefund TransactionType = "charge_refund"
+const TransactionTypeExchange TransactionType = "exchange"
+const TransactionTypeFee TransactionType = "fee"
+const TransactionTypeLoan TransactionType = "loan"
+const TransactionTypeRefund TransactionType = "refund"
+const TransactionTypeTax TransactionType = "tax"
+const TransactionTypeTaxRefund TransactionType = "tax_refund"
+const TransactionTypeTopup TransactionType = "topup"
+const TransactionTypeTopupReturn TransactionType = "topup_return"
+const TransactionTypeTransfer TransactionType = "transfer"
+const TransactionsIDTypeRequestID TransactionsIDType = "request_id"
+const TransferReasonCodeAdvertising TransferReasonCode = "advertising"
+const TransferReasonCodeAdvisorFees TransferReasonCode = "advisor_fees"
+const TransferReasonCodeBusinessInsurance TransferReasonCode = "business_insurance"
+const TransferReasonCodeConstruction TransferReasonCode = "construction"
+const TransferReasonCodeDelivery TransferReasonCode = "delivery"
+const TransferReasonCodeEducation TransferReasonCode = "education"
+const TransferReasonCodeExports TransferReasonCode = "exports"
+const TransferReasonCodeFamily TransferReasonCode = "family"
+const TransferReasonCodeFundInvestment TransferReasonCode = "fund_investment"
+const TransferReasonCodeGoods TransferReasonCode = "goods"
+const TransferReasonCodeHomesend TransferReasonCode = "homesend"
+const TransferReasonCodeHotel TransferReasonCode = "hotel"
+const TransferReasonCodeInsuranceClaims TransferReasonCode = "insurance_claims"
+const TransferReasonCodeInsurancePremium TransferReasonCode = "insurance_premium"
+const TransferReasonCodeLoanRepayment TransferReasonCode = "loan_repayment"
+const TransferReasonCodeMedical TransferReasonCode = "medical"
+const TransferReasonCodeOffice TransferReasonCode = "office"
+const TransferReasonCodeOtherFees TransferReasonCode = "other_fees"
+const TransferReasonCodePersonalTransfer TransferReasonCode = "personal_transfer"
+const TransferReasonCodePropertyPurchase TransferReasonCode = "property_purchase"
+const TransferReasonCodePropertyRental TransferReasonCode = "property_rental"
+const TransferReasonCodeRoyalties TransferReasonCode = "royalties"
+const TransferReasonCodeServices TransferReasonCode = "services"
+const TransferReasonCodeShareInvestment TransferReasonCode = "share_investment"
+const TransferReasonCodeTax TransferReasonCode = "tax"
+const TransferReasonCodeTransfer TransferReasonCode = "transfer"
+const TransferReasonCodeTransportation TransferReasonCode = "transportation"
+const TransferReasonCodeTravel TransferReasonCode = "travel"
+const TransferReasonCodeUtilities TransferReasonCode = "utilities"
+const ValidateAccountNameResponseAUResultCodeCannotBeChecked ValidateAccountNameResponseAUResultCode = "cannot_be_checked"
+const ValidateAccountNameResponseAUResultCodeCloseMatch ValidateAccountNameResponseAUResultCode = "close_match"
+const ValidateAccountNameResponseAUResultCodeMatched ValidateAccountNameResponseAUResultCode = "matched"
+const ValidateAccountNameResponseAUResultCodeNotMatched ValidateAccountNameResponseAUResultCode = "not_matched"
+const ValidateAccountNameResponseAUResultCodeTemporarilyUnavailable ValidateAccountNameResponseAUResultCode = "temporarily_unavailable"
+const ValidateAccountNameResponseEURResultCodeCannotBeChecked ValidateAccountNameResponseEURResultCode = "cannot_be_checked"
+const ValidateAccountNameResponseEURResultCodeCloseMatch ValidateAccountNameResponseEURResultCode = "close_match"
+const ValidateAccountNameResponseEURResultCodeMatched ValidateAccountNameResponseEURResultCode = "matched"
+const ValidateAccountNameResponseEURResultCodeNotMatched ValidateAccountNameResponseEURResultCode = "not_matched"
+const ValidateAccountNameResponseEURResultCodeTemporarilyUnavailable ValidateAccountNameResponseEURResultCode = "temporarily_unavailable"
+const ValidateAccountNameResponseROResultCodeCannotBeChecked ValidateAccountNameResponseROResultCode = "cannot_be_checked"
+const ValidateAccountNameResponseROResultCodeCloseMatch ValidateAccountNameResponseROResultCode = "close_match"
+const ValidateAccountNameResponseROResultCodeMatched ValidateAccountNameResponseROResultCode = "matched"
+const ValidateAccountNameResponseROResultCodeNotMatched ValidateAccountNameResponseROResultCode = "not_matched"
+const ValidateAccountNameResponseROResultCodeTemporarilyUnavailable ValidateAccountNameResponseROResultCode = "temporarily_unavailable"
+const ValidateAccountNameResponseResultCodeCannotBeChecked ValidateAccountNameResponseResultCode = "cannot_be_checked"
+const ValidateAccountNameResponseResultCodeCloseMatch ValidateAccountNameResponseResultCode = "close_match"
+const ValidateAccountNameResponseResultCodeMatched ValidateAccountNameResponseResultCode = "matched"
+const ValidateAccountNameResponseResultCodeNotMatched ValidateAccountNameResponseResultCode = "not_matched"
+const ValidateAccountNameResponseResultCodeTemporarilyUnavailable ValidateAccountNameResponseResultCode = "temporarily_unavailable"
+const ValidateAccountNameResponseUKResultCodeCannotBeChecked ValidateAccountNameResponseUKResultCode = "cannot_be_checked"
+const ValidateAccountNameResponseUKResultCodeCloseMatch ValidateAccountNameResponseUKResultCode = "close_match"
+const ValidateAccountNameResponseUKResultCodeMatched ValidateAccountNameResponseUKResultCode = "matched"
+const ValidateAccountNameResponseUKResultCodeNotMatched ValidateAccountNameResponseUKResultCode = "not_matched"
+const ValidateAccountNameResponseUKResultCodeTemporarilyUnavailable ValidateAccountNameResponseUKResultCode = "temporarily_unavailable"
+const WebhookEventTypePayoutLinkCreated WebhookEventType = "PayoutLinkCreated"
+const WebhookEventTypePayoutLinkStateChanged WebhookEventType = "PayoutLinkStateChanged"
+const WebhookEventTypeTransactionCreated WebhookEventType = "TransactionCreated"
+const WebhookEventTypeTransactionStateChanged WebhookEventType = "TransactionStateChanged"
+func (*Accounting) CreateCategory
+func (*Accounting) CreateLabel
+func (*Accounting) CreateLabelGroup
+func (*Accounting) CreateTaxRate
+func (*Accounting) DeleteCategory
+func (*Accounting) DeleteLabel
+func (*Accounting) DeleteLabelGroup
+func (*Accounting) DeleteTaxRate
+func (*Accounting) GetCategories
+func (*Accounting) GetCategoriesAll
+func (*Accounting) GetCategory
+func (*Accounting) GetLabelGroup
+func (*Accounting) GetLabelGroups
+func (*Accounting) GetLabelGroupsAll
+func (*Accounting) GetLabels
+func (*Accounting) GetLabelsAll
+func (*Accounting) GetTaxRate
+func (*Accounting) GetTaxRates
+func (*Accounting) GetTaxRatesAll
+func (*Accounting) UpdateCategory
+func (*Accounting) UpdateLabel
+func (*Accounting) UpdateLabelGroup
+func (*Accounting) UpdateTaxRate
+func (*Accounts) Get
+func (*Accounts) GetDetails
+func (*Accounts) List
+func (*CardInvitations) CancelCardInvitation
+func (*CardInvitations) Create
+func (*CardInvitations) Get
+func (*CardInvitations) List
+func (*CardInvitations) Update
+func (*Cards) Create
+func (*Cards) Delete
+func (*Cards) FreezeCard
+func (*Cards) Get
+func (*Cards) GetSensitiveCardDetails
+func (*Cards) List
+func (*Cards) ListAll
+func (*Cards) LockCard
+func (*Cards) UnfreezeCard
+func (*Cards) UnlockCard
+func (*Cards) Update
+func (*Cards) UpdateContacts
+func (*Cards) UpdateReferences
+func (*Counterparties) Create
+func (*Counterparties) Delete
+func (*Counterparties) Get
+func (*Counterparties) List
+func (*Counterparties) ListAll
+func (*Counterparties) ValidateAccountName
+func (*Expenses) GetExpense
+func (*Expenses) GetExpenseReceipt
+func (*Expenses) List
+func (*Expenses) ListAll
+func (*ForeignExchange) ExchangeMoney
+func (*ForeignExchange) GetExchangeReasons
+func (*ForeignExchange) GetRate
+func (*PaymentDrafts) Create
+func (*PaymentDrafts) Delete
+func (*PaymentDrafts) Get
+func (*PaymentDrafts) List
+func (*PayoutLinks) CancelPayoutLink
+func (*PayoutLinks) Create
+func (*PayoutLinks) Get
+func (*PayoutLinks) List
+func (*PayoutLinks) ListAll
+func (*Simulations) SimulateTopUp
+func (*Simulations) SimulateTransferStateUpdate
+func (*TeamMembers) Delete
+func (*TeamMembers) GetRoles
+func (*TeamMembers) GetRolesAll
+func (*TeamMembers) InviteTeamMember
+func (*TeamMembers) List
+func (*TeamMembers) ListAll
+func (*Transactions) Get
+func (*Transactions) List
+func (*Transactions) ListAll
+func (*Transfers) Create
+func (*Transfers) CreatePayment
+func (*Transfers) GetReasons
+func (*WebhooksV2) Create
+func (*WebhooksV2) Delete
+func (*WebhooksV2) Get
+func (*WebhooksV2) GetFailedWebhookEvents
+func (*WebhooksV2) GetFailedWebhookEventsAll
+func (*WebhooksV2) List
+func (*WebhooksV2) RotateWebhookSigningSecret
+func (*WebhooksV2) Update
+func New
+type Account struct { Balance json.Number `json:"balance"` CreatedAt time.Time `json:"created_at"` Currency AccountCurrency `json:"currency"` ID string `json:"id"` Name string `json:"name,omitempty"` Public bool `json:"public"` State AccountState `json:"state"` UpdatedAt time.Time `json:"updated_at"` }
+type AccountBankDetailsItem struct { AccountNo string `json:"account_no,omitempty"` BankCountry BankCountryCode `json:"bank_country,omitempty"` Beneficiary string `json:"beneficiary"` BeneficiaryAddress BeneficiaryAddress `json:"beneficiary_address"` BIC string `json:"bic,omitempty"` EstimatedTime EstimatedTime `json:"estimated_time"` IBAN string `json:"iban,omitempty"` Pooled bool `json:"pooled,omitempty"` RoutingNumber string `json:"routing_number,omitempty"` Schemes []PaymentSystem `json:"schemes"` SortCode string `json:"sort_code,omitempty"` UniqueReference string `json:"unique_reference,omitempty"` }
+type AccountCurrency core.Currency
+type AccountNameValidationReasonAU struct { Code AccountNameValidationReasonAUCode `json:"code,omitempty"` Type AccountNameValidationReasonAUType `json:"type,omitempty"` }
+type AccountNameValidationReasonAUCode string
+type AccountNameValidationReasonAUType string
+type AccountNameValidationReasonEUR struct { Code AccountNameValidationReasonEURCode `json:"code,omitempty"` Type AccountNameValidationReasonEURType `json:"type,omitempty"` }
+type AccountNameValidationReasonEURCode string
+type AccountNameValidationReasonEURType string
+type AccountNameValidationReasonRO struct { Code AccountNameValidationReasonROCode `json:"code,omitempty"` Type AccountNameValidationReasonROType `json:"type,omitempty"` }
+type AccountNameValidationReasonROCode string
+type AccountNameValidationReasonROType string
+type AccountNameValidationReasonUK struct { Code AccountNameValidationReasonUKCode `json:"code,omitempty"` Type AccountNameValidationReasonUKType `json:"type,omitempty"` }
+type AccountNameValidationReasonUKCode string
+type AccountNameValidationReasonUKType string
+type AccountState string
+type Accounting struct { t *transport.Transport }
+type AccountingCategoryResponse struct { Code string `json:"code,omitempty"` CreatedAt time.Time `json:"created_at"` DefaultTaxRateID string `json:"default_tax_rate_id,omitempty"` ID string `json:"id"` Name string `json:"name"` UpdatedAt time.Time `json:"updated_at"` }
+type AccountingTaxRate struct { Name string `json:"name"` Percentage json.Number `json:"percentage,omitempty"` }
+type Accounts struct { t *transport.Transport }
+type Amount json.Number
+type AmountWithCurrency struct { Amount json.Number `json:"amount,omitempty"` Currency Currency `json:"currency,omitempty"` }
+type BankCountryCode string
+type BeneficiaryAddress struct { City string `json:"city,omitempty"` Country string `json:"country"` Postcode string `json:"postcode"` Region string `json:"region,omitempty"` StreetLine1 string `json:"street_line1,omitempty"` StreetLine2 string `json:"street_line2,omitempty"` }
+type BusinessMerchantCategory string
+type CardCanBeUnlocked bool
+type CardContact string
+type CardCreatedResponse struct { Accounts []string `json:"accounts"` CanBeUnlocked CardCanBeUnlocked `json:"can_be_unlocked,omitempty"` Categories []BusinessMerchantCategory `json:"categories,omitempty"` ContactIds []CardContact `json:"contact_ids,omitempty"` Countries []string `json:"countries,omitempty"` CreatedAt time.Time `json:"created_at"` Expiry string `json:"expiry"` HolderID string `json:"holder_id,omitempty"` ID string `json:"id"` Label string `json:"label,omitempty"` LastDigits string `json:"last_digits"` MerchantControls MerchantControlsSchema `json:"merchant_controls,omitempty"` Product CardProduct `json:"product,omitempty"` References []CardReference `json:"references,omitempty"` SpendingLimits SpendingLimits `json:"spending_limits,omitempty"` SpendingPeriod *CardCreatedResponseSpendingPeriod `json:"spending_period,omitempty"` State CardState `json:"state"` UpdatedAt time.Time `json:"updated_at"` Virtual bool `json:"virtual"` }
+type CardCreatedResponseSpendingPeriod struct { EndDate *time.Time `json:"end_date,omitempty"` EndDateAction CardCreatedResponseSpendingPeriodEndDateAction `json:"end_date_action,omitempty"` StartDate *time.Time `json:"start_date,omitempty"` }
+type CardCreatedResponseSpendingPeriodEndDateAction string
+type CardInvitationCardID string
+type CardInvitationCreatedAt time.Time
+type CardInvitationCreatedHolderID string
+type CardInvitationCreatedResponse struct { Accounts []string `json:"accounts"` Categories []BusinessMerchantCategory `json:"categories,omitempty"` Countries []string `json:"countries,omitempty"` CreatedAt CardInvitationCreatedAt `json:"created_at"` ExpiryDate CardInvitationExpiryDate `json:"expiry_date,omitempty"` HolderID CardInvitationCreatedHolderID `json:"holder_id,omitempty"` ID CardInvitationID `json:"id"` Label CardInvitationLabel `json:"label,omitempty"` MerchantControls CardInvitationMerchantControls `json:"merchant_controls,omitempty"` SpendingLimits SpendingLimits `json:"spending_limits,omitempty"` SpendingPeriod CardInvitationSpendingPeriod `json:"spending_period,omitempty"` State CardInvitationState `json:"state"` UpdatedAt CardInvitationUpdatedAt `json:"updated_at"` Virtual CardInvitationVirtual `json:"virtual"` }
+type CardInvitationExpiryDate time.Time
+type CardInvitationHolderID string
+type CardInvitationID string
+type CardInvitationLabel string
+type CardInvitationMerchantControls struct { ControlType CardInvitationMerchantControlsControlType `json:"control_type"` MerchantIds []string `json:"merchant_ids"` }
+type CardInvitationMerchantControlsControlType string
+type CardInvitationResponse struct { Accounts []string `json:"accounts"` CardID CardInvitationCardID `json:"card_id,omitempty"` Categories []BusinessMerchantCategory `json:"categories,omitempty"` Countries []string `json:"countries,omitempty"` CreatedAt CardInvitationCreatedAt `json:"created_at"` ExpiryDate CardInvitationExpiryDate `json:"expiry_date,omitempty"` HolderID CardInvitationHolderID `json:"holder_id,omitempty"` ID CardInvitationID `json:"id"` Label CardInvitationLabel `json:"label,omitempty"` MerchantControls CardInvitationMerchantControls `json:"merchant_controls,omitempty"` SpendProgram SpendProgram `json:"spend_program,omitempty"` SpendingLimits SpendingLimits `json:"spending_limits,omitempty"` SpendingPeriod CardInvitationSpendingPeriod `json:"spending_period,omitempty"` State CardInvitationState `json:"state"` UpdatedAt CardInvitationUpdatedAt `json:"updated_at"` Virtual CardInvitationVirtual `json:"virtual"` }
+type CardInvitationSpendProgram struct { Label string `json:"label"` }
+type CardInvitationSpendingLimits struct { AllTime SpendingLimitPeriodic `json:"all_time,omitempty"` Day SpendingLimitPeriodic `json:"day,omitempty"` Month SpendingLimitPeriodic `json:"month,omitempty"` Quarter SpendingLimitPeriodic `json:"quarter,omitempty"` Single SpendingLimitSingleTransaction `json:"single,omitempty"` Week SpendingLimitPeriodic `json:"week,omitempty"` Year SpendingLimitPeriodic `json:"year,omitempty"` }
+type CardInvitationSpendingPeriod struct { EndDate *time.Time `json:"end_date,omitempty"` EndDateAction CardInvitationSpendingPeriodEndDateAction `json:"end_date_action,omitempty"` StartDate *time.Time `json:"start_date,omitempty"` }
+type CardInvitationSpendingPeriodEndDateAction string
+type CardInvitationState string
+type CardInvitationUpdatedAt time.Time
+type CardInvitationUpdatedResponse struct { Accounts []string `json:"accounts"` Categories []BusinessMerchantCategory `json:"categories,omitempty"` Countries []string `json:"countries,omitempty"` CreatedAt CardInvitationCreatedAt `json:"created_at"` ExpiryDate CardInvitationExpiryDate `json:"expiry_date,omitempty"` HolderID CardInvitationCreatedHolderID `json:"holder_id,omitempty"` ID CardInvitationID `json:"id"` Label CardInvitationLabel `json:"label,omitempty"` MerchantControls CardInvitationMerchantControls `json:"merchant_controls,omitempty"` SpendProgram SpendProgram `json:"spend_program,omitempty"` SpendingLimits SpendingLimits `json:"spending_limits,omitempty"` SpendingPeriod CardInvitationSpendingPeriod `json:"spending_period,omitempty"` State CardInvitationState `json:"state"` UpdatedAt CardInvitationUpdatedAt `json:"updated_at"` Virtual CardInvitationVirtual `json:"virtual"` }
+type CardInvitationVirtual bool
+type CardInvitations struct { t *transport.Transport }
+type CardInvitationsBody struct { Accounts []string `json:"accounts,omitempty"` Categories []BusinessMerchantCategory `json:"categories,omitempty"` Countries []string `json:"countries,omitempty"` ExpiryPeriod string `json:"expiry_period,omitempty"` HolderID string `json:"holder_id"` Label string `json:"label,omitempty"` MerchantControls MerchantControlsSchema `json:"merchant_controls,omitempty"` RequestID string `json:"request_id"` SpendingLimits SpendingLimitsSchema `json:"spending_limits,omitempty"` SpendingPeriod *CardInvitationsBodySpendingPeriod `json:"spending_period,omitempty"` Virtual bool `json:"virtual"` }
+type CardInvitationsBodySpendingPeriod struct { EndDate *time.Time `json:"end_date,omitempty"` EndDateAction CardInvitationsBodySpendingPeriodEndDateAction `json:"end_date_action,omitempty"` StartDate *time.Time `json:"start_date,omitempty"` }
+type CardInvitationsBodySpendingPeriodEndDateAction string
+type CardProduct struct { Code string `json:"code"` }
+type CardReference struct { Name string `json:"name"` Value string `json:"value"` }
+type CardResponse struct { Accounts []string `json:"accounts"` CanBeUnlocked CardCanBeUnlocked `json:"can_be_unlocked,omitempty"` Categories []BusinessMerchantCategory `json:"categories,omitempty"` ContactIds []CardContact `json:"contact_ids,omitempty"` Countries []string `json:"countries,omitempty"` CreatedAt time.Time `json:"created_at"` Expiry string `json:"expiry"` HolderID string `json:"holder_id,omitempty"` ID string `json:"id"` Label string `json:"label,omitempty"` LastDigits string `json:"last_digits"` MerchantControls MerchantControlsSchema `json:"merchant_controls,omitempty"` Product CardProduct `json:"product,omitempty"` References []CardReference `json:"references,omitempty"` SpendProgram SpendProgram `json:"spend_program,omitempty"` SpendingLimits SpendingLimits `json:"spending_limits,omitempty"` SpendingPeriod *CardResponseSpendingPeriod `json:"spending_period,omitempty"` State CardState `json:"state"` UpdatedAt time.Time `json:"updated_at"` Virtual bool `json:"virtual"` }
+type CardResponseSpendingPeriod struct { EndDate *time.Time `json:"end_date,omitempty"` EndDateAction CardResponseSpendingPeriodEndDateAction `json:"end_date_action,omitempty"` StartDate *time.Time `json:"start_date,omitempty"` }
+type CardResponseSpendingPeriodEndDateAction string
+type CardState string
+type Cards struct { t *transport.Transport }
+type CardsBody struct { Accounts []string `json:"accounts,omitempty"` Categories []BusinessMerchantCategory `json:"categories,omitempty"` ContactIds []string `json:"contact_ids,omitempty"` Countries []string `json:"countries,omitempty"` HolderID string `json:"holder_id,omitempty"` Label string `json:"label,omitempty"` MerchantControls MerchantControlsSchema `json:"merchant_controls,omitempty"` Product *CardsBodyProduct `json:"product,omitempty"` References []CardReference `json:"references,omitempty"` RequestID string `json:"request_id"` SpendingLimits SpendingLimitsSchema `json:"spending_limits,omitempty"` SpendingPeriod *CardsBodySpendingPeriod `json:"spending_period,omitempty"` Virtual bool `json:"virtual"` }
+type CardsBodyProduct struct { Code string `json:"code"` }
+type CardsBodySpendingPeriod struct { EndDate *time.Time `json:"end_date,omitempty"` EndDateAction CardsBodySpendingPeriodEndDateAction `json:"end_date_action,omitempty"` StartDate *time.Time `json:"start_date,omitempty"` }
+type CardsBodySpendingPeriodEndDateAction string
+type Category struct { Code string `json:"code,omitempty"` ID string `json:"id"` Name string `json:"name"` }
+type ChargeBearer string
+type Client struct { transport *transport.Transport Counterparties *Counterparties Accounting *Accounting Accounts *Accounts CardInvitations *CardInvitations Cards *Cards ForeignExchange *ForeignExchange Expenses *Expenses Transfers *Transfers PaymentDrafts *PaymentDrafts PayoutLinks *PayoutLinks TeamMembers *TeamMembers Simulations *Simulations Transactions *Transactions WebhooksV2 *WebhooksV2 }
+type Counterparties struct { t *transport.Transport }
+type Counterparty struct { Accounts []CounterpartyAccount `json:"accounts,omitempty"` Cards []CounterpartyCard `json:"cards,omitempty"` Country CountryCode `json:"country,omitempty"` CreatedAt time.Time `json:"created_at"` ID string `json:"id"` Name string `json:"name"` ProfileType ProfileType `json:"profile_type,omitempty"` Revtag string `json:"revtag,omitempty"` State CounterpartyState `json:"state"` UpdatedAt time.Time `json:"updated_at"` }
+type CounterpartyAccount struct { AccountNo string `json:"account_no,omitempty"` BankCountry BankCountryCode `json:"bank_country,omitempty"` BIC string `json:"bic,omitempty"` BSBCode string `json:"bsb_code,omitempty"` Clabe string `json:"clabe,omitempty"` Currency AccountCurrency `json:"currency"` IBAN string `json:"iban,omitempty"` ID string `json:"id"` Ifsc string `json:"ifsc,omitempty"` Name string `json:"name,omitempty"` RecipientCharges CounterpartyAccountRecipientCharges `json:"recipient_charges,omitempty"` RoutingNumber string `json:"routing_number,omitempty"` SortCode string `json:"sort_code,omitempty"` Type CounterpartyAccountType `json:"type"` }
+type CounterpartyAccountRecipientCharges string
+type CounterpartyAccountType string
+type CounterpartyCard struct { Country CountryCodeCard `json:"country"` Currency Currency `json:"currency"` ID string `json:"id"` LastDigits string `json:"last_digits"` Name string `json:"name"` Scheme CounterpartyCardScheme `json:"scheme"` }
+type CounterpartyCardScheme string
+type CounterpartyError struct { Code int `json:"code"` Message string `json:"message"` Params CounterpartyErrorParams `json:"params,omitempty"` }
+type CounterpartyErrorParams struct { CounterpartyID string `json:"counterparty_id,omitempty"` }
+type CounterpartyState string
+type CountryCode string
+type CountryCodeCard string
+type CountryCodeMerchant string
+type CreateAccountingCategoryRequest struct { Code string `json:"code"` DefaultTaxRateID string `json:"default_tax_rate_id,omitempty"` Name string `json:"name"` }
+type CreateCounterpartyRequest struct { AccountNo string `json:"account_no,omitempty"` Address BeneficiaryAddress `json:"address,omitempty"` BankCountry BankCountryCode `json:"bank_country,omitempty"` BIC string `json:"bic,omitempty"` BSBCode string `json:"bsb_code,omitempty"` Clabe string `json:"clabe,omitempty"` CompanyName string `json:"company_name,omitempty"` Currency Currency `json:"currency,omitempty"` IBAN string `json:"iban,omitempty"` Ifsc string `json:"ifsc,omitempty"` IndividualName IndividualName `json:"individual_name,omitempty"` Name string `json:"name,omitempty"` ProfileType CreateCounterpartyRequestProfileType `json:"profile_type,omitempty"` Revtag string `json:"revtag,omitempty"` RoutingNumber string `json:"routing_number,omitempty"` SortCode string `json:"sort_code,omitempty"` }
+type CreateCounterpartyRequestProfileType string
+type CreateLabelGroupRequest struct { Labels []CreateLabelRequest `json:"labels"` Name string `json:"name"` }
+type CreateLabelRequest struct { Name string `json:"name"` }
+type CreatePaymentDraftRequest struct { Payments []PaymentRequest `json:"payments"` ScheduleFor *time.Time `json:"schedule_for,omitempty"` Title string `json:"title,omitempty"` }
+type CreatePaymentDraftResponse struct { ID string `json:"id"` }
+type CreatePayoutLinkRequest struct { AccountID PayoutLinkAccountID `json:"account_id"` Amount PayoutLinkAmount `json:"amount"` CounterpartyName PayoutLinkCounterpartyName `json:"counterparty_name"` Currency Currency `json:"currency"` ExpiryPeriod PayoutLinkExpiryPeriod `json:"expiry_period,omitempty"` PayoutMethods []PayoutMethod `json:"payout_methods,omitempty"` Reference string `json:"reference"` RequestID PayoutLinkRequestID `json:"request_id"` SaveCounterparty bool `json:"save_counterparty,omitempty"` TransferReasonCode TransferReasonCode `json:"transfer_reason_code,omitempty"` }
+type CreateTaxRateRequest struct { Name string `json:"name"` Percentage json.Number `json:"percentage"` }
+type CreateWebhookRequest struct { Events []WebhookEventType `json:"events,omitempty"` URL URL `json:"url"` }
+type Currency core.Currency
+type Error struct { Code int `json:"code"` Message string `json:"message"` }
+type ErrorUnauthorized struct { Message string `json:"message"` Status int `json:"status"` }
+type ErrorUnprocessableEntity struct { Code int `json:"code,omitempty"` Message string `json:"message"` }
+type ErrorWithID struct { Code int `json:"code"` ErrorID string `json:"error_id"` Message string `json:"message"` }
+type ErrorWithStatus struct { Message string `json:"message"` Status int `json:"status"` }
+type EstimatedTime struct { Max int `json:"max,omitempty"` Min int `json:"min,omitempty"` Unit EstimatedTimeUnit `json:"unit"` }
+type EstimatedTimeUnit string
+type ExchangePartFrom struct { AccountID string `json:"account_id"` Amount json.Number `json:"amount,omitempty"` Currency Currency `json:"currency"` }
+type ExchangePartTo struct { AccountID string `json:"account_id"` Amount json.Number `json:"amount,omitempty"` Currency Currency `json:"currency"` }
+type ExchangeRateResponse struct { Fee Fee `json:"fee"` From AmountWithCurrency `json:"from"` Rate json.Number `json:"rate"` RateDate time.Time `json:"rate_date"` To AmountWithCurrency `json:"to"` }
+type ExchangeReason struct { Code ExchangeReasonCode `json:"code"` Name string `json:"name"` }
+type ExchangeReasonCode string
+type ExchangeRequest struct { ExchangeReasonCode ExchangeReasonCode `json:"exchange_reason_code,omitempty"` From ExchangePartFrom `json:"from"` Reference string `json:"reference,omitempty"` RequestID string `json:"request_id"` To ExchangePartTo `json:"to"` }
+type ExchangeResponse struct { CompletedAt *time.Time `json:"completed_at,omitempty"` CreatedAt *time.Time `json:"created_at,omitempty"` ID string `json:"id,omitempty"` ReasonCode string `json:"reason_code,omitempty"` State TransactionState `json:"state,omitempty"` Type string `json:"type,omitempty"` }
+type Expense struct { CompletedAt *time.Time `json:"completed_at,omitempty"` Description string `json:"description,omitempty"` ExpenseDate time.Time `json:"expense_date"` ID string `json:"id"` Labels map[string][]string `json:"labels"` Merchant string `json:"merchant,omitempty"` Payer string `json:"payer,omitempty"` ReceiptIds []string `json:"receipt_ids"` SpentAmount *ExpenseSpentAmount `json:"spent_amount"` Splits []ExpenseSplit `json:"splits"` State ExpenseState `json:"state"` SubmittedAt *time.Time `json:"submitted_at,omitempty"` TransactionID string `json:"transaction_id,omitempty"` TransactionType ExpenseTransactionType `json:"transaction_type"` }
+type ExpenseSpentAmount struct { Amount Amount `json:"amount"` Currency Currency `json:"currency"` }
+type ExpenseSplit struct { Amount *ExpenseSplitAmount `json:"amount"` Category Category `json:"category"` TaxRate TaxRate `json:"tax_rate"` }
+type ExpenseSplitAmount struct { Amount Amount `json:"amount,omitempty"` Currency Currency `json:"currency,omitempty"` }
+type ExpenseState string
+type ExpenseTransactionType string
+type Expenses struct { t *transport.Transport }
+type ExpensesState string
+type ExpensesTransactionType string
+type Fee struct { Amount json.Number `json:"amount,omitempty"` Currency Currency `json:"currency,omitempty"` }
+type ForeignExchange struct { t *transport.Transport }
+type GetAccountingCategoriesParams struct { Limit int `json:"limit,omitempty"` PageToken PageToken `json:"page_token,omitempty"` }
+type GetAccountingCategoriesResponse struct { AccountingCategories []AccountingCategoryResponse `json:"accounting_categories"` NextPageToken PageToken `json:"next_page_token,omitempty"` }
+type GetCardInvitationsParams struct { CreatedBefore time.Time `json:"created_before,omitempty"` Limit json.Number `json:"limit,omitempty"` State []CardInvitationState `json:"state,omitempty"` }
+type GetCardsParams struct { CreatedBefore time.Time `json:"created_before,omitempty"` Limit json.Number `json:"limit,omitempty"` }
+type GetCounterpartiesParams struct { Name string `json:"name,omitempty"` AccountNo string `json:"account_no,omitempty"` SortCode string `json:"sort_code,omitempty"` IBAN string `json:"iban,omitempty"` BIC string `json:"bic,omitempty"` CreatedBefore time.Time `json:"created_before,omitempty"` Limit int `json:"limit,omitempty"` }
+type GetExpensesParams struct { From time.Time `json:"from,omitempty"` To time.Time `json:"to,omitempty"` Count int `json:"count,omitempty"` State ExpensesState `json:"state,omitempty"` TransactionType ExpensesTransactionType `json:"transaction_type,omitempty"` }
+type GetFailedWebhookEventsParams struct { Limit int `json:"limit,omitempty"` CreatedBefore time.Time `json:"created_before,omitempty"` }
+type GetLabelGroupsParams struct { Limit int `json:"limit,omitempty"` PageToken PageToken `json:"page_token,omitempty"` }
+type GetLabelGroupsResponse struct { LabelGroups []LabelGroupResponse `json:"label_groups"` NextPageToken PageToken `json:"next_page_token,omitempty"` }
+type GetLabelsParams struct { Limit int `json:"limit,omitempty"` PageToken PageToken `json:"page_token,omitempty"` }
+type GetLabelsResponse struct { Labels []LabelResponse `json:"labels"` NextPageToken PageToken `json:"next_page_token,omitempty"` }
+type GetPayoutLinksParams struct { State []PayoutLinkState `json:"state,omitempty"` CreatedBefore time.Time `json:"created_before,omitempty"` Limit int `json:"limit,omitempty"` }
+type GetRateParams struct { From Currency `json:"from"` Amount json.Number `json:"amount,omitempty"` To Currency `json:"to"` }
+type GetRolesParams struct { CreatedBefore time.Time `json:"created_before,omitempty"` Limit json.Number `json:"limit,omitempty"` }
+type GetSensitiveCardDetailsResponse struct { Cvv string `json:"cvv"` Expiry string `json:"expiry"` Pan string `json:"pan"` }
+type GetTaxRatesParams struct { Limit int `json:"limit,omitempty"` PageToken PageToken `json:"page_token,omitempty"` }
+type GetTaxRatesResponse struct { NextPageToken PageToken `json:"next_page_token,omitempty"` TaxRates []TaxRateResponse `json:"tax_rates"` }
+type GetTeamMembersParams struct { CreatedBefore time.Time `json:"created_before,omitempty"` Limit json.Number `json:"limit,omitempty"` }
+type GetTransactionParams struct { IDType TransactionsIDType `json:"id_type,omitempty"` }
+type GetTransactionsParams struct { From time.Time `json:"from,omitempty"` To time.Time `json:"to,omitempty"` Account string `json:"account,omitempty"` Count int `json:"count,omitempty"` Type TransactionType `json:"type,omitempty"` }
+type IndividualName struct { FirstName string `json:"first_name,omitempty"` LastName string `json:"last_name,omitempty"` }
+type InviteTeamMemberResponse struct { CreatedAt time.Time `json:"created_at"` Email string `json:"email"` ID string `json:"id"` RoleID string `json:"role_id"` UpdatedAt time.Time `json:"updated_at"` }
+type LabelGroupResponse struct { CreatedAt time.Time `json:"created_at"` ID string `json:"id"` Name string `json:"name"` UpdatedAt time.Time `json:"updated_at"` }
+type LabelResponse struct { CreatedAt time.Time `json:"created_at"` ID string `json:"id"` Name string `json:"name"` UpdatedAt time.Time `json:"updated_at"` }
+type MerchantControlsSchema struct { ControlType MerchantControlsSchemaControlType `json:"control_type"` MerchantIds []string `json:"merchant_ids"` }
+type MerchantControlsSchemaControlType string
+type PageToken string
+type PaymentDraftResponse struct { Payments []PaymentInfo `json:"payments"` ScheduledFor *time.Time `json:"scheduled_for,omitempty"` Title string `json:"title,omitempty"` }
+type PaymentDrafts struct { t *transport.Transport }
+type PaymentDraftsResponse struct { PaymentOrders []PaymentOrderInfo `json:"payment_orders"` }
+type PaymentInfo struct { AccountID string `json:"account_id"` Amount AmountWithCurrency `json:"amount"` Currency Currency `json:"currency,omitempty"` CurrentChargeOptions *PaymentInfoCurrentChargeOptions `json:"current_charge_options"` ErrorMessage string `json:"error_message,omitempty"` ID string `json:"id"` Reason string `json:"reason,omitempty"` Receiver PaymentReceiver `json:"receiver"` Reference string `json:"reference,omitempty"` State PaymentState `json:"state"` }
+type PaymentInfoCurrentChargeOptions struct { Fee AmountWithCurrency `json:"fee,omitempty"` From AmountWithCurrency `json:"from"` Rate string `json:"rate,omitempty"` To AmountWithCurrency `json:"to"` }
+type PaymentOrderInfo struct { ID string `json:"id"` PaymentsCount int `json:"payments_count"` ScheduledFor *time.Time `json:"scheduled_for,omitempty"` Title string `json:"title,omitempty"` }
+type PaymentReceiver struct { AccountID string `json:"account_id,omitempty"` CardID string `json:"card_id,omitempty"` CounterpartyID string `json:"counterparty_id"` }
+type PaymentRequest struct { AccountID string `json:"account_id"` Amount json.Number `json:"amount"` ChargeBearer PaymentRequestChargeBearer `json:"charge_bearer,omitempty"` Currency Currency `json:"currency"` Receiver PaymentReceiver `json:"receiver"` Reference string `json:"reference"` }
+type PaymentRequestChargeBearer string
+type PaymentState string
+type PaymentSystem string
+type PayoutLink struct { AccountID PayoutLinkAccountID `json:"account_id"` Amount PayoutLinkAmount `json:"amount"` CancellationReason PayoutLinkCancellationReason `json:"cancellation_reason,omitempty"` CounterpartyID string `json:"counterparty_id,omitempty"` CounterpartyName PayoutLinkCounterpartyName `json:"counterparty_name"` CreatedAt time.Time `json:"created_at"` Currency Currency `json:"currency"` ExpiryDate PayoutLinkExpiryDate `json:"expiry_date,omitempty"` ID string `json:"id"` PayoutMethods []PayoutMethod `json:"payout_methods"` Reference PayoutLinkReference `json:"reference"` RequestID PayoutLinkRequestID `json:"request_id"` SaveCounterparty bool `json:"save_counterparty"` State PayoutLinkState `json:"state"` TransactionID string `json:"transaction_id,omitempty"` TransferReasonCode TransferReasonCode `json:"transfer_reason_code,omitempty"` UpdatedAt time.Time `json:"updated_at"` URL string `json:"url,omitempty"` }
+type PayoutLinkAccountID string
+type PayoutLinkAdditionalProps struct { CancellationReason PayoutLinkAdditionalPropsCancellationReason `json:"cancellation_reason,omitempty"` CounterpartyID string `json:"counterparty_id,omitempty"` TransactionID string `json:"transaction_id,omitempty"` }
+type PayoutLinkAdditionalPropsCancellationReason string
+type PayoutLinkAmount json.Number
+type PayoutLinkCancellationReason string
+type PayoutLinkCounterpartyName string
+type PayoutLinkExpiryDate time.Time
+type PayoutLinkExpiryPeriod string
+type PayoutLinkInitialProps struct { AccountID PayoutLinkAccountID `json:"account_id"` Amount PayoutLinkAmount `json:"amount"` CounterpartyName PayoutLinkCounterpartyName `json:"counterparty_name"` CreatedAt time.Time `json:"created_at"` Currency Currency `json:"currency"` ExpiryDate PayoutLinkExpiryDate `json:"expiry_date,omitempty"` ID string `json:"id"` PayoutMethods []PayoutMethod `json:"payout_methods"` Reference PayoutLinkReference `json:"reference"` RequestID PayoutLinkRequestID `json:"request_id"` SaveCounterparty bool `json:"save_counterparty"` State PayoutLinkState `json:"state"` TransferReasonCode TransferReasonCode `json:"transfer_reason_code,omitempty"` UpdatedAt time.Time `json:"updated_at"` URL string `json:"url,omitempty"` }
+type PayoutLinkReference string
+type PayoutLinkRequestID string
+type PayoutLinkState string
+type PayoutLinks struct { t *transport.Transport }
+type PayoutMethod string
+type ProfileType string
+type ResourceCreatedResponse struct { ID string `json:"id,omitempty"` }
+type Role struct { CreatedAt time.Time `json:"created_at"` ID string `json:"id"` Name string `json:"name"` UpdatedAt time.Time `json:"updated_at"` }
+type SimulateTopUpResponse struct { CompletedAt *time.Time `json:"completed_at,omitempty"` CreatedAt time.Time `json:"created_at"` ID string `json:"id"` State SimulateTopUpResponseState `json:"state"` }
+type SimulateTopUpResponseState string
+type SimulateTransferStateUpdateResponse struct { CompletedAt *time.Time `json:"completed_at,omitempty"` CreatedAt time.Time `json:"created_at"` ID string `json:"id"` State SimulateTransferStateUpdateResponseState `json:"state"` }
+type SimulateTransferStateUpdateResponseState string
+type Simulations struct { t *transport.Transport }
+type SimulationsBody struct { AccountID string `json:"account_id"` Amount json.Number `json:"amount"` Currency Currency `json:"currency"` Reference string `json:"reference,omitempty"` State SimulationsBodyState `json:"state,omitempty"` }
+type SimulationsBodyState string
+type SpendProgram struct { Label string `json:"label"` }
+type SpendingLimitPeriodic struct { Amount json.Number `json:"amount"` Currency TransactionLimitCurrency `json:"currency"` }
+type SpendingLimitSingleTransaction struct { Amount json.Number `json:"amount"` Currency TransactionLimitCurrency `json:"currency"` }
+type SpendingLimits struct { AllTime SpendingLimitPeriodic `json:"all_time,omitempty"` Day SpendingLimitPeriodic `json:"day,omitempty"` Month SpendingLimitPeriodic `json:"month,omitempty"` Quarter SpendingLimitPeriodic `json:"quarter,omitempty"` Single SpendingLimitSingleTransaction `json:"single,omitempty"` Week SpendingLimitPeriodic `json:"week,omitempty"` Year SpendingLimitPeriodic `json:"year,omitempty"` }
+type SpendingLimitsSchema struct { AllTime SpendingLimitPeriodic `json:"all_time,omitempty"` Day SpendingLimitPeriodic `json:"day,omitempty"` Month SpendingLimitPeriodic `json:"month,omitempty"` Quarter SpendingLimitPeriodic `json:"quarter,omitempty"` Single SpendingLimitSingleTransaction `json:"single,omitempty"` Week SpendingLimitPeriodic `json:"week,omitempty"` Year SpendingLimitPeriodic `json:"year,omitempty"` }
+type SpendingPeriodSchema struct { EndDate *time.Time `json:"end_date,omitempty"` EndDateAction SpendingPeriodSchemaEndDateAction `json:"end_date_action,omitempty"` StartDate *time.Time `json:"start_date,omitempty"` }
+type SpendingPeriodSchemaEndDateAction string
+type TaxRate struct { ID string `json:"id"` Name string `json:"name"` Percentage json.Number `json:"percentage,omitempty"` }
+type TaxRateResponse struct { CreatedAt time.Time `json:"created_at"` ID string `json:"id"` Name string `json:"name"` Percentage json.Number `json:"percentage,omitempty"` UpdatedAt time.Time `json:"updated_at"` }
+type TeamMember struct { CreatedAt time.Time `json:"created_at"` Email string `json:"email"` FirstName string `json:"first_name,omitempty"` ID string `json:"id"` LastName string `json:"last_name,omitempty"` RoleID string `json:"role_id"` State TeamMemberState `json:"state"` UpdatedAt time.Time `json:"updated_at"` }
+type TeamMemberState string
+type TeamMembers struct { t *transport.Transport }
+type TeamMembersBody struct { Email string `json:"email"` RoleID string `json:"role_id"` }
+type Transaction struct { Card TransactionCard `json:"card,omitempty"` CompletedAt *time.Time `json:"completed_at,omitempty"` CreatedAt time.Time `json:"created_at"` ID string `json:"id"` Legs []TransactionLeg `json:"legs"` Merchant TransactionMerchant `json:"merchant,omitempty"` ReasonCode string `json:"reason_code,omitempty"` Reference string `json:"reference,omitempty"` RelatedTransactionID string `json:"related_transaction_id,omitempty"` RequestID string `json:"request_id,omitempty"` ScheduledFor *time.Time `json:"scheduled_for,omitempty"` State TransactionState `json:"state"` Type TransactionType `json:"type"` UpdatedAt time.Time `json:"updated_at"` }
+type TransactionCard struct { CardNumber string `json:"card_number,omitempty"` FirstName string `json:"first_name,omitempty"` ID string `json:"id,omitempty"` LastName string `json:"last_name,omitempty"` Phone string `json:"phone,omitempty"` References []CardReference `json:"references,omitempty"` }
+type TransactionCounterparty struct { AccountID string `json:"account_id,omitempty"` AccountType TransactionCounterpartyAccountType `json:"account_type"` ID string `json:"id,omitempty"` }
+type TransactionCounterpartyAccountType string
+type TransactionLeg struct { AccountID string `json:"account_id"` Amount json.Number `json:"amount"` Balance json.Number `json:"balance,omitempty"` BillAmount json.Number `json:"bill_amount,omitempty"` BillCurrency Currency `json:"bill_currency,omitempty"` Counterparty TransactionCounterparty `json:"counterparty,omitempty"` Currency Currency `json:"currency"` Description string `json:"description,omitempty"` Fee json.Number `json:"fee,omitempty"` LegID string `json:"leg_id"` }
+type TransactionLimitCurrency core.Currency
+type TransactionMerchant struct { CategoryCode string `json:"category_code,omitempty"` City string `json:"city,omitempty"` Country CountryCodeMerchant `json:"country,omitempty"` ID string `json:"id,omitempty"` Name string `json:"name,omitempty"` }
+type TransactionPaymentRequest struct { AccountID string `json:"account_id"` Amount json.Number `json:"amount"` ChargeBearer ChargeBearer `json:"charge_bearer,omitempty"` Currency Currency `json:"currency,omitempty"` ExchangeReasonCode ExchangeReasonCode `json:"exchange_reason_code,omitempty"` Receiver PaymentReceiver `json:"receiver"` Reference string `json:"reference,omitempty"` RequestID string `json:"request_id"` TransferReasonCode TransferReasonCode `json:"transfer_reason_code,omitempty"` }
+type TransactionState string
+type TransactionType string
+type Transactions struct { t *transport.Transport }
+type TransactionsIDType string
+type TransferReason struct { Code TransferReasonCode `json:"code"` Country CountryCode `json:"country"` Currency Currency `json:"currency"` Description string `json:"description"` }
+type TransferReasonCode string
+type TransferRequest struct { Amount json.Number `json:"amount"` Currency Currency `json:"currency"` Reference string `json:"reference,omitempty"` RequestID string `json:"request_id"` SourceAccountID string `json:"source_account_id"` TargetAccountID string `json:"target_account_id"` }
+type TransferResponse struct { CompletedAt *time.Time `json:"completed_at,omitempty"` CreatedAt time.Time `json:"created_at"` ID string `json:"id"` State TransactionState `json:"state"` }
+type Transfers struct { t *transport.Transport }
+type URL string
+type UpdateAccountingCategoryRequest struct { Code string `json:"code,omitempty"` DefaultTaxRateID string `json:"default_tax_rate_id,omitempty"` Name string `json:"name,omitempty"` }
+type UpdateLabelGroupRequest struct { Name string `json:"name"` }
+type UpdateLabelRequest struct { Name string `json:"name"` }
+type UpdateTaxRateRequest struct { Name string `json:"name,omitempty"` }
+type UpdateWebhookRequest struct { Events []WebhookEventType `json:"events,omitempty"` URL URL `json:"url,omitempty"` }
+type ValidateAccountNameRequest struct { AccountNo string `json:"account_no,omitempty"` BSB string `json:"bsb,omitempty"` CompanyName string `json:"company_name,omitempty"` IndividualName *ValidateAccountNameRequestIndividualName `json:"individual_name,omitempty"` BIC string `json:"bic,omitempty"` IBAN string `json:"iban,omitempty"` RecipientCountry string `json:"recipient_country,omitempty"` RecipientCurrency core.Currency `json:"recipient_currency,omitempty"` SortCode string `json:"sort_code,omitempty"` }
+type ValidateAccountNameRequestAU struct { AccountNo string `json:"account_no"` BSB string `json:"bsb"` CompanyName string `json:"company_name,omitempty"` IndividualName *ValidateAccountNameRequestAUIndividualName `json:"individual_name,omitempty"` }
+type ValidateAccountNameRequestAUIndividualName struct { FirstName string `json:"first_name"` LastName string `json:"last_name"` }
+type ValidateAccountNameRequestEUR struct { BIC string `json:"bic,omitempty"` CompanyName string `json:"company_name,omitempty"` IBAN string `json:"iban"` IndividualName *ValidateAccountNameRequestEURIndividualName `json:"individual_name,omitempty"` RecipientCountry string `json:"recipient_country"` RecipientCurrency core.Currency `json:"recipient_currency"` }
+type ValidateAccountNameRequestEURIndividualName struct { FirstName string `json:"first_name"` LastName string `json:"last_name"` }
+type ValidateAccountNameRequestIndividualName struct { FirstName string `json:"first_name"` LastName string `json:"last_name"` }
+type ValidateAccountNameRequestRO struct { BIC string `json:"bic,omitempty"` CompanyName string `json:"company_name,omitempty"` IBAN string `json:"iban"` IndividualName *ValidateAccountNameRequestROIndividualName `json:"individual_name,omitempty"` RecipientCountry string `json:"recipient_country"` RecipientCurrency core.Currency `json:"recipient_currency"` }
+type ValidateAccountNameRequestROIndividualName struct { FirstName string `json:"first_name"` LastName string `json:"last_name"` }
+type ValidateAccountNameRequestUK struct { AccountNo string `json:"account_no"` CompanyName string `json:"company_name,omitempty"` IndividualName *ValidateAccountNameRequestUKIndividualName `json:"individual_name,omitempty"` SortCode string `json:"sort_code"` }
+type ValidateAccountNameRequestUKIndividualName struct { FirstName string `json:"first_name"` LastName string `json:"last_name"` }
+type ValidateAccountNameResponse struct { CompanyName string `json:"company_name,omitempty"` IndividualName *ValidateAccountNameResponseIndividualName `json:"individual_name,omitempty"` Reason AccountNameValidationReasonAU `json:"reason,omitempty"` ResultCode ValidateAccountNameResponseResultCode `json:"result_code,omitempty"` }
+type ValidateAccountNameResponseAU struct { CompanyName string `json:"company_name,omitempty"` IndividualName *ValidateAccountNameResponseAUIndividualName `json:"individual_name,omitempty"` Reason AccountNameValidationReasonAU `json:"reason,omitempty"` ResultCode ValidateAccountNameResponseAUResultCode `json:"result_code"` }
+type ValidateAccountNameResponseAUIndividualName struct { FirstName string `json:"first_name"` LastName string `json:"last_name"` }
+type ValidateAccountNameResponseAUResultCode string
+type ValidateAccountNameResponseEUR struct { CompanyName string `json:"company_name,omitempty"` IndividualName *ValidateAccountNameResponseEURIndividualName `json:"individual_name,omitempty"` Reason AccountNameValidationReasonEUR `json:"reason,omitempty"` ResultCode ValidateAccountNameResponseEURResultCode `json:"result_code"` }
+type ValidateAccountNameResponseEURIndividualName struct { FirstName string `json:"first_name"` LastName string `json:"last_name"` }
+type ValidateAccountNameResponseEURResultCode string
+type ValidateAccountNameResponseIndividualName struct { FirstName string `json:"first_name"` LastName string `json:"last_name"` }
+type ValidateAccountNameResponseRO struct { CompanyName string `json:"company_name,omitempty"` IndividualName *ValidateAccountNameResponseROIndividualName `json:"individual_name,omitempty"` Reason AccountNameValidationReasonRO `json:"reason,omitempty"` ResultCode ValidateAccountNameResponseROResultCode `json:"result_code"` }
+type ValidateAccountNameResponseROIndividualName struct { FirstName string `json:"first_name"` LastName string `json:"last_name"` }
+type ValidateAccountNameResponseROResultCode string
+type ValidateAccountNameResponseResultCode string
+type ValidateAccountNameResponseUK struct { CompanyName string `json:"company_name,omitempty"` IndividualName *ValidateAccountNameResponseUKIndividualName `json:"individual_name,omitempty"` Reason AccountNameValidationReasonUK `json:"reason,omitempty"` ResultCode ValidateAccountNameResponseUKResultCode `json:"result_code"` }
+type ValidateAccountNameResponseUKIndividualName struct { FirstName string `json:"first_name"` LastName string `json:"last_name"` }
+type ValidateAccountNameResponseUKResultCode string
+type WebhookEvent struct { CreatedAt time.Time `json:"created_at"` ID string `json:"id"` LastSentDate *time.Time `json:"last_sent_date,omitempty"` Payload map[string]any `json:"payload"` UpdatedAt time.Time `json:"updated_at"` WebhookID string `json:"webhook_id"` WebhookURL string `json:"webhook_url"` }
+type WebhookEventType string
+type WebhookSigningSecretRotateRequest struct { ExpirationPeriod string `json:"expiration_period,omitempty"` }
+type WebhookV1 struct { URL string `json:"url"` }
+type WebhookV2 struct { Events []WebhookEventType `json:"events"` ID string `json:"id"` SigningSecret string `json:"signing_secret"` URL string `json:"url"` }
+type WebhookV2Basic struct { Events []WebhookEventType `json:"events"` ID string `json:"id"` URL string `json:"url"` }
+type WebhooksV2 struct { t *transport.Transport }

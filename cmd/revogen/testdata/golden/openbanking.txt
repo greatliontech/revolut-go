@@ -1,0 +1,403 @@
+const APIVersion = "v3.1.0"
+const DraftPaymentStatusApproved DraftPaymentStatus = "Approved"
+const DraftPaymentStatusAwaiting DraftPaymentStatus = "Awaiting"
+const DraftPaymentStatusDeleted DraftPaymentStatus = "Deleted"
+const DraftPaymentStatusProcessed DraftPaymentStatus = "Processed"
+const DraftPaymentTransferStatusCompleted DraftPaymentTransferStatus = "Completed"
+const DraftPaymentTransferStatusCreated DraftPaymentTransferStatus = "Created"
+const DraftPaymentTransferStatusDeleted DraftPaymentTransferStatus = "Deleted"
+const DraftPaymentTransferStatusFailed DraftPaymentTransferStatus = "Failed"
+const DraftPaymentTransferStatusPending DraftPaymentTransferStatus = "Pending"
+const GetApplicationResponseIDTokenSignedResponseAlgTLSClientAuth GetApplicationResponseIDTokenSignedResponseAlg = "tls_client_auth"
+const GetApplicationResponseRequestObjectSigningAlgTLSClientAuth GetApplicationResponseRequestObjectSigningAlg = "tls_client_auth"
+const GetApplicationResponseTokenEndpointAuthMethodTLSClientAuth GetApplicationResponseTokenEndpointAuthMethod = "tls_client_auth"
+const ObbalanceType1codeClosingAvailable ObbalanceType1code = "ClosingAvailable"
+const ObbalanceType1codeClosingBooked ObbalanceType1code = "ClosingBooked"
+const ObbalanceType1codeClosingCleared ObbalanceType1code = "ClosingCleared"
+const ObbalanceType1codeExpected ObbalanceType1code = "Expected"
+const ObbalanceType1codeForwardAvailable ObbalanceType1code = "ForwardAvailable"
+const ObbalanceType1codeInformation ObbalanceType1code = "Information"
+const ObbalanceType1codeInterimAvailable ObbalanceType1code = "InterimAvailable"
+const ObbalanceType1codeInterimAvailableV2 ObbalanceType1code = "InterimAvailable"
+const ObbalanceType1codeInterimBooked ObbalanceType1code = "InterimBooked"
+const ObbalanceType1codeInterimBookedV2 ObbalanceType1code = "InterimBooked"
+const ObbalanceType1codeInterimCleared ObbalanceType1code = "InterimCleared"
+const ObbalanceType1codeOpeningAvailable ObbalanceType1code = "OpeningAvailable"
+const ObbalanceType1codeOpeningBooked ObbalanceType1code = "OpeningBooked"
+const ObbalanceType1codeOpeningCleared ObbalanceType1code = "OpeningCleared"
+const ObbalanceType1codePreviouslyClosedBooked ObbalanceType1code = "PreviouslyClosedBooked"
+const ObcashBalance1CreditDebitIndicatorCredit ObcashBalance1CreditDebitIndicator = "Credit"
+const ObcashBalance1CreditDebitIndicatorDebit ObcashBalance1CreditDebitIndicator = "Debit"
+const ObchargeBearerType1codeBorneByDebtor ObchargeBearerType1code = "BorneByDebtor"
+const ObchargeBearerType1codeFollowingServiceLevel ObchargeBearerType1code = "FollowingServiceLevel"
+const ObentryStatus1codeBooked ObentryStatus1code = "Booked"
+const ObentryStatus1codePending ObentryStatus1code = "Pending"
+const ObexchangeRateType2codeActual ObexchangeRateType2code = "Actual"
+const ObexchangeRateType2codeAgreed ObexchangeRateType2code = "Agreed"
+const ObexchangeRateType2codeIndicative ObexchangeRateType2code = "Indicative"
+const ObexternalAccountIdentification4codeUKObieIBAN ObexternalAccountIdentification4code = "UK.OBIE.IBAN"
+const ObexternalAccountIdentification4codeUKObieSortCodeAccountNumber ObexternalAccountIdentification4code = "UK.OBIE.SortCodeAccountNumber"
+const ObexternalAccountIdentification4codeUsBranchCodeAccountNumber ObexternalAccountIdentification4code = "US.BranchCodeAccountNumber"
+const ObexternalAccountIdentification4codeUsRoutingNumberAccountNumber ObexternalAccountIdentification4code = "US.RoutingNumberAccountNumber"
+const ObexternalAccountSubType1codeCreditCard ObexternalAccountSubType1code = "CreditCard"
+const ObexternalAccountSubType1codeCurrentAccount ObexternalAccountSubType1code = "CurrentAccount"
+const ObexternalAccountSubType1codeSavings ObexternalAccountSubType1code = "Savings"
+const ObexternalAccountType1codeBusiness ObexternalAccountType1code = "Business"
+const ObexternalAccountType1codePersonal ObexternalAccountType1code = "Personal"
+const ObexternalConsentStatus1codeAuthorised ObexternalConsentStatus1code = "Authorised"
+const ObexternalConsentStatus1codeAwaitingAuthorisation ObexternalConsentStatus1code = "AwaitingAuthorisation"
+const ObexternalConsentStatus1codeConsumed ObexternalConsentStatus1code = "Consumed"
+const ObexternalConsentStatus1codeRejected ObexternalConsentStatus1code = "Rejected"
+const ObexternalConsentStatus2codeAuthorised ObexternalConsentStatus2code = "Authorised"
+const ObexternalConsentStatus2codeAwaitingAuthorisation ObexternalConsentStatus2code = "AwaitingAuthorisation"
+const ObexternalConsentStatus2codeAwaitingUpload ObexternalConsentStatus2code = "AwaitingUpload"
+const ObexternalConsentStatus2codeConsumed ObexternalConsentStatus2code = "Consumed"
+const ObexternalConsentStatus2codeRejected ObexternalConsentStatus2code = "Rejected"
+const ObexternalDirectDebitStatus1codeActive ObexternalDirectDebitStatus1code = "Active"
+const ObexternalDirectDebitStatus1codeInactive ObexternalDirectDebitStatus1code = "Inactive"
+const ObexternalLimitType1codeAvailable ObexternalLimitType1code = "Available"
+const ObexternalPaymentContext1codeBillPayment ObexternalPaymentContext1code = "BillPayment"
+const ObexternalPaymentContext1codeEcommerceGoods ObexternalPaymentContext1code = "EcommerceGoods"
+const ObexternalPaymentContext1codeEcommerceServices ObexternalPaymentContext1code = "EcommerceServices"
+const ObexternalPaymentContext1codeOther ObexternalPaymentContext1code = "Other"
+const ObexternalPaymentContext1codePartyToParty ObexternalPaymentContext1code = "PartyToParty"
+const ObexternalPermissions1codeReadAccountsBasic ObexternalPermissions1code = "ReadAccountsBasic"
+const ObexternalPermissions1codeReadAccountsDetail ObexternalPermissions1code = "ReadAccountsDetail"
+const ObexternalPermissions1codeReadBalances ObexternalPermissions1code = "ReadBalances"
+const ObexternalPermissions1codeReadBeneficiariesBasic ObexternalPermissions1code = "ReadBeneficiariesBasic"
+const ObexternalPermissions1codeReadBeneficiariesDetail ObexternalPermissions1code = "ReadBeneficiariesDetail"
+const ObexternalPermissions1codeReadDirectDebits ObexternalPermissions1code = "ReadDirectDebits"
+const ObexternalPermissions1codeReadOffers ObexternalPermissions1code = "ReadOffers"
+const ObexternalPermissions1codeReadPan ObexternalPermissions1code = "ReadPAN"
+const ObexternalPermissions1codeReadParty ObexternalPermissions1code = "ReadParty"
+const ObexternalPermissions1codeReadPartyPsu ObexternalPermissions1code = "ReadPartyPSU"
+const ObexternalPermissions1codeReadProducts ObexternalPermissions1code = "ReadProducts"
+const ObexternalPermissions1codeReadScheduledPaymentsBasic ObexternalPermissions1code = "ReadScheduledPaymentsBasic"
+const ObexternalPermissions1codeReadScheduledPaymentsDetail ObexternalPermissions1code = "ReadScheduledPaymentsDetail"
+const ObexternalPermissions1codeReadStandingOrdersBasic ObexternalPermissions1code = "ReadStandingOrdersBasic"
+const ObexternalPermissions1codeReadStandingOrdersDetail ObexternalPermissions1code = "ReadStandingOrdersDetail"
+const ObexternalPermissions1codeReadStatementsBasic ObexternalPermissions1code = "ReadStatementsBasic"
+const ObexternalPermissions1codeReadStatementsDetail ObexternalPermissions1code = "ReadStatementsDetail"
+const ObexternalPermissions1codeReadTransactionsBasic ObexternalPermissions1code = "ReadTransactionsBasic"
+const ObexternalPermissions1codeReadTransactionsCredits ObexternalPermissions1code = "ReadTransactionsCredits"
+const ObexternalPermissions1codeReadTransactionsDebits ObexternalPermissions1code = "ReadTransactionsDebits"
+const ObexternalPermissions1codeReadTransactionsDetail ObexternalPermissions1code = "ReadTransactionsDetail"
+const ObexternalPermissions2codeCreate ObexternalPermissions2code = "Create"
+const ObexternalRequestStatus1codeAuthorised ObexternalRequestStatus1code = "Authorised"
+const ObexternalRequestStatus1codeAwaitingAuthorisation ObexternalRequestStatus1code = "AwaitingAuthorisation"
+const ObexternalRequestStatus1codeRejected ObexternalRequestStatus1code = "Rejected"
+const ObexternalRequestStatus1codeRevoked ObexternalRequestStatus1code = "Revoked"
+const ObexternalStandingOrderStatus1codeActive ObexternalStandingOrderStatus1code = "Active"
+const ObexternalStandingOrderStatus1codeInactive ObexternalStandingOrderStatus1code = "Inactive"
+const ObexternalStatus1codeInitiationCompleted ObexternalStatus1code = "InitiationCompleted"
+const ObexternalStatus1codeInitiationFailed ObexternalStatus1code = "InitiationFailed"
+const ObexternalStatus1codeInitiationPending ObexternalStatus1code = "InitiationPending"
+const ObrevolutAccountIdentificationCodeUKObieIBAN ObrevolutAccountIdentificationCode = "UK.OBIE.IBAN"
+const ObrevolutAccountIdentificationCodeUKObieSortCodeAccountNumber ObrevolutAccountIdentificationCode = "UK.OBIE.SortCodeAccountNumber"
+const ObrevolutAccountIdentificationCodeUKRevolutInternalAccountID ObrevolutAccountIdentificationCode = "UK.Revolut.InternalAccountId"
+const ObrevolutAccountIdentificationCodeUsBranchCodeAccountNumber ObrevolutAccountIdentificationCode = "US.BranchCodeAccountNumber"
+const ObrevolutAccountIdentificationCodeUsRoutingNumberAccountNumber ObrevolutAccountIdentificationCode = "US.RoutingNumberAccountNumber"
+const Obtransaction4CreditDebitIndicatorCredit Obtransaction4CreditDebitIndicator = "Credit"
+const Obtransaction4CreditDebitIndicatorDebit Obtransaction4CreditDebitIndicator = "Debit"
+const ObtransactionCashBalanceCreditDebitIndicatorCredit ObtransactionCashBalanceCreditDebitIndicator = "Credit"
+const ObtransactionCashBalanceCreditDebitIndicatorDebit ObtransactionCashBalanceCreditDebitIndicator = "Debit"
+const ObtransactionIndividualStatus1codeAcceptedSettlementCompleted ObtransactionIndividualStatus1code = "AcceptedSettlementCompleted"
+const ObtransactionIndividualStatus1codeAcceptedSettlementInProcess ObtransactionIndividualStatus1code = "AcceptedSettlementInProcess"
+const ObtransactionIndividualStatus1codePending ObtransactionIndividualStatus1code = "Pending"
+const ObtransactionIndividualStatus1codeRejected ObtransactionIndividualStatus1code = "Rejected"
+const PaymentStatusCompleted PaymentStatus = "Completed"
+const PaymentStatusCreated PaymentStatus = "Created"
+const PaymentStatusDeleted PaymentStatus = "Deleted"
+const PaymentStatusFailed PaymentStatus = "Failed"
+const PaymentStatusPending PaymentStatus = "Pending"
+const RegisterApplicationResponseApplicationTypeMobile RegisterApplicationResponseApplicationType = "mobile"
+const RegisterApplicationResponseApplicationTypeWeb RegisterApplicationResponseApplicationType = "web"
+const RegisterApplicationResponseIDTokenSignedResponseAlgPs256 RegisterApplicationResponseIDTokenSignedResponseAlg = "PS256"
+const RegisterApplicationResponseRequestObjectSigningAlgPs256 RegisterApplicationResponseRequestObjectSigningAlg = "PS256"
+const RegisterApplicationResponseTokenEndpointAuthMethodTLSClientAuth RegisterApplicationResponseTokenEndpointAuthMethod = "tls_client_auth"
+func (*Accounts) CreateAccessConsents
+func (*Accounts) DeleteAccessConsentsConsentID
+func (*Accounts) GetAccessConsentsConsentID
+func (*Accounts) GetAccountID
+func (*Accounts) GetAccountIDBalances
+func (*Accounts) GetAccountIDBeneficiaries
+func (*Accounts) List
+func (*Applications) Delete
+func (*Applications) Get
+func (*Applications) GetDistinguishedName
+func (*Applications) RegisterApplication
+func (*Applications) Update
+func (*DomesticPayment) Create
+func (*DomesticPayment) CreateConsents
+func (*DomesticPayment) GetConsentsConsentID
+func (*DomesticPayment) GetConsentsConsentIDFundsConfirmation
+func (*DomesticPayment) GetDomesticPaymentID
+func (*DomesticScheduledPayment) Create
+func (*DomesticScheduledPayment) CreateConsents
+func (*DomesticScheduledPayment) GetConsentsConsentID
+func (*DomesticScheduledPayment) GetDomesticScheduledPaymentID
+func (*DomesticStandingOrder) Create
+func (*DomesticStandingOrder) CreateConsents
+func (*DomesticStandingOrder) GetConsentsConsentID
+func (*DomesticStandingOrder) GetDomesticStandingOrderID
+func (*DraftPayment) Create
+func (*DraftPayment) Delete
+func (*DraftPayment) DeleteTransfer
+func (*DraftPayment) FindDraftPayment
+func (*DraftPayment) List
+func (*FilePayment) Create
+func (*FilePayment) CreateConsents
+func (*FilePayment) CreateConsentsConsentIDFile
+func (*FilePayment) GetConsentsConsentID
+func (*FilePayment) GetConsentsConsentIDFile
+func (*FilePayment) GetFilePaymentID
+func (*FilePayment) GetFilePaymentIDReportFile
+func (*InternationalPayment) Create
+func (*InternationalPayment) CreateConsents
+func (*InternationalPayment) GetConsentsConsentID
+func (*InternationalPayment) GetConsentsConsentIDFundsConfirmation
+func (*InternationalPayment) GetInternationalPaymentID
+func (*InternationalScheduledPayment) Create
+func (*InternationalScheduledPayment) CreateConsents
+func (*InternationalScheduledPayment) GetConsentsConsentID
+func (*InternationalScheduledPayment) GetConsentsConsentIDFundsConfirmation
+func (*InternationalScheduledPayment) GetInternationalScheduledPaymentID
+func (*InternationalStandingOrder) Create
+func (*InternationalStandingOrder) CreateConsents
+func (*InternationalStandingOrder) GetConsentsConsentID
+func (*InternationalStandingOrder) GetInternationalStandingOrderID
+func (*Transactions) GetAccountsAccountIDDirectDebits
+func (*Transactions) GetAccountsAccountIDStandingOrders
+func (*Transactions) GetAccountsAccountIDTransactions
+func New
+type AccountID string
+type Accounts struct { t *transport.Transport }
+type Amount string
+type Applications struct { t *transport.Transport }
+type CSVError struct { Code int `json:"Code"` Errors []ErrorDetail `json:"Errors,omitempty"` ID string `json:"Id"` Message string `json:"Message"` }
+type Client struct { transport *transport.Transport Accounts *Accounts Transactions *Transactions Applications *Applications DomesticPayment *DomesticPayment DomesticScheduledPayment *DomesticScheduledPayment DomesticStandingOrder *DomesticStandingOrder DraftPayment *DraftPayment FilePayment *FilePayment InternationalPayment *InternationalPayment InternationalScheduledPayment *InternationalScheduledPayment InternationalStandingOrder *InternationalStandingOrder }
+type CreateDraftPaymentParams struct { ScheduledDate string `json:"scheduledDate,omitempty"` Title string `json:"title,omitempty"` }
+type Currency core.Currency
+type DomesticPayment struct { t *transport.Transport }
+type DomesticScheduledPayment struct { t *transport.Transport }
+type DomesticStandingOrder struct { t *transport.Transport }
+type DraftPayment struct { t *transport.Transport }
+type DraftPaymentListResponse struct { Items []*DraftPaymentListResponseItemsItem `json:"Items"` Links *DraftPaymentListResponseLinks `json:"Links"` }
+type DraftPaymentListResponseItemsItem struct { CreatedAt time.Time `json:"CreatedAt"` ID string `json:"Id"` RequestedExecutionDate string `json:"RequestedExecutionDate,omitempty"` Status DraftPaymentStatus `json:"Status"` Title string `json:"Title,omitempty"` }
+type DraftPaymentListResponseLinks struct { Next string `json:"Next,omitempty"` }
+type DraftPaymentResponse struct { DraftPaymentID string `json:"DraftPaymentId"` RequestedExecutionDate string `json:"RequestedExecutionDate,omitempty"` Status DraftPaymentStatus `json:"Status"` Transfers []DraftPaymentTransfer `json:"Transfers"` }
+type DraftPaymentStatus string
+type DraftPaymentTransfer struct { FailedReason string `json:"FailedReason,omitempty"` FailedReasonCode int `json:"FailedReasonCode,omitempty"` ID string `json:"Id"` Index int `json:"Index,omitempty"` InstructedAmount InstructedAmount `json:"InstructedAmount"` Reference string `json:"Reference"` Status DraftPaymentTransferStatus `json:"Status"` }
+type DraftPaymentTransferStatus string
+type EmptyBody struct { }
+type Error struct { Code int `json:"Code"` ID string `json:"Id"` Message string `json:"Message"` }
+type ErrorDetail struct { Errors []FieldError `json:"Errors"` Row int `json:"Row"` }
+type FieldError struct { Code int `json:"Code"` Field string `json:"Field,omitempty"` Message string `json:"Message"` }
+type FilePayment struct { t *transport.Transport }
+type GetAccountsAccountIDTransactionsParams struct { FromBookingDateTime time.Time `json:"fromBookingDateTime,omitempty"` ToBookingDateTime time.Time `json:"toBookingDateTime,omitempty"` }
+type GetApplicationResponse struct { ClientID string `json:"client_id,omitempty"` IDTokenSignedResponseAlg GetApplicationResponseIDTokenSignedResponseAlg `json:"id_token_signed_response_alg,omitempty"` OrgJwksEndpoint string `json:"org_jwks_endpoint,omitempty"` OrgName string `json:"org_name,omitempty"` RedirectUris []string `json:"redirect_uris,omitempty"` RequestObjectSigningAlg GetApplicationResponseRequestObjectSigningAlg `json:"request_object_signing_alg,omitempty"` Scope string `json:"scope,omitempty"` TLSClientAuthDn string `json:"tls_client_auth_dn,omitempty"` TokenEndpointAuthMethod GetApplicationResponseTokenEndpointAuthMethod `json:"token_endpoint_auth_method,omitempty"` }
+type GetApplicationResponseIDTokenSignedResponseAlg string
+type GetApplicationResponseRequestObjectSigningAlg string
+type GetApplicationResponseTokenEndpointAuthMethod string
+type GetDistinguishedNameResponse struct { TLSClientAuthDn string `json:"tls_client_auth_dn"` }
+type InstructedAmount struct { Amount Amount `json:"Amount"` Currency Currency `json:"Currency"` }
+type InternationalPayment struct { t *transport.Transport }
+type InternationalScheduledPayment struct { t *transport.Transport }
+type InternationalStandingOrder struct { t *transport.Transport }
+type Links struct { Next string `json:"Next,omitempty"` Prev string `json:"Prev,omitempty"` Self string `json:"Self"` }
+type ListDraftPaymentParams struct { From time.Time `json:"from,omitempty"` To time.Time `json:"to,omitempty"` Limit int32 `json:"limit,omitempty"` }
+type Meta struct { TotalPages int32 `json:"TotalPages,omitempty"` }
+type Obaccount3 struct { Account []ObcashAccount5 `json:"Account,omitempty"` AccountID AccountID `json:"AccountId"` AccountSubType ObexternalAccountSubType1code `json:"AccountSubType"` AccountType ObexternalAccountType1code `json:"AccountType"` Currency string `json:"Currency"` Nickname string `json:"Nickname,omitempty"` }
+type ObactiveCurrencyAndAmountSimpleType string
+type ObactiveOrHistoricCurrencyAndAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObbalanceType1code string
+type Obbeneficiary3 struct { AccountID AccountID `json:"AccountId,omitempty"` BeneficiaryID string `json:"BeneficiaryId,omitempty"` CreditorAccount ObcashAccount5 `json:"CreditorAccount,omitempty"` }
+type ObbranchAndFinancialInstitutionIdentification6 struct { Identification string `json:"Identification,omitempty"` Name string `json:"Name,omitempty"` PostalAddress ObpostalAddress6 `json:"PostalAddress,omitempty"` SchemeName []string `json:"SchemeName,omitempty"` }
+type ObcashAccount5 struct { Identification string `json:"Identification"` Name string `json:"Name,omitempty"` SchemeName ObrevolutAccountIdentificationCode `json:"SchemeName"` SecondaryIdentification string `json:"SecondaryIdentification,omitempty"` }
+type ObcashAccount6 struct { Identification string `json:"Identification,omitempty"` Name string `json:"Name,omitempty"` SchemeName ObexternalAccountIdentification4code `json:"SchemeName,omitempty"` SecondaryIdentification string `json:"SecondaryIdentification,omitempty"` }
+type ObcashAccountCreditor3 struct { Identification string `json:"Identification"` Name string `json:"Name"` SchemeName ObexternalAccountIdentification4code `json:"SchemeName"` SecondaryIdentification string `json:"SecondaryIdentification,omitempty"` }
+type ObcashAccountDebtor4 struct { Identification string `json:"Identification"` Name string `json:"Name,omitempty"` SchemeName ObexternalAccountIdentification4code `json:"SchemeName"` SecondaryIdentification string `json:"SecondaryIdentification,omitempty"` }
+type ObcashAccountDebtorResponse struct { Identification string `json:"Identification"` Name string `json:"Name,omitempty"` SchemeName ObexternalAccountIdentification4code `json:"SchemeName"` SecondaryIdentification string `json:"SecondaryIdentification,omitempty"` }
+type ObcashBalance1 struct { AccountID AccountID `json:"AccountId"` Amount ObactiveOrHistoricCurrencyAndAmount `json:"Amount"` CreditDebitIndicator ObcashBalance1CreditDebitIndicator `json:"CreditDebitIndicator"` CreditLine []ObcreditLine1 `json:"CreditLine,omitempty"` DateTime time.Time `json:"DateTime"` Type ObbalanceType1code `json:"Type"` }
+type ObcashBalance1CreditDebitIndicator string
+type ObchargeBearerType1code string
+type ObcreditLine1 struct { Amount ObactiveOrHistoricCurrencyAndAmount `json:"Amount,omitempty"` Included bool `json:"Included"` Type ObexternalLimitType1code `json:"Type,omitempty"` }
+type ObcurrencyExchange5 struct { ExchangeRate string `json:"ExchangeRate"` InstructedAmount *ObcurrencyExchange5InstructedAmount `json:"InstructedAmount,omitempty"` SourceCurrency string `json:"SourceCurrency"` TargetCurrency string `json:"TargetCurrency,omitempty"` UnitCurrency string `json:"UnitCurrency,omitempty"` }
+type ObcurrencyExchange5InstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency Currency `json:"Currency"` }
+type ObdirectDebit1 struct { AccountID AccountID `json:"AccountId"` DirectDebitID string `json:"DirectDebitId,omitempty"` DirectDebitStatusCode ObexternalDirectDebitStatus1code `json:"DirectDebitStatusCode,omitempty"` MandateIdentification string `json:"MandateIdentification"` Name string `json:"Name"` PreviousPaymentAmount ObactiveOrHistoricCurrencyAndAmount `json:"PreviousPaymentAmount,omitempty"` }
+type Obdomestic2 struct { CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"` CreditorPostalAddress ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"` DebtorAccount ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"` EndToEndIdentification string `json:"EndToEndIdentification"` InstructedAmount *Obdomestic2InstructedAmount `json:"InstructedAmount"` InstructionIdentification string `json:"InstructionIdentification"` RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"` SupplementaryData ObsupplementaryData1 `json:"SupplementaryData,omitempty"` }
+type Obdomestic2InstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObdomesticInitiationBase struct { CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"` CreditorPostalAddress ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"` EndToEndIdentification string `json:"EndToEndIdentification,omitempty"` InstructedAmount *ObdomesticInitiationBaseInstructedAmount `json:"InstructedAmount,omitempty"` InstructionIdentification string `json:"InstructionIdentification,omitempty"` RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"` SupplementaryData ObsupplementaryData1 `json:"SupplementaryData,omitempty"` }
+type ObdomesticInitiationBaseInstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObdomesticInitiationResponse struct { CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"` CreditorPostalAddress ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"` DebtorAccount ObcashAccountDebtorResponse `json:"DebtorAccount"` EndToEndIdentification string `json:"EndToEndIdentification"` InstructedAmount *ObdomesticInitiationResponseInstructedAmount `json:"InstructedAmount"` InstructionIdentification string `json:"InstructionIdentification"` RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"` SupplementaryData ObsupplementaryData1 `json:"SupplementaryData,omitempty"` }
+type ObdomesticInitiationResponseInstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObdomesticScheduled2 struct { CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"` CreditorPostalAddress ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"` DebtorAccount ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"` EndToEndIdentification string `json:"EndToEndIdentification,omitempty"` InstructedAmount *ObdomesticScheduled2InstructedAmount `json:"InstructedAmount"` InstructionIdentification string `json:"InstructionIdentification"` RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"` RequestedExecutionDateTime time.Time `json:"RequestedExecutionDateTime"` }
+type ObdomesticScheduled2InstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObdomesticScheduledBase struct { CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"` CreditorPostalAddress ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"` EndToEndIdentification string `json:"EndToEndIdentification,omitempty"` InstructedAmount *ObdomesticScheduledBaseInstructedAmount `json:"InstructedAmount,omitempty"` InstructionIdentification string `json:"InstructionIdentification,omitempty"` RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"` RequestedExecutionDateTime *time.Time `json:"RequestedExecutionDateTime,omitempty"` }
+type ObdomesticScheduledBaseInstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObdomesticScheduledInitiationResponse struct { CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"` CreditorPostalAddress ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"` DebtorAccount ObcashAccountDebtorResponse `json:"DebtorAccount"` EndToEndIdentification string `json:"EndToEndIdentification,omitempty"` InstructedAmount *ObdomesticScheduledInitiationResponseInstructedAmount `json:"InstructedAmount"` InstructionIdentification string `json:"InstructionIdentification"` RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"` RequestedExecutionDateTime time.Time `json:"RequestedExecutionDateTime"` }
+type ObdomesticScheduledInitiationResponseInstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObdomesticStandingOrder2 struct { CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"` DebtorAccount ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"` FinalPaymentAmount *ObdomesticStandingOrder2FinalPaymentAmount `json:"FinalPaymentAmount,omitempty"` FinalPaymentDateTime *time.Time `json:"FinalPaymentDateTime,omitempty"` FirstPaymentAmount *ObdomesticStandingOrder2FirstPaymentAmount `json:"FirstPaymentAmount"` FirstPaymentDateTime time.Time `json:"FirstPaymentDateTime"` Frequency string `json:"Frequency"` NumberOfPayments string `json:"NumberOfPayments,omitempty"` RecurringPaymentAmount *ObdomesticStandingOrder2RecurringPaymentAmount `json:"RecurringPaymentAmount,omitempty"` Reference string `json:"Reference,omitempty"` }
+type ObdomesticStandingOrder2FinalPaymentAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObdomesticStandingOrder2FirstPaymentAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObdomesticStandingOrder2RecurringPaymentAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObdomesticStandingOrderBase struct { CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"` FinalPaymentAmount *ObdomesticStandingOrderBaseFinalPaymentAmount `json:"FinalPaymentAmount,omitempty"` FinalPaymentDateTime *time.Time `json:"FinalPaymentDateTime,omitempty"` FirstPaymentAmount *ObdomesticStandingOrderBaseFirstPaymentAmount `json:"FirstPaymentAmount,omitempty"` FirstPaymentDateTime *time.Time `json:"FirstPaymentDateTime,omitempty"` Frequency string `json:"Frequency,omitempty"` NumberOfPayments string `json:"NumberOfPayments,omitempty"` RecurringPaymentAmount *ObdomesticStandingOrderBaseRecurringPaymentAmount `json:"RecurringPaymentAmount,omitempty"` Reference string `json:"Reference,omitempty"` }
+type ObdomesticStandingOrderBaseFinalPaymentAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObdomesticStandingOrderBaseFirstPaymentAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObdomesticStandingOrderBaseRecurringPaymentAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObdomesticStandingOrderInitiationResponse struct { CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"` DebtorAccount ObcashAccountDebtorResponse `json:"DebtorAccount"` FinalPaymentAmount *ObdomesticStandingOrderInitiationResponseFinalPaymentAmount `json:"FinalPaymentAmount,omitempty"` FinalPaymentDateTime *time.Time `json:"FinalPaymentDateTime,omitempty"` FirstPaymentAmount *ObdomesticStandingOrderInitiationResponseFirstPaymentAmount `json:"FirstPaymentAmount"` FirstPaymentDateTime time.Time `json:"FirstPaymentDateTime"` Frequency string `json:"Frequency"` NumberOfPayments string `json:"NumberOfPayments,omitempty"` RecurringPaymentAmount *ObdomesticStandingOrderInitiationResponseRecurringPaymentAmount `json:"RecurringPaymentAmount,omitempty"` Reference string `json:"Reference,omitempty"` }
+type ObdomesticStandingOrderInitiationResponseFinalPaymentAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObdomesticStandingOrderInitiationResponseFirstPaymentAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObdomesticStandingOrderInitiationResponseRecurringPaymentAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObentryStatus1code string
+type Oberror1 struct { ErrorCode string `json:"ErrorCode"` Message string `json:"Message"` }
+type OberrorResponse1 struct { Code string `json:"Code"` Errors []Oberror1 `json:"Errors"` ID string `json:"Id,omitempty"` Message string `json:"Message"` }
+type ObexchangeRate1 struct { ContractIdentification string `json:"ContractIdentification,omitempty"` ExchangeRate json.Number `json:"ExchangeRate,omitempty"` RateType ObexchangeRateType2code `json:"RateType"` UnitCurrency string `json:"UnitCurrency"` }
+type ObexchangeRate2 struct { ContractIdentification string `json:"ContractIdentification,omitempty"` ExchangeRate string `json:"ExchangeRate"` ExpirationDateTime *time.Time `json:"ExpirationDateTime,omitempty"` RateType ObexchangeRateType2code `json:"RateType"` UnitCurrency string `json:"UnitCurrency"` }
+type ObexchangeRateType2code string
+type ObexternalAccountIdentification4code string
+type ObexternalAccountSubType1code string
+type ObexternalAccountType1code string
+type ObexternalConsentStatus1code string
+type ObexternalConsentStatus2code string
+type ObexternalDirectDebitStatus1code string
+type ObexternalFileType1code string
+type ObexternalLimitType1code string
+type ObexternalLocalInstrument1code string
+type ObexternalMerchantCategoryCode string
+type ObexternalMerchantCustomerIdentification string
+type ObexternalPaymentContext1code string
+type ObexternalPermissions1code string
+type ObexternalPermissions2code string
+type ObexternalRequestStatus1code string
+type ObexternalStandingOrderStatus1code string
+type ObexternalStatus1code string
+type Obfile2 struct { DebtorAccount ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"` FileHash string `json:"FileHash"` FileReference string `json:"FileReference,omitempty"` FileType ObexternalFileType1code `json:"FileType"` LocalInstrument ObexternalLocalInstrument1code `json:"LocalInstrument,omitempty"` RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"` RequestedExecutionDateTime *time.Time `json:"RequestedExecutionDateTime,omitempty"` }
+type ObfileBase struct { FileHash string `json:"FileHash,omitempty"` FileReference string `json:"FileReference,omitempty"` FileType ObexternalFileType1code `json:"FileType,omitempty"` LocalInstrument ObexternalLocalInstrument1code `json:"LocalInstrument,omitempty"` RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"` RequestedExecutionDateTime *time.Time `json:"RequestedExecutionDateTime,omitempty"` }
+type ObfileInitiationResponse struct { DebtorAccount ObcashAccountDebtorResponse `json:"DebtorAccount"` FileHash string `json:"FileHash"` FileReference string `json:"FileReference,omitempty"` FileType ObexternalFileType1code `json:"FileType"` LocalInstrument ObexternalLocalInstrument1code `json:"LocalInstrument,omitempty"` RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"` RequestedExecutionDateTime *time.Time `json:"RequestedExecutionDateTime,omitempty"` }
+type ObfundsAvailableResult1 struct { FundsAvailable bool `json:"FundsAvailable"` FundsAvailableDateTime time.Time `json:"FundsAvailableDateTime"` }
+type Obinternational2 struct { ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"` Creditor ObpartyIdentification43 `json:"Creditor,omitempty"` CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"` CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"` CurrencyOfTransfer string `json:"CurrencyOfTransfer"` DebtorAccount ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"` EndToEndIdentification string `json:"EndToEndIdentification"` ExchangeRateInformation ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"` InstructedAmount *Obinternational2InstructedAmount `json:"InstructedAmount"` InstructionIdentification string `json:"InstructionIdentification"` RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"` }
+type Obinternational2InstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObinternationalBase struct { ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"` Creditor ObpartyIdentification43 `json:"Creditor,omitempty"` CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"` CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"` CurrencyOfTransfer string `json:"CurrencyOfTransfer,omitempty"` EndToEndIdentification string `json:"EndToEndIdentification,omitempty"` ExchangeRateInformation ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"` InstructedAmount *ObinternationalBaseInstructedAmount `json:"InstructedAmount,omitempty"` InstructionIdentification string `json:"InstructionIdentification,omitempty"` RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"` }
+type ObinternationalBaseInstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObinternationalInitiationResponse struct { ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"` Creditor ObpartyIdentification43 `json:"Creditor,omitempty"` CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"` CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"` CurrencyOfTransfer string `json:"CurrencyOfTransfer"` DebtorAccount ObcashAccountDebtorResponse `json:"DebtorAccount"` EndToEndIdentification string `json:"EndToEndIdentification"` ExchangeRateInformation ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"` InstructedAmount *ObinternationalInitiationResponseInstructedAmount `json:"InstructedAmount"` InstructionIdentification string `json:"InstructionIdentification"` RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"` }
+type ObinternationalInitiationResponseInstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObinternationalScheduled2 struct { ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"` Creditor ObpartyIdentification43 `json:"Creditor,omitempty"` CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"` CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"` CurrencyOfTransfer string `json:"CurrencyOfTransfer"` DebtorAccount ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"` EndToEndIdentification string `json:"EndToEndIdentification,omitempty"` ExchangeRateInformation ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"` InstructedAmount *ObinternationalScheduled2InstructedAmount `json:"InstructedAmount"` InstructionIdentification string `json:"InstructionIdentification"` RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"` RequestedExecutionDateTime time.Time `json:"RequestedExecutionDateTime"` }
+type ObinternationalScheduled2InstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObinternationalScheduledBase struct { ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"` Creditor ObpartyIdentification43 `json:"Creditor,omitempty"` CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"` CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"` CurrencyOfTransfer string `json:"CurrencyOfTransfer,omitempty"` EndToEndIdentification string `json:"EndToEndIdentification,omitempty"` ExchangeRateInformation ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"` InstructedAmount *ObinternationalScheduledBaseInstructedAmount `json:"InstructedAmount,omitempty"` InstructionIdentification string `json:"InstructionIdentification,omitempty"` RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"` RequestedExecutionDateTime *time.Time `json:"RequestedExecutionDateTime,omitempty"` }
+type ObinternationalScheduledBaseInstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObinternationalScheduledInitiationResponse struct { ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"` Creditor ObpartyIdentification43 `json:"Creditor,omitempty"` CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"` CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"` CurrencyOfTransfer string `json:"CurrencyOfTransfer"` DebtorAccount ObcashAccountDebtorResponse `json:"DebtorAccount"` EndToEndIdentification string `json:"EndToEndIdentification,omitempty"` ExchangeRateInformation ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"` InstructedAmount *ObinternationalScheduledInitiationResponseInstructedAmount `json:"InstructedAmount"` InstructionIdentification string `json:"InstructionIdentification"` RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"` RequestedExecutionDateTime time.Time `json:"RequestedExecutionDateTime"` }
+type ObinternationalScheduledInitiationResponseInstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObinternationalStandingOrder2 struct { ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"` Creditor ObpartyIdentification43 `json:"Creditor,omitempty"` CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"` CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"` CurrencyOfTransfer string `json:"CurrencyOfTransfer"` DebtorAccount ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"` FinalPaymentDateTime *time.Time `json:"FinalPaymentDateTime,omitempty"` FirstPaymentDateTime time.Time `json:"FirstPaymentDateTime"` Frequency string `json:"Frequency"` InstructedAmount *ObinternationalStandingOrder2InstructedAmount `json:"InstructedAmount"` NumberOfPayments string `json:"NumberOfPayments,omitempty"` Reference string `json:"Reference,omitempty"` }
+type ObinternationalStandingOrder2InstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObinternationalStandingOrderBase struct { ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"` Creditor ObpartyIdentification43 `json:"Creditor,omitempty"` CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"` CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"` CurrencyOfTransfer string `json:"CurrencyOfTransfer,omitempty"` FinalPaymentDateTime *time.Time `json:"FinalPaymentDateTime,omitempty"` FirstPaymentDateTime *time.Time `json:"FirstPaymentDateTime,omitempty"` Frequency string `json:"Frequency,omitempty"` InstructedAmount *ObinternationalStandingOrderBaseInstructedAmount `json:"InstructedAmount,omitempty"` NumberOfPayments string `json:"NumberOfPayments,omitempty"` Reference string `json:"Reference,omitempty"` }
+type ObinternationalStandingOrderBaseInstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObinternationalStandingOrderInitiationResponse struct { ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"` Creditor ObpartyIdentification43 `json:"Creditor,omitempty"` CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"` CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"` CurrencyOfTransfer string `json:"CurrencyOfTransfer"` DebtorAccount ObcashAccountDebtorResponse `json:"DebtorAccount"` FinalPaymentDateTime *time.Time `json:"FinalPaymentDateTime,omitempty"` FirstPaymentDateTime time.Time `json:"FirstPaymentDateTime"` Frequency string `json:"Frequency"` InstructedAmount *ObinternationalStandingOrderInitiationResponseInstructedAmount `json:"InstructedAmount"` NumberOfPayments string `json:"NumberOfPayments,omitempty"` Reference string `json:"Reference,omitempty"` }
+type ObinternationalStandingOrderInitiationResponseInstructedAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObmerchantDetails1 struct { MerchantName string `json:"MerchantName,omitempty"` }
+type ObpartyIdentification43 struct { Name string `json:"Name,omitempty"` PostalAddress ObpostalAddress6 `json:"PostalAddress,omitempty"` }
+type ObpostalAddress6 struct { AddressLine []string `json:"AddressLine,omitempty"` BuildingNumber string `json:"BuildingNumber,omitempty"` Country string `json:"Country,omitempty"` CountrySubDivision string `json:"CountrySubDivision,omitempty"` Department string `json:"Department,omitempty"` PostCode string `json:"PostCode,omitempty"` StreetName string `json:"StreetName,omitempty"` SubDepartment string `json:"SubDepartment,omitempty"` TownName string `json:"TownName,omitempty"` }
+type ObreadAccount3 struct { Data *ObreadAccount3Data `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` }
+type ObreadAccount3Data struct { Account []Obaccount3 `json:"Account,omitempty"` }
+type ObreadBalance1 struct { Data *ObreadBalance1Data `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` }
+type ObreadBalance1Data struct { Balance []ObcashBalance1 `json:"Balance"` }
+type ObreadBeneficiary3 struct { Data *ObreadBeneficiary3Data `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` }
+type ObreadBeneficiary3Data struct { Beneficiary []Obbeneficiary3 `json:"Beneficiary,omitempty"` }
+type ObreadConsent1 struct { Data ObreadData1 `json:"Data"` Risk Obrisk2 `json:"Risk"` }
+type ObreadConsentResponse1 struct { Data *ObreadConsentResponse1Data `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` Risk Obrisk2 `json:"Risk"` }
+type ObreadConsentResponse1Data struct { ConsentID string `json:"ConsentId"` CreationDateTime time.Time `json:"CreationDateTime"` ExpirationDateTime *time.Time `json:"ExpirationDateTime,omitempty"` Permissions []ObexternalPermissions1code `json:"Permissions"` Status ObexternalRequestStatus1code `json:"Status"` StatusUpdateDateTime time.Time `json:"StatusUpdateDateTime"` TransactionFromDateTime *time.Time `json:"TransactionFromDateTime,omitempty"` TransactionToDateTime *time.Time `json:"TransactionToDateTime,omitempty"` }
+type ObreadData1 struct { ExpirationDateTime *time.Time `json:"ExpirationDateTime,omitempty"` Permissions []ObexternalPermissions1code `json:"Permissions"` TransactionFromDateTime *time.Time `json:"TransactionFromDateTime,omitempty"` TransactionToDateTime *time.Time `json:"TransactionToDateTime,omitempty"` }
+type ObreadDirectDebit1 struct { Data *ObreadDirectDebit1Data `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` }
+type ObreadDirectDebit1Data struct { DirectDebit []ObdirectDebit1 `json:"DirectDebit,omitempty"` }
+type ObreadStandingOrder4 struct { Data *ObreadStandingOrder4Data `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` }
+type ObreadStandingOrder4Data struct { StandingOrder []ObstandingOrder4 `json:"StandingOrder,omitempty"` }
+type ObreadTransaction4 struct { Data *ObreadTransaction4Data `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` }
+type ObreadTransaction4Data struct { Transaction []Obtransaction4 `json:"Transaction,omitempty"` }
+type ObremittanceInformation1 struct { Reference string `json:"Reference,omitempty"` Unstructured string `json:"Unstructured,omitempty"` }
+type ObreportFileResponse struct { Payments []*ObreportFileResponsePaymentsItem `json:"Payments"` }
+type ObreportFileResponsePaymentsItem struct { Amount *ObreportFileResponsePaymentsItemAmount `json:"Amount"` Reference string `json:"Reference"` Status PaymentStatus `json:"Status"` }
+type ObreportFileResponsePaymentsItemAmount struct { Amount Amount `json:"Amount"` Currency Currency `json:"Currency"` }
+type ObrevolutAccountIdentificationCode string
+type Obrisk1 struct { DeliveryAddress *Obrisk1DeliveryAddress `json:"DeliveryAddress,omitempty"` MerchantCategoryCode ObexternalMerchantCategoryCode `json:"MerchantCategoryCode,omitempty"` MerchantCustomerIdentification ObexternalMerchantCustomerIdentification `json:"MerchantCustomerIdentification,omitempty"` PaymentContextCode ObexternalPaymentContext1code `json:"PaymentContextCode,omitempty"` }
+type Obrisk1DeliveryAddress struct { AddressLine []string `json:"AddressLine,omitempty"` BuildingNumber string `json:"BuildingNumber,omitempty"` Country string `json:"Country"` CountrySubDivision []string `json:"CountrySubDivision,omitempty"` PostCode string `json:"PostCode,omitempty"` StreetName string `json:"StreetName,omitempty"` TownName string `json:"TownName"` }
+type Obrisk2 struct { }
+type ObstandingOrder4 struct { AccountID AccountID `json:"AccountId"` CreditorAccount ObcashAccount5 `json:"CreditorAccount,omitempty"` FirstPaymentAmount *ObstandingOrder4FirstPaymentAmount `json:"FirstPaymentAmount,omitempty"` FirstPaymentDateTime *time.Time `json:"FirstPaymentDateTime,omitempty"` Frequency string `json:"Frequency"` NextPaymentAmount *ObstandingOrder4NextPaymentAmount `json:"NextPaymentAmount,omitempty"` Reference string `json:"Reference,omitempty"` StandingOrderID string `json:"StandingOrderId,omitempty"` StandingOrderStatusCode ObexternalStandingOrderStatus1code `json:"StandingOrderStatusCode,omitempty"` }
+type ObstandingOrder4FirstPaymentAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObstandingOrder4NextPaymentAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency string `json:"Currency"` }
+type ObsupplementaryData1 map[string]string
+type Obtransaction4 struct { AccountID AccountID `json:"AccountId"` Amount *Obtransaction4Amount `json:"Amount"` Balance ObtransactionCashBalance `json:"Balance,omitempty"` BookingDateTime time.Time `json:"BookingDateTime"` CardInstrument *Obtransaction4CardInstrument `json:"CardInstrument,omitempty"` ChargeAmount *Obtransaction4ChargeAmount `json:"ChargeAmount,omitempty"` CreditDebitIndicator Obtransaction4CreditDebitIndicator `json:"CreditDebitIndicator"` CreditorAccount ObcashAccount6 `json:"CreditorAccount,omitempty"` CurrencyExchange ObcurrencyExchange5 `json:"CurrencyExchange,omitempty"` DebtorAccount ObcashAccount6 `json:"DebtorAccount,omitempty"` MerchantDetails ObmerchantDetails1 `json:"MerchantDetails,omitempty"` ProprietaryBankTransactionCode *Obtransaction4ProprietaryBankTransactionCode `json:"ProprietaryBankTransactionCode,omitempty"` Status ObentryStatus1code `json:"Status"` SupplementaryData *Obtransaction4SupplementaryData `json:"SupplementaryData,omitempty"` TransactionID string `json:"TransactionId,omitempty"` TransactionInformation TransactionInformation `json:"TransactionInformation,omitempty"` ValueDateTime *time.Time `json:"ValueDateTime,omitempty"` }
+type Obtransaction4Amount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency Currency `json:"Currency"` }
+type Obtransaction4CardInstrument struct { CardSchemeName string `json:"CardSchemeName"` Identification string `json:"Identification,omitempty"` Name string `json:"Name,omitempty"` }
+type Obtransaction4ChargeAmount struct { Amount ObactiveCurrencyAndAmountSimpleType `json:"Amount"` Currency Currency `json:"Currency"` }
+type Obtransaction4CreditDebitIndicator string
+type Obtransaction4ProprietaryBankTransactionCode struct { Code string `json:"Code"` Issuer string `json:"Issuer,omitempty"` }
+type Obtransaction4SupplementaryData struct { StartedDate *time.Time `json:"StartedDate,omitempty"` }
+type ObtransactionCashBalance struct { Amount ObactiveOrHistoricCurrencyAndAmount `json:"Amount"` CreditDebitIndicator ObtransactionCashBalanceCreditDebitIndicator `json:"CreditDebitIndicator"` Type ObbalanceType1code `json:"Type"` }
+type ObtransactionCashBalanceCreditDebitIndicator string
+type ObtransactionIndividualStatus1code string
+type ObwriteDataDomestic2 struct { ConsentID string `json:"ConsentId"` Initiation Obdomestic2 `json:"Initiation"` }
+type ObwriteDataDomesticConsent2 struct { Initiation Obdomestic2 `json:"Initiation"` }
+type ObwriteDataDomesticConsentResponse2 struct { ConsentID string `json:"ConsentId"` CreationDateTime time.Time `json:"CreationDateTime"` Initiation Obdomestic2 `json:"Initiation"` Status ObexternalConsentStatus1code `json:"Status"` StatusUpdateDateTime time.Time `json:"StatusUpdateDateTime"` }
+type ObwriteDataDomesticResponse2 struct { ConsentID string `json:"ConsentId"` CreationDateTime time.Time `json:"CreationDateTime"` DomesticPaymentID string `json:"DomesticPaymentId"` Initiation ObdomesticInitiationResponse `json:"Initiation"` Status ObtransactionIndividualStatus1code `json:"Status"` StatusUpdateDateTime time.Time `json:"StatusUpdateDateTime"` }
+type ObwriteDataDomesticScheduled2 struct { ConsentID string `json:"ConsentId"` Initiation ObdomesticScheduled2 `json:"Initiation"` }
+type ObwriteDataDomesticScheduledConsent2 struct { Initiation ObdomesticScheduled2 `json:"Initiation"` Permission ObexternalPermissions2code `json:"Permission"` }
+type ObwriteDataDomesticScheduledConsentResponse2 struct { ConsentID string `json:"ConsentId"` CreationDateTime time.Time `json:"CreationDateTime"` Initiation ObdomesticScheduled2 `json:"Initiation"` Permission ObexternalPermissions2code `json:"Permission"` Status ObexternalConsentStatus1code `json:"Status"` StatusUpdateDateTime time.Time `json:"StatusUpdateDateTime"` }
+type ObwriteDataDomesticScheduledResponse2 struct { ConsentID string `json:"ConsentId"` CreationDateTime time.Time `json:"CreationDateTime"` DomesticScheduledPaymentID string `json:"DomesticScheduledPaymentId"` Initiation ObdomesticScheduledInitiationResponse `json:"Initiation"` Permission ObexternalPermissions2code `json:"Permission,omitempty"` Status ObexternalStatus1code `json:"Status"` StatusUpdateDateTime time.Time `json:"StatusUpdateDateTime"` }
+type ObwriteDataDomesticStandingOrder2 struct { ConsentID string `json:"ConsentId"` Initiation ObdomesticStandingOrder2 `json:"Initiation"` }
+type ObwriteDataDomesticStandingOrderConsent2 struct { Initiation ObdomesticStandingOrder2 `json:"Initiation"` Permission ObexternalPermissions2code `json:"Permission"` }
+type ObwriteDataDomesticStandingOrderConsentResponse2 struct { ConsentID string `json:"ConsentId"` CreationDateTime time.Time `json:"CreationDateTime"` Initiation ObdomesticStandingOrder2 `json:"Initiation"` Permission ObexternalPermissions2code `json:"Permission"` Status ObexternalConsentStatus1code `json:"Status"` StatusUpdateDateTime time.Time `json:"StatusUpdateDateTime"` }
+type ObwriteDataDomesticStandingOrderResponse2 struct { ConsentID string `json:"ConsentId"` CreationDateTime time.Time `json:"CreationDateTime"` DomesticStandingOrderID string `json:"DomesticStandingOrderId"` Initiation ObdomesticStandingOrderInitiationResponse `json:"Initiation"` Permission ObexternalPermissions2code `json:"Permission,omitempty"` Status ObexternalStatus1code `json:"Status"` StatusUpdateDateTime time.Time `json:"StatusUpdateDateTime"` }
+type ObwriteDataFile2 struct { ConsentID string `json:"ConsentId"` Initiation Obfile2 `json:"Initiation"` }
+type ObwriteDataFileConsent2 struct { Initiation Obfile2 `json:"Initiation"` }
+type ObwriteDataFileConsentResponse2 struct { ConsentID string `json:"ConsentId"` CreationDateTime time.Time `json:"CreationDateTime"` Initiation Obfile2 `json:"Initiation"` Status ObexternalConsentStatus2code `json:"Status"` StatusUpdateDateTime time.Time `json:"StatusUpdateDateTime"` }
+type ObwriteDataFileResponse2 struct { ConsentID string `json:"ConsentId"` CreationDateTime time.Time `json:"CreationDateTime"` FilePaymentID string `json:"FilePaymentId"` Initiation ObfileInitiationResponse `json:"Initiation"` Status ObexternalStatus1code `json:"Status"` StatusUpdateDateTime time.Time `json:"StatusUpdateDateTime"` }
+type ObwriteDataFundsConfirmationResponse1 struct { FundsAvailableResult ObfundsAvailableResult1 `json:"FundsAvailableResult,omitempty"` }
+type ObwriteDataInternational2 struct { ConsentID string `json:"ConsentId"` Initiation Obinternational2 `json:"Initiation"` }
+type ObwriteDataInternationalConsent2 struct { Initiation Obinternational2 `json:"Initiation"` }
+type ObwriteDataInternationalConsentResponse2 struct { ConsentID string `json:"ConsentId"` CreationDateTime time.Time `json:"CreationDateTime"` ExchangeRateInformation ObexchangeRate2 `json:"ExchangeRateInformation,omitempty"` Initiation Obinternational2 `json:"Initiation"` Status ObexternalConsentStatus1code `json:"Status"` StatusUpdateDateTime time.Time `json:"StatusUpdateDateTime"` }
+type ObwriteDataInternationalResponse2 struct { ConsentID string `json:"ConsentId"` CreationDateTime time.Time `json:"CreationDateTime"` ExchangeRateInformation ObexchangeRate2 `json:"ExchangeRateInformation,omitempty"` Initiation ObinternationalInitiationResponse `json:"Initiation"` InternationalPaymentID string `json:"InternationalPaymentId"` Status ObtransactionIndividualStatus1code `json:"Status"` StatusUpdateDateTime time.Time `json:"StatusUpdateDateTime"` }
+type ObwriteDataInternationalScheduled2 struct { ConsentID string `json:"ConsentId"` Initiation ObinternationalScheduled2 `json:"Initiation"` }
+type ObwriteDataInternationalScheduledConsent2 struct { Initiation ObinternationalScheduled2 `json:"Initiation"` Permission ObexternalPermissions2code `json:"Permission"` }
+type ObwriteDataInternationalScheduledConsentResponse2 struct { ConsentID string `json:"ConsentId"` CreationDateTime time.Time `json:"CreationDateTime"` ExchangeRateInformation ObexchangeRate2 `json:"ExchangeRateInformation,omitempty"` Initiation ObinternationalScheduled2 `json:"Initiation"` Permission ObexternalPermissions2code `json:"Permission"` Status ObexternalConsentStatus1code `json:"Status"` StatusUpdateDateTime time.Time `json:"StatusUpdateDateTime"` }
+type ObwriteDataInternationalScheduledResponse2 struct { ConsentID string `json:"ConsentId"` CreationDateTime time.Time `json:"CreationDateTime"` ExchangeRateInformation ObexchangeRate2 `json:"ExchangeRateInformation,omitempty"` Initiation ObinternationalScheduledInitiationResponse `json:"Initiation"` InternationalScheduledPaymentID string `json:"InternationalScheduledPaymentId"` Permission ObexternalPermissions2code `json:"Permission,omitempty"` Status ObexternalStatus1code `json:"Status"` StatusUpdateDateTime time.Time `json:"StatusUpdateDateTime"` }
+type ObwriteDataInternationalStandingOrder2 struct { ConsentID string `json:"ConsentId"` Initiation ObinternationalStandingOrder2 `json:"Initiation"` }
+type ObwriteDataInternationalStandingOrderConsent2 struct { Initiation ObinternationalStandingOrder2 `json:"Initiation"` Permission ObexternalPermissions2code `json:"Permission"` }
+type ObwriteDataInternationalStandingOrderConsentResponse2 struct { ConsentID string `json:"ConsentId"` CreationDateTime time.Time `json:"CreationDateTime"` Initiation ObinternationalStandingOrder2 `json:"Initiation"` Permission ObexternalPermissions2code `json:"Permission"` Status ObexternalConsentStatus1code `json:"Status"` StatusUpdateDateTime time.Time `json:"StatusUpdateDateTime"` }
+type ObwriteDataInternationalStandingOrderResponse2 struct { ConsentID string `json:"ConsentId"` CreationDateTime time.Time `json:"CreationDateTime"` Initiation ObinternationalStandingOrderInitiationResponse `json:"Initiation"` InternationalStandingOrderID string `json:"InternationalStandingOrderId"` Permission ObexternalPermissions2code `json:"Permission,omitempty"` Status ObexternalStatus1code `json:"Status"` StatusUpdateDateTime time.Time `json:"StatusUpdateDateTime"` }
+type ObwriteDomestic2 struct { Data ObwriteDataDomestic2 `json:"Data"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteDomesticConsent2 struct { Data ObwriteDataDomesticConsent2 `json:"Data"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteDomesticConsentResponse2 struct { Data ObwriteDataDomesticConsentResponse2 `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteDomesticResponse2 struct { Data ObwriteDataDomesticResponse2 `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` }
+type ObwriteDomesticScheduled2 struct { Data ObwriteDataDomesticScheduled2 `json:"Data"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteDomesticScheduledConsent2 struct { Data ObwriteDataDomesticScheduledConsent2 `json:"Data"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteDomesticScheduledConsentResponse2 struct { Data ObwriteDataDomesticScheduledConsentResponse2 `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteDomesticScheduledResponse2 struct { Data ObwriteDataDomesticScheduledResponse2 `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` }
+type ObwriteDomesticStandingOrder2 struct { Data ObwriteDataDomesticStandingOrder2 `json:"Data"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteDomesticStandingOrderConsent2 struct { Data ObwriteDataDomesticStandingOrderConsent2 `json:"Data"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteDomesticStandingOrderConsentResponse2 struct { Data ObwriteDataDomesticStandingOrderConsentResponse2 `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteDomesticStandingOrderResponse2 struct { Data ObwriteDataDomesticStandingOrderResponse2 `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` }
+type ObwriteFile2 struct { Data ObwriteDataFile2 `json:"Data"` }
+type ObwriteFileConsent2 struct { Data ObwriteDataFileConsent2 `json:"Data"` }
+type ObwriteFileConsentResponse2 struct { Data ObwriteDataFileConsentResponse2 `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` }
+type ObwriteFileResponse2 struct { Data ObwriteDataFileResponse2 `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` }
+type ObwriteFundsConfirmationResponse1 struct { Data ObwriteDataFundsConfirmationResponse1 `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` }
+type ObwriteInternational2 struct { Data ObwriteDataInternational2 `json:"Data"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteInternationalConsent2 struct { Data ObwriteDataInternationalConsent2 `json:"Data"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteInternationalConsentResponse2 struct { Data ObwriteDataInternationalConsentResponse2 `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteInternationalResponse2 struct { Data ObwriteDataInternationalResponse2 `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` }
+type ObwriteInternationalScheduled2 struct { Data ObwriteDataInternationalScheduled2 `json:"Data"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteInternationalScheduledConsent2 struct { Data ObwriteDataInternationalScheduledConsent2 `json:"Data"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteInternationalScheduledConsentResponse2 struct { Data ObwriteDataInternationalScheduledConsentResponse2 `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteInternationalScheduledResponse2 struct { Data ObwriteDataInternationalScheduledResponse2 `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` }
+type ObwriteInternationalStandingOrder2 struct { Data ObwriteDataInternationalStandingOrder2 `json:"Data"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteInternationalStandingOrderConsent2 struct { Data ObwriteDataInternationalStandingOrderConsent2 `json:"Data"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteInternationalStandingOrderConsentResponse2 struct { Data ObwriteDataInternationalStandingOrderConsentResponse2 `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` Risk Obrisk1 `json:"Risk"` }
+type ObwriteInternationalStandingOrderResponse2 struct { Data ObwriteDataInternationalStandingOrderResponse2 `json:"Data"` Links Links `json:"Links"` Meta Meta `json:"Meta"` }
+type PaymentStatus string
+type RegisterApplicationResponse struct { ApplicationType RegisterApplicationResponseApplicationType `json:"application_type,omitempty"` ClientID string `json:"client_id,omitempty"` Exp int `json:"exp,omitempty"` GrantTypes []string `json:"grant_types,omitempty"` Iat int `json:"iat,omitempty"` IDTokenSignedResponseAlg RegisterApplicationResponseIDTokenSignedResponseAlg `json:"id_token_signed_response_alg,omitempty"` Iss string `json:"iss,omitempty"` OrgJwksEndpoint string `json:"org_jwks_endpoint,omitempty"` RedirectUris []string `json:"redirect_uris,omitempty"` RequestObjectSigningAlg RegisterApplicationResponseRequestObjectSigningAlg `json:"request_object_signing_alg,omitempty"` Scope string `json:"scope,omitempty"` SoftwareStatement string `json:"software_statement,omitempty"` TLSClientAuthDn string `json:"tls_client_auth_dn,omitempty"` TokenEndpointAuthMethod RegisterApplicationResponseTokenEndpointAuthMethod `json:"token_endpoint_auth_method,omitempty"` }
+type RegisterApplicationResponseApplicationType string
+type RegisterApplicationResponseIDTokenSignedResponseAlg string
+type RegisterApplicationResponseRequestObjectSigningAlg string
+type RegisterApplicationResponseTokenEndpointAuthMethod string
+type TransactionInformation string
+type Transactions struct { t *transport.Transport }

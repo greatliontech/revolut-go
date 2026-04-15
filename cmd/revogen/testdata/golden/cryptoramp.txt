@@ -1,0 +1,105 @@
+const APIVersion = "2.0.0"
+const BlockchainAlgorand Blockchain = "ALGORAND"
+const BlockchainAvalanche Blockchain = "AVALANCHE"
+const BlockchainBase Blockchain = "BASE"
+const BlockchainBitcoin Blockchain = "BITCOIN"
+const BlockchainBitcoincash Blockchain = "BITCOINCASH"
+const BlockchainCardano Blockchain = "CARDANO"
+const BlockchainCelestia Blockchain = "CELESTIA"
+const BlockchainCelo Blockchain = "CELO"
+const BlockchainCosmos Blockchain = "COSMOS"
+const BlockchainDash Blockchain = "DASH"
+const BlockchainDogecoin Blockchain = "DOGECOIN"
+const BlockchainEos Blockchain = "EOS"
+const BlockchainEthereum Blockchain = "ETHEREUM"
+const BlockchainEthereumclassic Blockchain = "ETHEREUMCLASSIC"
+const BlockchainEthereumpow Blockchain = "ETHEREUMPOW"
+const BlockchainFantom Blockchain = "FANTOM"
+const BlockchainFlare Blockchain = "FLARE"
+const BlockchainHederahashgraph Blockchain = "HEDERAHASHGRAPH"
+const BlockchainKava Blockchain = "KAVA"
+const BlockchainKusama Blockchain = "KUSAMA"
+const BlockchainLitecoin Blockchain = "LITECOIN"
+const BlockchainNear Blockchain = "NEAR"
+const BlockchainOptimism Blockchain = "OPTIMISM"
+const BlockchainPolkadot Blockchain = "POLKADOT"
+const BlockchainPolygon Blockchain = "POLYGON"
+const BlockchainRipple Blockchain = "RIPPLE"
+const BlockchainSmartchain Blockchain = "SMARTCHAIN"
+const BlockchainSolana Blockchain = "SOLANA"
+const BlockchainSongbird Blockchain = "SONGBIRD"
+const BlockchainStellar Blockchain = "STELLAR"
+const BlockchainTezos Blockchain = "TEZOS"
+const BlockchainTron Blockchain = "TRON"
+const ConfigPaymentMethodsItemApplePay ConfigPaymentMethodsItem = "apple-pay"
+const ConfigPaymentMethodsItemCard ConfigPaymentMethodsItem = "card"
+const ConfigPaymentMethodsItemGooglePay ConfigPaymentMethodsItem = "google-pay"
+const ConfigPaymentMethodsItemRevolut ConfigPaymentMethodsItem = "revolut"
+const EventTypeOrderCompleted EventType = "ORDER_COMPLETED"
+const EventTypeOrderCreated EventType = "ORDER_CREATED"
+const EventTypeOrderFailed EventType = "ORDER_FAILED"
+const EventTypeOrderProcessing EventType = "ORDER_PROCESSING"
+const OrderFailReasonCryptoWithdrawalFailed OrderFailReason = "CRYPTO_WITHDRAWAL_FAILED"
+const OrderFailReasonOther OrderFailReason = "OTHER"
+const OrderFailReasonPaymentDeclined OrderFailReason = "PAYMENT_DECLINED"
+const OrderFailReasonPaymentNotReceived OrderFailReason = "PAYMENT_NOT_RECEIVED"
+const OrderPaymentApplePay OrderPayment = "apple-pay"
+const OrderPaymentCard OrderPayment = "card"
+const OrderPaymentGooglePay OrderPayment = "google-pay"
+const OrderPaymentRevolut OrderPayment = "revolut"
+const OrderStatusAwaitingPayment OrderStatus = "AWAITING_PAYMENT"
+const OrderStatusCompleted OrderStatus = "COMPLETED"
+const OrderStatusFailed OrderStatus = "FAILED"
+const OrderStatusProcessing OrderStatus = "PROCESSING"
+const PartnersPaymentApplePay PartnersPayment = "apple-pay"
+const PartnersPaymentCard PartnersPayment = "card"
+const PartnersPaymentGooglePay PartnersPayment = "google-pay"
+const PartnersPaymentRevolut PartnersPayment = "revolut"
+func (*Partners) GetOrder
+func (*Partners) ListBuy
+func (*Partners) ListConfig
+func (*Partners) ListOrders
+func (*Partners) ListOrdersAll
+func (*Partners) ListQuote
+func (*Webhooks) Create
+func (*Webhooks) Delete
+func (*Webhooks) Get
+func (*Webhooks) List
+func (*Webhooks) Update
+func New
+type BadRequestError struct { Message string `json:"message"` }
+type Blockchain string
+type Client struct { transport *transport.Transport Partners *Partners Webhooks *Webhooks }
+type Config struct { Countries []CountryCode `json:"countries"` Crypto []*ConfigCryptoItem `json:"crypto"` FeePercentages []json.Number `json:"feePercentages,omitempty"` Fiat []*ConfigFiatItem `json:"fiat"` PaymentMethods []ConfigPaymentMethodsItem `json:"payment_methods"` Version string `json:"version"` }
+type ConfigCryptoItem struct { Blockchain Blockchain `json:"blockchain"` Currency CurrencyCryptoCode `json:"currency"` ID string `json:"id"` SmartContractAddress string `json:"smartContractAddress,omitempty"` }
+type ConfigFiatItem struct { Currency CurrencyFiat `json:"currency"` MaxLimit json.Number `json:"max_limit"` MinLimit json.Number `json:"min_limit"` }
+type ConfigPaymentMethodsItem string
+type CountryCode string
+type Currency string
+type CurrencyCryptoCode string
+type CurrencyCryptoID string
+type CurrencyFiat string
+type DisabledByKillSwitchError struct { Message string `json:"message"` }
+type EventType string
+type GetBuyParams struct { Fiat Currency `json:"fiat"` Amount json.Number `json:"amount"` Crypto string `json:"crypto"` Payment PartnersPayment `json:"payment"` Region CountryCode `json:"region"` Wallet string `json:"wallet"` OrderID string `json:"orderId,omitempty"` FeePercentage json.Number `json:"feePercentage,omitempty"` PartnerRedirectURL string `json:"partnerRedirectUrl,omitempty"` AdditionalProperties string `json:"additionalProperties,omitempty"` }
+type GetOrdersParams struct { Start time.Time `json:"start"` End time.Time `json:"end"` Skip int32 `json:"skip,omitempty"` Limit int32 `json:"limit,omitempty"` }
+type GetOrdersParams2 struct { Wallet string `json:"wallet"` }
+type GetQuoteParams struct { Fiat Currency `json:"fiat"` Amount json.Number `json:"amount"` Crypto string `json:"crypto"` Payment PartnersPayment `json:"payment"` Region CountryCode `json:"region"` FeePercentage json.Number `json:"feePercentage,omitempty"` WalletAddress string `json:"walletAddress,omitempty"` }
+type MoneyCryptoID struct { Amount json.Number `json:"amount"` CurrencyID CurrencyCryptoID `json:"currencyId"` }
+type MoneyFiat struct { Amount json.Number `json:"amount"` Currency CurrencyFiat `json:"currency"` }
+type NotFoundError struct { Message string `json:"message"` }
+type Order struct { AdditionalProperties map[string]string `json:"additionalProperties,omitempty"` CreatedAt time.Time `json:"created_at"` Crypto MoneyCryptoID `json:"crypto"` ExchangeRate json.Number `json:"exchange_rate"` FailReason OrderFailReason `json:"fail_reason,omitempty"` Fees *OrderFees `json:"fees"` FeesPartnerCurrency *OrderFeesPartnerCurrency `json:"fees_partner_currency"` Fiat MoneyFiat `json:"fiat"` ID string `json:"id"` Payment OrderPayment `json:"payment"` Status OrderStatus `json:"status"` TransactionHash string `json:"transaction_hash,omitempty"` UpdatedAt time.Time `json:"updated_at"` Wallet string `json:"wallet"` }
+type OrderFailReason string
+type OrderFees struct { NetworkFee MoneyFiat `json:"network_fee"` PartnerFee MoneyFiat `json:"partner_fee"` RampFee MoneyFiat `json:"ramp_fee"` }
+type OrderFeesPartnerCurrency struct { NetworkFee MoneyFiat `json:"network_fee"` PartnerFee MoneyFiat `json:"partner_fee"` RampFee MoneyFiat `json:"ramp_fee"` }
+type OrderPayment string
+type OrderStatus string
+type Partners struct { t *transport.Transport }
+type PartnersPayment string
+type Quote struct { Crypto MoneyCryptoID `json:"crypto"` NetworkFee MoneyFiat `json:"network_fee"` PartnerFee MoneyFiat `json:"partner_fee"` ServiceFee MoneyFiat `json:"service_fee"` }
+type RampRedirectURL struct { RampRedirectURL string `json:"ramp_redirect_url"` }
+type UnexpectedError struct { ErrorID string `json:"errorId"` Timestamp int64 `json:"timestamp"` }
+type Webhook struct { Events []EventType `json:"events"` ID string `json:"id"` SigningSecret string `json:"signing_secret"` URL string `json:"url"` }
+type WebhookCreateRequest struct { Events []EventType `json:"events"` URL string `json:"url"` }
+type WebhookUpdateRequest struct { Events []EventType `json:"events,omitempty"` URL string `json:"url,omitempty"` }
+type Webhooks struct { t *transport.Transport }

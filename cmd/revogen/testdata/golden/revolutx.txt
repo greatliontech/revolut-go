@@ -1,0 +1,147 @@
+const APIVersion = "1.0.0"
+const ClientTradeSBuy ClientTradeS = "buy"
+const ClientTradeSSell ClientTradeS = "sell"
+const CurrencyAssetTypeCrypto CurrencyAssetType = "crypto"
+const CurrencyAssetTypeFiat CurrencyAssetType = "fiat"
+const CurrencyPairStatusActive CurrencyPairStatus = "active"
+const CurrencyPairStatusInactive CurrencyPairStatus = "inactive"
+const CurrencyStatusActive CurrencyStatus = "active"
+const CurrencyStatusInactive CurrencyStatus = "inactive"
+const ExecutionInstructionsItemAllowTaker ExecutionInstructionsItem = "allow_taker"
+const ExecutionInstructionsItemPostOnly ExecutionInstructionsItem = "post_only"
+const OrderBookPriceLevelSBuyi OrderBookPriceLevelS = "BUYI"
+const OrderBookPriceLevelSSell OrderBookPriceLevelS = "SELL"
+const OrderBookPublicPriceLevelSBuyi OrderBookPublicPriceLevelS = "BUYI"
+const OrderBookPublicPriceLevelSSell OrderBookPublicPriceLevelS = "SELL"
+const OrderPlacementResponseDataStateCancelled OrderPlacementResponseDataState = "cancelled"
+const OrderPlacementResponseDataStateFilled OrderPlacementResponseDataState = "filled"
+const OrderPlacementResponseDataStateNew OrderPlacementResponseDataState = "new"
+const OrderPlacementResponseDataStatePartiallyFilled OrderPlacementResponseDataState = "partially_filled"
+const OrderPlacementResponseDataStatePendingNew OrderPlacementResponseDataState = "pending_new"
+const OrderPlacementResponseDataStateRejected OrderPlacementResponseDataState = "rejected"
+const OrderPlacementResponseDataStateReplaced OrderPlacementResponseDataState = "replaced"
+const OrderSideBuy OrderSide = "buy"
+const OrderSideSell OrderSide = "sell"
+const OrderStatusCancelled OrderStatus = "cancelled"
+const OrderStatusFilled OrderStatus = "filled"
+const OrderStatusNew OrderStatus = "new"
+const OrderStatusPartiallyFilled OrderStatus = "partially_filled"
+const OrderStatusPendingNew OrderStatus = "pending_new"
+const OrderStatusRejected OrderStatus = "rejected"
+const OrderStatusReplaced OrderStatus = "replaced"
+const OrderTimeInForceFok OrderTimeInForce = "fok"
+const OrderTimeInForceGtc OrderTimeInForce = "gtc"
+const OrderTimeInForceIoc OrderTimeInForce = "ioc"
+const OrderTriggerTimeInForceGtc OrderTriggerTimeInForce = "gtc"
+const OrderTriggerTimeInForceIoc OrderTriggerTimeInForce = "ioc"
+const OrderTriggerTriggerDirectionGe OrderTriggerTriggerDirection = "ge"
+const OrderTriggerTriggerDirectionLe OrderTriggerTriggerDirection = "le"
+const OrderTriggerTypeLimit OrderTriggerType = "limit"
+const OrderTriggerTypeMarket OrderTriggerType = "market"
+const OrderTypeConditional OrderType = "conditional"
+const OrderTypeLimit OrderType = "limit"
+const OrderTypeMarket OrderType = "market"
+const OrderTypeTpsl OrderType = "tpsl"
+const OrdersOrderStatesItemNew OrdersOrderStatesItem = "new"
+const OrdersOrderStatesItemPartiallyFilled OrdersOrderStatesItem = "partially_filled"
+const OrdersOrderStatesItemPendingNew OrdersOrderStatesItem = "pending_new"
+const OrdersOrderTypesItemConditional OrdersOrderTypesItem = "conditional"
+const OrdersOrderTypesItemLimit OrdersOrderTypesItem = "limit"
+const OrdersOrderTypesItemTpsl OrdersOrderTypesItem = "tpsl"
+const OrdersSideBuy OrdersSide = "buy"
+const OrdersSideSell OrdersSide = "sell"
+const SideBuy Side = "buy"
+const SideSell Side = "sell"
+func (*Balance) GetAllBalances
+func (*Configuration) GetAllCurrencies
+func (*Configuration) GetAllCurrencyPairs
+func (*MarketData) GetCandles
+func (*MarketData) GetOrderBook
+func (*MarketData) GetTicker
+func (*Orders) CancelAllOrders
+func (*Orders) CancelOrder
+func (*Orders) Get
+func (*Orders) GetActiveOrders
+func (*Orders) GetFills
+func (*Orders) GetHistoricalOrders
+func (*Orders) PlaceOrder
+func (*PublicMarketData) GetLastTrades
+func (*PublicMarketData) GetOrderBook
+func (*Trades) GetAllTrades
+func (*Trades) GetPrivateTrades
+func New
+type AccountBalanceEntry struct { Available json.Number `json:"available"` Currency string `json:"currency"` Reserved json.Number `json:"reserved"` Staked json.Number `json:"staked,omitempty"` Total json.Number `json:"total"` }
+type ActiveOrdersPaginatedResponse struct { Data []Order `json:"data"` Metadata *ActiveOrdersPaginatedResponseMetadata `json:"metadata"` }
+type ActiveOrdersPaginatedResponseMetadata struct { NextCursor string `json:"next_cursor,omitempty"` Timestamp int64 `json:"timestamp"` }
+type AllTradesPaginatedResponse struct { Data []Trade `json:"data"` Metadata *AllTradesPaginatedResponseMetadata `json:"metadata"` }
+type AllTradesPaginatedResponseMetadata struct { NextCursor string `json:"next_cursor,omitempty"` Timestamp int64 `json:"timestamp"` }
+type Balance struct { t *transport.Transport }
+type Candle struct { Close json.Number `json:"close"` High json.Number `json:"high"` Low json.Number `json:"low"` Open json.Number `json:"open"` Start int64 `json:"start"` Volume json.Number `json:"volume"` }
+type Client struct { transport *transport.Transport Balance *Balance MarketData *MarketData Configuration *Configuration Orders *Orders PublicMarketData *PublicMarketData Trades *Trades }
+type ClientTrade struct { Aid string `json:"aid"` Anm string `json:"anm"` Im bool `json:"im"` Oid string `json:"oid"` P string `json:"p"` Pc string `json:"pc"` Pdt int64 `json:"pdt"` Pn string `json:"pn"` Q string `json:"q"` Qc string `json:"qc"` Qn string `json:"qn"` S ClientTradeS `json:"s,omitempty"` Tdt int64 `json:"tdt"` Tid string `json:"tid"` Ve string `json:"ve"` Vp string `json:"vp"` }
+type ClientTradeS string
+type Configuration struct { t *transport.Transport }
+type CurrenciesResponse map[string]Currency
+type Currency struct { AssetType CurrencyAssetType `json:"asset_type"` Name string `json:"name"` Scale int `json:"scale"` Status CurrencyStatus `json:"status"` Symbol string `json:"symbol"` }
+type CurrencyAssetType string
+type CurrencyPair struct { Base string `json:"base"` BaseStep json.Number `json:"base_step"` MaxOrderSize json.Number `json:"max_order_size"` MinOrderSize json.Number `json:"min_order_size"` MinOrderSizeQuote json.Number `json:"min_order_size_quote"` Quote string `json:"quote"` QuoteStep json.Number `json:"quote_step"` Status CurrencyPairStatus `json:"status"` }
+type CurrencyPairStatus string
+type CurrencyPairsResponse map[string]CurrencyPair
+type CurrencyStatus string
+type ErrorResponse struct { ErrorID string `json:"error_id"` Message string `json:"message"` Timestamp int64 `json:"timestamp"` }
+type ExecutionInstructionsItem string
+type GetActiveOrdersParams struct { Symbols []string `json:"symbols,omitempty"` OrderStates []OrdersOrderStatesItem `json:"order_states,omitempty"` OrderTypes []OrdersOrderTypesItem `json:"order_types,omitempty"` Side OrdersSide `json:"side,omitempty"` Cursor string `json:"cursor,omitempty"` Limit int32 `json:"limit,omitempty"` }
+type GetAllTradesParams struct { StartDate int64 `json:"start_date,omitempty"` EndDate int64 `json:"end_date,omitempty"` Cursor string `json:"cursor,omitempty"` Limit int32 `json:"limit,omitempty"` }
+type GetCandlesParams struct { Interval int32 `json:"interval,omitempty"` Since int64 `json:"since,omitempty"` Until int64 `json:"until,omitempty"` }
+type GetCandlesResponse struct { Data []Candle `json:"data"` }
+type GetHistoricalOrdersParams struct { Symbols []string `json:"symbols,omitempty"` OrderStates []OrdersOrderStatesItem `json:"order_states,omitempty"` OrderTypes []OrdersOrderTypesItem `json:"order_types,omitempty"` StartDate int64 `json:"start_date,omitempty"` EndDate int64 `json:"end_date,omitempty"` Cursor string `json:"cursor,omitempty"` Limit int32 `json:"limit,omitempty"` }
+type GetOrderBookParams struct { Limit int32 `json:"limit,omitempty"` }
+type GetOrderFillsResponse struct { Data []ClientTrade `json:"data"` }
+type GetOrderResponse struct { Data Order `json:"data"` }
+type GetPrivateTradesParams struct { StartDate int64 `json:"start_date,omitempty"` EndDate int64 `json:"end_date,omitempty"` Cursor string `json:"cursor,omitempty"` Limit int32 `json:"limit,omitempty"` }
+type GetTickerParams struct { Symbols []string `json:"symbols,omitempty"` }
+type HistoricalOrdersPaginatedResponse struct { Data []Order `json:"data"` Metadata *HistoricalOrdersPaginatedResponseMetadata `json:"metadata"` }
+type HistoricalOrdersPaginatedResponseMetadata struct { NextCursor string `json:"next_cursor,omitempty"` Timestamp int64 `json:"timestamp"` }
+type LastTrades struct { Data []PublicTrade `json:"data"` Metadata *LastTradesMetadata `json:"metadata"` }
+type LastTradesMetadata struct { Timestamp time.Time `json:"timestamp"` }
+type LimitOrderConfiguration struct { BaseSize json.Number `json:"base_size,omitempty"` ExecutionInstructions []ExecutionInstructionsItem `json:"execution_instructions,omitempty"` Price json.Number `json:"price"` QuoteSize json.Number `json:"quote_size,omitempty"` }
+type MarketData struct { t *transport.Transport }
+type MarketOrderConfiguration struct { BaseSize json.Number `json:"base_size,omitempty"` QuoteSize json.Number `json:"quote_size,omitempty"` }
+type Order struct { Amount string `json:"amount,omitempty"` AverageFillPrice string `json:"average_fill_price,omitempty"` ClientOrderID string `json:"client_order_id"` Conditional OrderTrigger `json:"conditional,omitempty"` CreatedDate int64 `json:"created_date"` ExecutionInstructions []ExecutionInstructionsItem `json:"execution_instructions"` FilledQuantity string `json:"filled_quantity"` ID string `json:"id"` LeavesQuantity string `json:"leaves_quantity"` PreviousOrderID string `json:"previous_order_id,omitempty"` Price string `json:"price"` Quantity string `json:"quantity"` RejectReason string `json:"reject_reason,omitempty"` Side OrderSide `json:"side"` Status OrderStatus `json:"status"` StopLoss OrderTrigger `json:"stop_loss,omitempty"` Symbol string `json:"symbol"` TakeProfit OrderTrigger `json:"take_profit,omitempty"` TimeInForce OrderTimeInForce `json:"time_in_force"` Type OrderType `json:"type"` UpdatedDate int64 `json:"updated_date"` }
+type OrderBook struct { Data *OrderBookData `json:"data"` Metadata *OrderBookMetadata `json:"metadata"` }
+type OrderBookData struct { Asks []OrderBookPriceLevel `json:"asks"` Bids []OrderBookPriceLevel `json:"bids"` }
+type OrderBookMetadata struct { Timestamp int64 `json:"timestamp"` }
+type OrderBookPriceLevel struct { Aid string `json:"aid"` Anm string `json:"anm"` No string `json:"no"` P string `json:"p"` Pc string `json:"pc"` Pdt int64 `json:"pdt"` Pn string `json:"pn"` Q string `json:"q"` Qc string `json:"qc"` Qn string `json:"qn"` S OrderBookPriceLevelS `json:"s"` Ts string `json:"ts"` Ve string `json:"ve"` }
+type OrderBookPriceLevelS string
+type OrderBookPublic struct { Data *OrderBookPublicData `json:"data"` Metadata *OrderBookPublicMetadata `json:"metadata"` }
+type OrderBookPublicData struct { Asks []OrderBookPublicPriceLevel `json:"asks"` Bids []OrderBookPublicPriceLevel `json:"bids"` }
+type OrderBookPublicMetadata struct { Timestamp time.Time `json:"timestamp"` }
+type OrderBookPublicPriceLevel struct { Aid string `json:"aid"` Anm string `json:"anm"` No string `json:"no"` P string `json:"p"` Pc string `json:"pc"` Pdt time.Time `json:"pdt"` Pn string `json:"pn"` Q string `json:"q"` Qc string `json:"qc"` Qn string `json:"qn"` S OrderBookPublicPriceLevelS `json:"s"` Ts string `json:"ts"` Ve string `json:"ve"` }
+type OrderBookPublicPriceLevelS string
+type OrderPlacementRequest struct { ClientOrderID string `json:"client_order_id"` OrderConfiguration *OrderPlacementRequestOrderConfiguration `json:"order_configuration"` Side Side `json:"side"` Symbol string `json:"symbol"` }
+type OrderPlacementRequestOrderConfiguration struct { Limit LimitOrderConfiguration `json:"limit,omitempty"` Market MarketOrderConfiguration `json:"market,omitempty"` }
+type OrderPlacementResponse struct { Data *OrderPlacementResponseData `json:"data"` }
+type OrderPlacementResponseData struct { ClientOrderID string `json:"client_order_id"` State OrderPlacementResponseDataState `json:"state"` VenueOrderID string `json:"venue_order_id"` }
+type OrderPlacementResponseDataState string
+type OrderSide string
+type OrderStatus string
+type OrderTimeInForce string
+type OrderTrigger struct { ExecutionInstructions []ExecutionInstructionsItem `json:"execution_instructions"` LimitPrice json.Number `json:"limit_price,omitempty"` TimeInForce OrderTriggerTimeInForce `json:"time_in_force"` TriggerDirection OrderTriggerTriggerDirection `json:"trigger_direction"` TriggerPrice json.Number `json:"trigger_price"` Type OrderTriggerType `json:"type"` }
+type OrderTriggerTimeInForce string
+type OrderTriggerTriggerDirection string
+type OrderTriggerType string
+type OrderType string
+type Orders struct { t *transport.Transport }
+type OrdersOrderStatesItem string
+type OrdersOrderTypesItem string
+type OrdersSide string
+type PrivateTradesPaginatedResponse struct { Data []ClientTrade `json:"data"` Metadata *PrivateTradesPaginatedResponseMetadata `json:"metadata"` }
+type PrivateTradesPaginatedResponseMetadata struct { NextCursor string `json:"next_cursor,omitempty"` Timestamp int64 `json:"timestamp"` }
+type PublicMarketData struct { t *transport.Transport }
+type PublicTrade struct { Aid string `json:"aid"` Anm string `json:"anm"` P string `json:"p"` Pc string `json:"pc"` Pdt time.Time `json:"pdt"` Pn string `json:"pn"` Q string `json:"q"` Qc string `json:"qc"` Qn string `json:"qn"` Tdt time.Time `json:"tdt"` Tid string `json:"tid"` Ve string `json:"ve"` Vp string `json:"vp"` }
+type Side string
+type Ticker struct { Ask json.Number `json:"ask"` Bid json.Number `json:"bid"` LastPrice json.Number `json:"last_price"` Mid json.Number `json:"mid"` Symbol string `json:"symbol"` }
+type TickersResponse struct { Data []Ticker `json:"data"` Metadata *TickersResponseMetadata `json:"metadata"` }
+type TickersResponseMetadata struct { Timestamp int64 `json:"timestamp"` }
+type Trade struct { Aid string `json:"aid"` Anm string `json:"anm"` P string `json:"p"` Pc string `json:"pc"` Pdt int64 `json:"pdt"` Pn string `json:"pn"` Q string `json:"q"` Qc string `json:"qc"` Qn string `json:"qn"` Tdt int64 `json:"tdt"` Tid string `json:"tid"` Ve string `json:"ve"` Vp string `json:"vp"` }
+type Trades struct { t *transport.Transport }
