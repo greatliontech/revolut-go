@@ -8,18 +8,39 @@ import (
 // initialisms the generator capitalises wholesale when converting
 // snake_case to Go identifiers ("request_id" → "RequestID", not
 // "RequestId"). Extend as needed.
+//
+// Revolut tags several schemas with region codes (UK, AU, RO, EUR) as
+// nominal variants; keeping them upper-case preserves the spec's
+// mental model in generated identifiers and aligns with Go's style
+// guide recommendation that acronyms keep their case.
 var initialisms = map[string]bool{
-	"ID":   true,
-	"URL":  true,
-	"URI":  true,
-	"API":  true,
-	"HTTP": true,
-	"UUID": true,
-	"IBAN": true,
-	"BIC":  true,
+	"ID":    true,
+	"URL":   true,
+	"URI":   true,
+	"API":   true,
+	"HTTP":  true,
+	"UUID":  true,
+	"IBAN":  true,
+	"BIC":   true,
 	"SWIFT": true,
-	"JWT":  true,
-	"JSON": true,
+	"JWT":   true,
+	"JSON":  true,
+	"SEPA":  true,
+	"ACH":   true,
+	"VAT":   true,
+	"KYC":   true,
+	"AML":   true,
+	"MFA":   true,
+	"SMS":   true,
+	"PDF":   true,
+	"CSV":   true,
+	"HTML":  true,
+	"XML":   true,
+	// Region/country codes Revolut uses as discriminator tags.
+	"UK":  true,
+	"AU":  true,
+	"RO":  true,
+	"EUR": true,
 }
 
 // goTypeName turns a spec schema or tag name into an exported Go type

@@ -9,8 +9,11 @@ package main
 // to one Go output package.
 type Spec struct {
 	PackageName string
-	Resources   []*Resource
-	Types       []*NamedType
+	// ErrPrefix is prepended to validation error messages in emitted
+	// methods ("<ErrPrefix>: Foo.bar is required"). Set by buildConfig.
+	ErrPrefix string
+	Resources []*Resource
+	Types     []*NamedType
 }
 
 // Resource is one grouping of operations that produces a single

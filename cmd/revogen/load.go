@@ -49,16 +49,29 @@ func loadSpec(path string) (*openapi3.T, error) {
 
 // scrubInvalidBounds patches Revolut-specific spec violations. Operates
 // on a parsed YAML node tree, then re-serialises.
+//
+// Each scrub pass runs with a context flag that tells it whether the
+// current mapping is inside an `example(s)` subtree. Example payloads
+// are arbitrary user data: stripping "$ref siblings" or
+// "parameter-only fields" from them risks mangling the documented
+// wire shape. Schema-level scrubs therefore only fire outside
+// example subtrees.
 func scrubInvalidBounds(data []byte) ([]byte, error) {
 	var root yaml.Node
 	if err := yaml.Unmarshal(data, &root); err != nil {
 		return nil, err
 	}
-	walk(&root, func(n *yaml.Node) {
+	walkWithContext(&root, false, func(n *yaml.Node, insideExample bool) {
 		if n.Kind != yaml.MappingNode {
 			return
 		}
+		// Non-numeric maximum/minimum is a schema-only concern, safe
+		// to strip globally (these keys don't appear in examples or
+		// parameter-adjacent objects).
 		stripNonNumericBounds(n)
+		if insideExample {
+			return
+		}
 		stripRefSiblings(n)
 		stripUnknownSchemaFields(n)
 	})
@@ -158,5 +171,31 @@ func walk(n *yaml.Node, fn func(*yaml.Node)) {
 	fn(n)
 	for _, child := range n.Content {
 		walk(child, fn)
+	}
+}
+
+// walkWithContext is walk with an "inside example subtree" flag
+// propagated through children. The flag turns on whenever the current
+// mapping has a key named `example` or `examples` and the walker
+// descends into that key's value; it stays on for the whole subtree.
+func walkWithContext(n *yaml.Node, insideExample bool, fn func(*yaml.Node, bool)) {
+	if n == nil {
+		return
+	}
+	fn(n, insideExample)
+	switch n.Kind {
+	case yaml.MappingNode:
+		for i := 0; i+1 < len(n.Content); i += 2 {
+			k, v := n.Content[i], n.Content[i+1]
+			nextInside := insideExample
+			if !nextInside && (k.Value == "example" || k.Value == "examples") {
+				nextInside = true
+			}
+			walkWithContext(v, nextInside, fn)
+		}
+	default:
+		for _, child := range n.Content {
+			walkWithContext(child, insideExample, fn)
+		}
 	}
 }

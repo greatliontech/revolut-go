@@ -31,6 +31,8 @@ type flags struct {
 	resources         stringList
 	includeDeprecated bool
 	verbose           bool
+	errPrefix         string
+	docsBase          string
 }
 
 type stringList []string
@@ -46,7 +48,15 @@ func parseFlags() flags {
 	flag.Var(&f.resources, "resource", "resource tag to emit (repeatable; omit to emit all)")
 	flag.BoolVar(&f.includeDeprecated, "include-deprecated", false, "emit operations/resources the spec marks as deprecated")
 	flag.BoolVar(&f.verbose, "v", false, "verbose output")
+	flag.StringVar(&f.errPrefix, "err-prefix", "", "prefix for validation error messages (defaults to the package name)")
+	flag.StringVar(&f.docsBase, "docs-base", "", "base URL for generated godoc links (defaults to https://developer.revolut.com/docs/<package>/)")
 	flag.Parse()
+	if f.errPrefix == "" {
+		f.errPrefix = f.pkg
+	}
+	if f.docsBase == "" {
+		f.docsBase = "https://developer.revolut.com/docs/" + f.pkg + "/"
+	}
 	return f
 }
 
@@ -66,7 +76,13 @@ func run(f flags) error {
 	if f.verbose {
 		summarize(doc)
 	}
-	spec, err := buildSpec(doc, f.pkg, f.resources, f.includeDeprecated)
+	spec, err := buildSpec(doc, buildConfig{
+		PackageName:       f.pkg,
+		ResourceAllow:     f.resources,
+		IncludeDeprecated: f.includeDeprecated,
+		ErrPrefix:         f.errPrefix,
+		DocsBase:          f.docsBase,
+	})
 	if err != nil {
 		return fmt.Errorf("build IR: %w", err)
 	}

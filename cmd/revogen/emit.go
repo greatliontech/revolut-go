@@ -312,9 +312,9 @@ func emitResource(spec *Spec, r *Resource, unionTypes map[string]bool) string {
 			writeType(&buf, op.ParamsStruct, nil)
 			writeParamsEncode(&buf, op)
 		}
-		writeMethod(&buf, r, op, unionTypes)
+		writeMethod(&buf, r, op, unionTypes, spec.ErrPrefix)
 		if op.Pagination != nil {
-			writePaginationMethod(&buf, r, op)
+			writePaginationMethod(&buf, r, op, spec.ErrPrefix)
 		}
 	}
 	return buf.String()
@@ -322,7 +322,7 @@ func emitResource(spec *Spec, r *Resource, unionTypes map[string]bool) string {
 
 // writePaginationMethod emits a <GoMethod>All iterator that walks every
 // page of a paginated endpoint and yields one item at a time.
-func writePaginationMethod(buf *bytes.Buffer, r *Resource, op *Operation) {
+func writePaginationMethod(buf *bytes.Buffer, r *Resource, op *Operation, errPrefix string) {
 	p := op.Pagination
 	name := op.GoMethod + "All"
 
@@ -362,7 +362,7 @@ func writePaginationMethod(buf *bytes.Buffer, r *Resource, op *Operation) {
 	for _, pp := range op.PathParams {
 		fmt.Fprintf(buf, "\t\tif %s == \"\" {\n", pp.GoName)
 		fmt.Fprintf(buf, "\t\t\tvar zero %s\n", p.ItemType)
-		fmt.Fprintf(buf, "\t\t\tyield(zero, errors.New(\"business: %s is required\"))\n", pp.Name)
+		fmt.Fprintf(buf, "\t\t\tyield(zero, errors.New(%q))\n", errPrefix+": "+pp.Name+" is required")
 		buf.WriteString("\t\t\treturn\n")
 		buf.WriteString("\t\t}\n")
 	}
@@ -502,7 +502,7 @@ func emitQueryField(buf *bytes.Buffer, f *StructField, wireName string) {
 	}
 }
 
-func writeMethod(buf *bytes.Buffer, r *Resource, op *Operation, unionTypes map[string]bool) {
+func writeMethod(buf *bytes.Buffer, r *Resource, op *Operation, unionTypes map[string]bool, errPrefix string) {
 	// godoc
 	if op.Summary != "" {
 		fmt.Fprintf(buf, "// %s %s\n", op.GoMethod, lower1(op.Summary))
@@ -546,7 +546,7 @@ func writeMethod(buf *bytes.Buffer, r *Resource, op *Operation, unionTypes map[s
 	zero := zeroValueForReturn(op.ResponseType)
 	for _, p := range op.PathParams {
 		fmt.Fprintf(buf, "\tif %s == \"\" {\n", p.GoName)
-		fmt.Fprintf(buf, "\t\treturn %serrors.New(\"business: %s is required\")\n", ifZero(zero), p.Name)
+		fmt.Fprintf(buf, "\t\treturn %serrors.New(%q)\n", ifZero(zero), errPrefix+": "+p.Name+" is required")
 		buf.WriteString("\t}\n")
 	}
 	// Body-field validation.
@@ -596,14 +596,15 @@ func writeMethod(buf *bytes.Buffer, r *Resource, op *Operation, unionTypes map[s
 }
 
 // renderPathExpr produces the Go expression for the concrete request
-// path, url.PathEscape-ing path parameters.
+// path, url.PathEscape-ing path parameters. Parameter names are looked
+// up case- and separator-insensitively so a `{cardInvitationId}`
+// template placeholder still resolves to a `card_invitation_id`
+// parameter entry — Revolut's specs mix the two in the same operation.
 func renderPathExpr(tmpl string, params []*PathParam) string {
-	// Drop the leading "/", since the transport resolves relative paths
-	// against the base URL that already has a trailing slash.
 	tmpl = strings.TrimPrefix(tmpl, "/")
 	paramByName := map[string]*PathParam{}
 	for _, p := range params {
-		paramByName[p.Name] = p
+		paramByName[canonicalParamKey(p.Name)] = p
 	}
 
 	var parts []string
@@ -626,7 +627,7 @@ func renderPathExpr(tmpl string, params []*PathParam) string {
 		if literal != "" {
 			parts = append(parts, fmt.Sprintf("%q", literal))
 		}
-		p, ok := paramByName[name]
+		p, ok := paramByName[canonicalParamKey(name)]
 		if !ok {
 			parts = append(parts, fmt.Sprintf("%q", "{"+name+"}"))
 		} else {
@@ -638,6 +639,25 @@ func renderPathExpr(tmpl string, params []*PathParam) string {
 		return `""`
 	}
 	return strings.Join(parts, " + ")
+}
+
+// canonicalParamKey normalises a parameter name for case- and
+// separator-insensitive lookup: lowercased, with underscores and
+// hyphens stripped. "card_invitation_id" and "cardInvitationId" and
+// "card-invitation-id" all collapse to "cardinvitationid".
+func canonicalParamKey(s string) string {
+	var b strings.Builder
+	b.Grow(len(s))
+	for _, r := range s {
+		if r == '_' || r == '-' {
+			continue
+		}
+		if r >= 'A' && r <= 'Z' {
+			r += 'a' - 'A'
+		}
+		b.WriteRune(r)
+	}
+	return b.String()
 }
 
 func zeroValueForReturn(responseType string) string {

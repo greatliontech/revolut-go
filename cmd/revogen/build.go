@@ -7,29 +7,38 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
+// buildConfig bundles the caller's per-package knobs so multiple
+// target packages (business, merchant, open-banking, ...) can share
+// the generator without string surgery at call sites.
+type buildConfig struct {
+	PackageName       string
+	ResourceAllow     []string
+	IncludeDeprecated bool
+
+	// ErrPrefix is prepended to validation error messages emitted by
+	// generated methods (e.g. "business", "merchant"). Typically the
+	// package name.
+	ErrPrefix string
+
+	// DocsBase is the base URL for per-operation godoc links. The
+	// operation ID is appended in kebab case.
+	DocsBase string
+}
+
 // buildSpec walks an openapi3 document and produces a normalized Spec.
-//
-// For this first pass we intentionally cover a narrow slice: struct,
-// enum, and string-alias schemas under components/schemas; operations
-// with zero or one JSON-body request and a single JSON 2xx response.
-// Unsupported shapes (allOf, oneOf, query params, ...) cause the
-// operation or type to be skipped with a warning — not an error —
-// so the generator can still emit a partial package while we expand
-// coverage.
-func buildSpec(doc *openapi3.T, packageName string, resourceAllow []string, includeDeprecated bool) (*Spec, error) {
+func buildSpec(doc *openapi3.T, cfg buildConfig) (*Spec, error) {
 	b := &builder{
-		doc:               doc,
-		pkg:               packageName,
-		allow:             stringSet(resourceAllow),
-		includeDeprecated: includeDeprecated,
-		emitted:           map[string]bool{},
-		typesByName:       map[string]*NamedType{},
+		cfg:         cfg,
+		doc:         doc,
+		allow:       stringSet(cfg.ResourceAllow),
+		emitted:     map[string]bool{},
+		typesByName: map[string]*NamedType{},
 	}
 	b.buildTypes()
 	b.buildResources()
 	b.promoteRequestBodyPointers()
 	b.buildValidators()
-	return b.spec(packageName), nil
+	return b.spec(cfg.PackageName), nil
 }
 
 // buildValidators runs the recursive required-field walker for every
@@ -91,21 +100,25 @@ func (b *builder) promoteRequestBodyPointers() {
 }
 
 type builder struct {
-	doc               *openapi3.T
-	pkg               string
-	allow             map[string]bool // empty = allow all
-	includeDeprecated bool
-	resources         []*Resource
-	types             []*NamedType
-	typesByName       map[string]*NamedType
-	emitted           map[string]bool
+	cfg         buildConfig
+	doc         *openapi3.T
+	allow       map[string]bool // empty = allow all
+	resources   []*Resource
+	types       []*NamedType
+	typesByName map[string]*NamedType
+	emitted     map[string]bool
 }
 
 func (b *builder) spec(pkg string) *Spec {
 	// Stable output: sort resources by name, sort types by name.
 	sort.Slice(b.resources, func(i, j int) bool { return b.resources[i].GoName < b.resources[j].GoName })
 	sort.Slice(b.types, func(i, j int) bool { return b.types[i].GoName < b.types[j].GoName })
-	return &Spec{PackageName: pkg, Resources: b.resources, Types: b.types}
+	return &Spec{
+		PackageName: pkg,
+		ErrPrefix:   b.cfg.ErrPrefix,
+		Resources:   b.resources,
+		Types:       b.types,
+	}
 }
 
 // --- types --------------------------------------------------------------
@@ -486,11 +499,23 @@ func mergeAllOf(s *openapi3.Schema) *openapi3.Schema {
 	return out
 }
 
-// goTypePromoteEnum is goTypeExpr with a normalization pass: when a
-// struct property's schema has an inline string enum (no $ref, not a
-// named component type), we synthesize a named enum type derived from
-// the parent struct + field name (e.g. Account.state → AccountState)
-// so callers get exported enum constants rather than bare strings.
+// goTypePromoteEnum is goTypeExpr with two normalization passes.
+//
+// 1. Inline string enums on a struct property (no $ref, not a named
+//    component type) are promoted to a derived named enum type
+//    (e.g. Account.state → AccountState) so callers get exported
+//    constants rather than bare strings.
+//
+// 2. Inline object schemas on a struct property — the spec form
+//    `foo: { type: object, properties: {...} }` — are promoted to a
+//    derived named struct type (e.g. `ValidateAccountNameRequestUk`
+//    .individual_name → `ValidateAccountNameRequestUkIndividualName`).
+//    Without this, goTypeExpr would return "" for the field and the
+//    emitted struct would silently lose that property.
+//
+// Inline object arrays — `foo: { type: array, items: { type: object,
+// ... } }` — are similarly unwrapped: the element type is promoted
+// and the field emitted as `[]<DerivedName>`.
 func (b *builder) goTypePromoteEnum(parentGoName, propName string, ref *openapi3.SchemaRef) string {
 	if ref != nil && ref.Ref == "" && ref.Value != nil && len(ref.Value.Enum) > 0 && schemaTypeIs(ref.Value, "string") {
 		enumName := parentGoName + goTypeName(propName)
@@ -516,28 +541,98 @@ func (b *builder) goTypePromoteEnum(parentGoName, propName string, ref *openapi3
 		}
 		return enumName
 	}
+	if name, ok := b.promoteInlineObject(parentGoName, propName, ref); ok {
+		return name
+	}
+	if name, ok := b.promoteInlineObjectArray(parentGoName, propName, ref); ok {
+		return name
+	}
 	return b.goTypeExpr(ref)
+}
+
+// promoteInlineObject synthesizes a named struct type for an inline
+// object schema referenced from a parent struct property. Returns the
+// derived Go type name or ("", false) if ref is not an inline object.
+// Pointer-valued by default so optional inline sub-objects don't force
+// callers to materialise an empty struct; required ones are handled
+// at the parent level (Required flag on the StructField).
+func (b *builder) promoteInlineObject(parentGoName, propName string, ref *openapi3.SchemaRef) (string, bool) {
+	if ref == nil || ref.Ref != "" || ref.Value == nil {
+		return "", false
+	}
+	v := ref.Value
+	if !schemaTypeIs(v, "object") && len(v.Properties) == 0 {
+		return "", false
+	}
+	if len(v.Properties) == 0 {
+		// type: object with no properties — leave to goTypeExpr fallback.
+		return "", false
+	}
+	name := parentGoName + goTypeName(propName)
+	if b.typesByName[name] == nil {
+		b.addType(b.synthesizeInlineStruct(name, v))
+	}
+	return "*" + name, true
+}
+
+// promoteInlineObjectArray handles `type: array, items: { inline
+// object }`. The items are promoted to a named struct via
+// promoteInlineObject and the returned expression is `[]<Name>` (no
+// pointer — consistent with []NamedType elsewhere in the generator).
+func (b *builder) promoteInlineObjectArray(parentGoName, propName string, ref *openapi3.SchemaRef) (string, bool) {
+	if ref == nil || ref.Ref != "" || ref.Value == nil {
+		return "", false
+	}
+	if !schemaTypeIs(ref.Value, "array") {
+		return "", false
+	}
+	items := ref.Value.Items
+	if items == nil || items.Ref != "" || items.Value == nil {
+		return "", false
+	}
+	iv := items.Value
+	if !schemaTypeIs(iv, "object") || len(iv.Properties) == 0 {
+		return "", false
+	}
+	itemName := parentGoName + goTypeName(propName) + "Item"
+	if b.typesByName[itemName] == nil {
+		b.addType(b.synthesizeInlineStruct(itemName, iv))
+	}
+	return "[]" + itemName, true
 }
 
 // resolveRefTypeExpr turns a schema reference (as found on a request
 // body or response) into a Go type expression. Array-wrapper component
 // schemas (e.g. Accounts → array of Account) are flattened to []Element.
+//
+// Revolut's spec occasionally nests an "array" response schema around an
+// already-array named schema (an inline "type: array, items: $ref:
+// SomeListResponse" where SomeListResponse is itself "type: array, items:
+// $ref: SomeItem"). The wire format, verified against the examples, is
+// a flat list of SomeItem. We collapse any chain of array wrappers down
+// to a single []Element so the emitted type matches reality.
 func (b *builder) resolveRefTypeExpr(ref *openapi3.SchemaRef) string {
+	expr := b.resolveRefTypeExprRaw(ref)
+	for strings.HasPrefix(expr, "[][]") {
+		expr = expr[2:]
+	}
+	return expr
+}
+
+func (b *builder) resolveRefTypeExprRaw(ref *openapi3.SchemaRef) string {
 	if ref == nil {
 		return ""
 	}
-	// Named ref: if it points at an array schema, unwrap it.
 	if name := schemaRefName(ref); name != "" {
 		if target := b.doc.Components.Schemas[name]; target != nil && target.Value != nil {
 			if schemaTypeIs(target.Value, "array") {
-				return "[]" + b.resolveRefTypeExpr(target.Value.Items)
+				return "[]" + b.resolveRefTypeExprRaw(target.Value.Items)
 			}
 		}
 		return goTypeName(name)
 	}
-	// Inline schema.
 	if ref.Value != nil && schemaTypeIs(ref.Value, "array") {
-		return "[]" + b.resolveRefTypeExpr(ref.Value.Items)
+		return "[]" + b.resolveRefTypeExprRaw(ref.Value.Items)
 	}
 	return b.goTypeExpr(ref)
 }
@@ -572,12 +667,12 @@ func (b *builder) buildResources() {
 			if len(b.allow) > 0 && !b.allow[tag] {
 				continue
 			}
-			if op.Deprecated && !b.includeDeprecated {
+			if op.Deprecated && !b.cfg.IncludeDeprecated {
 				continue
 			}
 			// Tags ending in "(deprecated)" signal a whole resource
 			// being retired; skip unless the caller opts in.
-			if !b.includeDeprecated && containsDeprecatedMarker(op.Tags) {
+			if !b.cfg.IncludeDeprecated && containsDeprecatedMarker(op.Tags) {
 				continue
 			}
 			built := b.buildOperation(httpMethod, path, op)
@@ -675,7 +770,7 @@ func (b *builder) buildOperation(httpMethod, path string, op *openapi3.Operation
 	if o.GoMethod == "" {
 		return nil
 	}
-	o.DocURL = docURL(op.OperationID)
+	o.DocURL = b.docURL(op.OperationID)
 
 	// Synthesise a <OperationID>Params struct for operations that have
 	// any query parameters. Colocated with the resource file at emit
@@ -708,17 +803,37 @@ func (b *builder) walkRequired(t *NamedType, exprPrefix, jsonPathPrefix string, 
 		if cond != "" {
 			out = append(out, FieldCheck{
 				Cond:    cond,
-				Message: "business: " + jsonPath + " is required",
+				Message: b.cfg.ErrPrefix + ": " + jsonPath + " is required",
 			})
 		}
-		// Recurse into a required nested struct value so its own
-		// required fields are also validated. Skip pointers/arrays
-		// (their "unset" is already expressed via the top-level
-		// check); skip unions (opaque from here).
-		if nested := b.typesByName[f.GoType]; nested != nil && nested.Kind == KindStruct && !visited[f.GoType] {
-			visited[f.GoType] = true
-			out = append(out, b.walkRequired(nested, expr, jsonPath, visited)...)
-			delete(visited, f.GoType)
+		// Recurse into nested struct types so that required fields at
+		// greater depths are validated too.
+		//
+		// Two shapes to handle:
+		//   - value-type struct (req.Foo.Bar == ""): reached when
+		//     f.GoType is the bare struct name.
+		//   - pointer-to-struct (req.Foo != nil && req.Foo.Bar == ""):
+		//     reached when f.GoType is "*StructName". The generated
+		//     nested checks must be guarded by the nil check already
+		//     emitted via cond above, so we prepend it to each
+		//     descendant's Cond so a nil pointer short-circuits.
+		nestedName := strings.TrimPrefix(f.GoType, "*")
+		nested := b.typesByName[nestedName]
+		if nested == nil || nested.Kind != KindStruct || visited[nestedName] {
+			continue
+		}
+		visited[nestedName] = true
+		inner := b.walkRequired(nested, expr, jsonPath, visited)
+		delete(visited, nestedName)
+		if strings.HasPrefix(f.GoType, "*") {
+			for _, c := range inner {
+				out = append(out, FieldCheck{
+					Cond:    expr + " != nil && " + c.Cond,
+					Message: c.Message,
+				})
+			}
+		} else {
+			out = append(out, inner...)
 		}
 	}
 	return out
@@ -997,11 +1112,11 @@ func nonParamSegments(path string) []string {
 	return out
 }
 
-func docURL(opID string) string {
-	if opID == "" {
+func (b *builder) docURL(opID string) string {
+	if opID == "" || b.cfg.DocsBase == "" {
 		return ""
 	}
-	return "https://developer.revolut.com/docs/business/" + camelToKebab(opID)
+	return b.cfg.DocsBase + camelToKebab(opID)
 }
 
 func stringSet(values []string) map[string]bool {

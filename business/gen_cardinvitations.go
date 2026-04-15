@@ -48,12 +48,12 @@ func (p *GetCardInvitationsParams) encode() url.Values {
 // List retrieve a list of card invitations
 //
 // Docs: https://developer.revolut.com/docs/business/get-card-invitations
-func (s *CardInvitations) List(ctx context.Context, opts *GetCardInvitationsParams) ([][]CardInvitationResponse, error) {
+func (s *CardInvitations) List(ctx context.Context, opts *GetCardInvitationsParams) ([]CardInvitationResponse, error) {
 	path := "card-invitations"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
 	}
-	var out [][]CardInvitationResponse
+	var out []CardInvitationResponse
 	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func (s *CardInvitations) Cancel(ctx context.Context, cardInvitationID string) e
 	if cardInvitationID == "" {
 		return errors.New("business: card_invitation_id is required")
 	}
-	return s.t.Do(ctx, http.MethodPost, "card-invitations/"+"{cardInvitationId}"+"/cancel", nil, nil)
+	return s.t.Do(ctx, http.MethodPost, "card-invitations/"+url.PathEscape(cardInvitationID)+"/cancel", nil, nil)
 }
 
 // Get retrieve card invitation details

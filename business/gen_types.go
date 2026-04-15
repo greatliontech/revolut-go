@@ -65,16 +65,16 @@ type AccountBankDetailsItem struct {
 // AccountCurrency [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency code in upper case.
 type AccountCurrency = core.Currency
 
-// AccountNameValidationReasonAu a code which explains why a given result was returned, and the service that returned it.
+// AccountNameValidationReasonAU a code which explains why a given result was returned, and the service that returned it.
 // In some cases, it may provide more details about the result.
-type AccountNameValidationReasonAu struct {
+type AccountNameValidationReasonAU struct {
 	// The reason code. Possible values for AU:
-	Code AccountNameValidationReasonAuCode `json:"code,omitempty"`
+	Code AccountNameValidationReasonAUCode `json:"code,omitempty"`
 	// The reason type.
-	Type AccountNameValidationReasonAuType `json:"type,omitempty"`
+	Type AccountNameValidationReasonAUType `json:"type,omitempty"`
 }
 
-// AccountNameValidationReasonAuCode the reason code. Possible values for AU:
+// AccountNameValidationReasonAUCode the reason code. Possible values for AU:
 //   - **`close_match`** (business accounts): The provided name is similar to the account name.
 //     The actual name is returned. Mismatched account type is corrected.
 //   - **`not_matched`**: The account details don't match the provided values.
@@ -82,42 +82,42 @@ type AccountNameValidationReasonAu struct {
 //   - **`account_switched`**: The account has been switched using the Current Account Switching Service.
 //     Please contact the recipient for updated account details.
 //   - **`cannot_be_checked`**: The account cannot be checked.
-type AccountNameValidationReasonAuCode string
+type AccountNameValidationReasonAUCode string
 
 const (
-	AccountNameValidationReasonAuCodeCloseMatch                   AccountNameValidationReasonAuCode = "close_match"
-	AccountNameValidationReasonAuCodeIndividualAccountNameMatched AccountNameValidationReasonAuCode = "individual_account_name_matched"
-	AccountNameValidationReasonAuCodeCompanyAccountNameMatched    AccountNameValidationReasonAuCode = "company_account_name_matched"
-	AccountNameValidationReasonAuCodeIndividualAccountCloseMatch  AccountNameValidationReasonAuCode = "individual_account_close_match"
-	AccountNameValidationReasonAuCodeCompanyAccountCloseMatch     AccountNameValidationReasonAuCode = "company_account_close_match"
-	AccountNameValidationReasonAuCodeNotMatched                   AccountNameValidationReasonAuCode = "not_matched"
-	AccountNameValidationReasonAuCodeAccountDoesNotExist          AccountNameValidationReasonAuCode = "account_does_not_exist"
-	AccountNameValidationReasonAuCodeAccountSwitched              AccountNameValidationReasonAuCode = "account_switched"
-	AccountNameValidationReasonAuCodeCannotBeChecked              AccountNameValidationReasonAuCode = "cannot_be_checked"
+	AccountNameValidationReasonAUCodeCloseMatch                   AccountNameValidationReasonAUCode = "close_match"
+	AccountNameValidationReasonAUCodeIndividualAccountNameMatched AccountNameValidationReasonAUCode = "individual_account_name_matched"
+	AccountNameValidationReasonAUCodeCompanyAccountNameMatched    AccountNameValidationReasonAUCode = "company_account_name_matched"
+	AccountNameValidationReasonAUCodeIndividualAccountCloseMatch  AccountNameValidationReasonAUCode = "individual_account_close_match"
+	AccountNameValidationReasonAUCodeCompanyAccountCloseMatch     AccountNameValidationReasonAUCode = "company_account_close_match"
+	AccountNameValidationReasonAUCodeNotMatched                   AccountNameValidationReasonAUCode = "not_matched"
+	AccountNameValidationReasonAUCodeAccountDoesNotExist          AccountNameValidationReasonAUCode = "account_does_not_exist"
+	AccountNameValidationReasonAUCodeAccountSwitched              AccountNameValidationReasonAUCode = "account_switched"
+	AccountNameValidationReasonAUCodeCannotBeChecked              AccountNameValidationReasonAUCode = "cannot_be_checked"
 )
 
-// AccountNameValidationReasonAuType the reason type.
+// AccountNameValidationReasonAUType the reason type.
 // Determines the [service](https://developer.revolut.com/docs/guides/manage-accounts/counterparties/confirmation-of-payee#supported-regions-and-services) used for the validation that returned the reason code.
 // For AU, the value is: `au_cop`.
-type AccountNameValidationReasonAuType string
+type AccountNameValidationReasonAUType string
 
 const (
-	AccountNameValidationReasonAuTypeUkCop AccountNameValidationReasonAuType = "uk_cop"
-	AccountNameValidationReasonAuTypeEuCop AccountNameValidationReasonAuType = "eu_cop"
-	AccountNameValidationReasonAuTypeRoCop AccountNameValidationReasonAuType = "ro_cop"
-	AccountNameValidationReasonAuTypeAuCop AccountNameValidationReasonAuType = "au_cop"
+	AccountNameValidationReasonAUTypeUKCop AccountNameValidationReasonAUType = "uk_cop"
+	AccountNameValidationReasonAUTypeEuCop AccountNameValidationReasonAUType = "eu_cop"
+	AccountNameValidationReasonAUTypeROCop AccountNameValidationReasonAUType = "ro_cop"
+	AccountNameValidationReasonAUTypeAUCop AccountNameValidationReasonAUType = "au_cop"
 )
 
-// AccountNameValidationReasonEur a code which explains why a given result was returned, and the service that returned it.
+// AccountNameValidationReasonEUR a code which explains why a given result was returned, and the service that returned it.
 // For example, it might happen that the details you provided match the account details, but you specified the counterparty as an individual, and the account type is business.
-type AccountNameValidationReasonEur struct {
+type AccountNameValidationReasonEUR struct {
 	// The reason code. Possible values for EUR:
-	Code AccountNameValidationReasonEurCode `json:"code,omitempty"`
+	Code AccountNameValidationReasonEURCode `json:"code,omitempty"`
 	// The reason type.
-	Type AccountNameValidationReasonEurType `json:"type,omitempty"`
+	Type AccountNameValidationReasonEURType `json:"type,omitempty"`
 }
 
-// AccountNameValidationReasonEurCode the reason code. Possible values for EUR:
+// AccountNameValidationReasonEURCode the reason code. Possible values for EUR:
 //   - **`close_match`**: The provided name is similar to the account name.
 //     The actual name is returned.
 //   - **`not_matched`**: The account details don't match the provided values.
@@ -125,78 +125,78 @@ type AccountNameValidationReasonEur struct {
 //   - **`account_switched`**: The account has been switched using the Current Account Switching Service.
 //     Please contact the recipient for updated account details.
 //   - **`cannot_be_checked`**: The account cannot be checked.
-type AccountNameValidationReasonEurCode string
+type AccountNameValidationReasonEURCode string
 
 const (
-	AccountNameValidationReasonEurCodeCloseMatch                   AccountNameValidationReasonEurCode = "close_match"
-	AccountNameValidationReasonEurCodeIndividualAccountNameMatched AccountNameValidationReasonEurCode = "individual_account_name_matched"
-	AccountNameValidationReasonEurCodeCompanyAccountNameMatched    AccountNameValidationReasonEurCode = "company_account_name_matched"
-	AccountNameValidationReasonEurCodeIndividualAccountCloseMatch  AccountNameValidationReasonEurCode = "individual_account_close_match"
-	AccountNameValidationReasonEurCodeCompanyAccountCloseMatch     AccountNameValidationReasonEurCode = "company_account_close_match"
-	AccountNameValidationReasonEurCodeNotMatched                   AccountNameValidationReasonEurCode = "not_matched"
-	AccountNameValidationReasonEurCodeAccountDoesNotExist          AccountNameValidationReasonEurCode = "account_does_not_exist"
-	AccountNameValidationReasonEurCodeAccountSwitched              AccountNameValidationReasonEurCode = "account_switched"
-	AccountNameValidationReasonEurCodeCannotBeChecked              AccountNameValidationReasonEurCode = "cannot_be_checked"
+	AccountNameValidationReasonEURCodeCloseMatch                   AccountNameValidationReasonEURCode = "close_match"
+	AccountNameValidationReasonEURCodeIndividualAccountNameMatched AccountNameValidationReasonEURCode = "individual_account_name_matched"
+	AccountNameValidationReasonEURCodeCompanyAccountNameMatched    AccountNameValidationReasonEURCode = "company_account_name_matched"
+	AccountNameValidationReasonEURCodeIndividualAccountCloseMatch  AccountNameValidationReasonEURCode = "individual_account_close_match"
+	AccountNameValidationReasonEURCodeCompanyAccountCloseMatch     AccountNameValidationReasonEURCode = "company_account_close_match"
+	AccountNameValidationReasonEURCodeNotMatched                   AccountNameValidationReasonEURCode = "not_matched"
+	AccountNameValidationReasonEURCodeAccountDoesNotExist          AccountNameValidationReasonEURCode = "account_does_not_exist"
+	AccountNameValidationReasonEURCodeAccountSwitched              AccountNameValidationReasonEURCode = "account_switched"
+	AccountNameValidationReasonEURCodeCannotBeChecked              AccountNameValidationReasonEURCode = "cannot_be_checked"
 )
 
-// AccountNameValidationReasonEurType the reason type.
+// AccountNameValidationReasonEURType the reason type.
 // Determines the [service](https://developer.revolut.com/docs/guides/manage-accounts/counterparties/confirmation-of-payee#supported-regions-and-services) used for the validation that returned the reason code.
 // For EUR, the value is: `eu_cop`.
-type AccountNameValidationReasonEurType string
+type AccountNameValidationReasonEURType string
 
 const (
-	AccountNameValidationReasonEurTypeUkCop AccountNameValidationReasonEurType = "uk_cop"
-	AccountNameValidationReasonEurTypeEuCop AccountNameValidationReasonEurType = "eu_cop"
-	AccountNameValidationReasonEurTypeRoCop AccountNameValidationReasonEurType = "ro_cop"
-	AccountNameValidationReasonEurTypeAuCop AccountNameValidationReasonEurType = "au_cop"
+	AccountNameValidationReasonEURTypeUKCop AccountNameValidationReasonEURType = "uk_cop"
+	AccountNameValidationReasonEURTypeEuCop AccountNameValidationReasonEURType = "eu_cop"
+	AccountNameValidationReasonEURTypeROCop AccountNameValidationReasonEURType = "ro_cop"
+	AccountNameValidationReasonEURTypeAUCop AccountNameValidationReasonEURType = "au_cop"
 )
 
-// AccountNameValidationReasonRo a code which explains why a given result was returned, and the service that returned it.
-type AccountNameValidationReasonRo struct {
+// AccountNameValidationReasonRO a code which explains why a given result was returned, and the service that returned it.
+type AccountNameValidationReasonRO struct {
 	// The reason code. Possible values for RO:
-	Code AccountNameValidationReasonRoCode `json:"code,omitempty"`
+	Code AccountNameValidationReasonROCode `json:"code,omitempty"`
 	// The reason type.
-	Type AccountNameValidationReasonRoType `json:"type,omitempty"`
+	Type AccountNameValidationReasonROType `json:"type,omitempty"`
 }
 
-// AccountNameValidationReasonRoCode the reason code. Possible values for RO:
+// AccountNameValidationReasonROCode the reason code. Possible values for RO:
 // - **`cannot_be_checked`**: The account cannot be checked.
-type AccountNameValidationReasonRoCode string
+type AccountNameValidationReasonROCode string
 
 const (
-	AccountNameValidationReasonRoCodeCloseMatch                   AccountNameValidationReasonRoCode = "close_match"
-	AccountNameValidationReasonRoCodeIndividualAccountNameMatched AccountNameValidationReasonRoCode = "individual_account_name_matched"
-	AccountNameValidationReasonRoCodeCompanyAccountNameMatched    AccountNameValidationReasonRoCode = "company_account_name_matched"
-	AccountNameValidationReasonRoCodeIndividualAccountCloseMatch  AccountNameValidationReasonRoCode = "individual_account_close_match"
-	AccountNameValidationReasonRoCodeCompanyAccountCloseMatch     AccountNameValidationReasonRoCode = "company_account_close_match"
-	AccountNameValidationReasonRoCodeNotMatched                   AccountNameValidationReasonRoCode = "not_matched"
-	AccountNameValidationReasonRoCodeAccountDoesNotExist          AccountNameValidationReasonRoCode = "account_does_not_exist"
-	AccountNameValidationReasonRoCodeAccountSwitched              AccountNameValidationReasonRoCode = "account_switched"
-	AccountNameValidationReasonRoCodeCannotBeChecked              AccountNameValidationReasonRoCode = "cannot_be_checked"
+	AccountNameValidationReasonROCodeCloseMatch                   AccountNameValidationReasonROCode = "close_match"
+	AccountNameValidationReasonROCodeIndividualAccountNameMatched AccountNameValidationReasonROCode = "individual_account_name_matched"
+	AccountNameValidationReasonROCodeCompanyAccountNameMatched    AccountNameValidationReasonROCode = "company_account_name_matched"
+	AccountNameValidationReasonROCodeIndividualAccountCloseMatch  AccountNameValidationReasonROCode = "individual_account_close_match"
+	AccountNameValidationReasonROCodeCompanyAccountCloseMatch     AccountNameValidationReasonROCode = "company_account_close_match"
+	AccountNameValidationReasonROCodeNotMatched                   AccountNameValidationReasonROCode = "not_matched"
+	AccountNameValidationReasonROCodeAccountDoesNotExist          AccountNameValidationReasonROCode = "account_does_not_exist"
+	AccountNameValidationReasonROCodeAccountSwitched              AccountNameValidationReasonROCode = "account_switched"
+	AccountNameValidationReasonROCodeCannotBeChecked              AccountNameValidationReasonROCode = "cannot_be_checked"
 )
 
-// AccountNameValidationReasonRoType the reason type.
+// AccountNameValidationReasonROType the reason type.
 // Determines the [service](https://developer.revolut.com/docs/guides/manage-accounts/counterparties/confirmation-of-payee#supported-regions-and-services) used for the validation that returned the reason code.
 // For RO, the value is: `ro_cop`.
-type AccountNameValidationReasonRoType string
+type AccountNameValidationReasonROType string
 
 const (
-	AccountNameValidationReasonRoTypeUkCop AccountNameValidationReasonRoType = "uk_cop"
-	AccountNameValidationReasonRoTypeEuCop AccountNameValidationReasonRoType = "eu_cop"
-	AccountNameValidationReasonRoTypeRoCop AccountNameValidationReasonRoType = "ro_cop"
-	AccountNameValidationReasonRoTypeAuCop AccountNameValidationReasonRoType = "au_cop"
+	AccountNameValidationReasonROTypeUKCop AccountNameValidationReasonROType = "uk_cop"
+	AccountNameValidationReasonROTypeEuCop AccountNameValidationReasonROType = "eu_cop"
+	AccountNameValidationReasonROTypeROCop AccountNameValidationReasonROType = "ro_cop"
+	AccountNameValidationReasonROTypeAUCop AccountNameValidationReasonROType = "au_cop"
 )
 
-// AccountNameValidationReasonUk a code which explains why a given result was returned, and the service that returned it.
+// AccountNameValidationReasonUK a code which explains why a given result was returned, and the service that returned it.
 // For example, it might happen that the details you provided match the account details, but you specified the counterparty as an individual, and the account type is business.
-type AccountNameValidationReasonUk struct {
+type AccountNameValidationReasonUK struct {
 	// The reason code. Possible values for UK:
-	Code AccountNameValidationReasonUkCode `json:"code,omitempty"`
+	Code AccountNameValidationReasonUKCode `json:"code,omitempty"`
 	// The reason type.
-	Type AccountNameValidationReasonUkType `json:"type,omitempty"`
+	Type AccountNameValidationReasonUKType `json:"type,omitempty"`
 }
 
-// AccountNameValidationReasonUkCode the reason code. Possible values for UK:
+// AccountNameValidationReasonUKCode the reason code. Possible values for UK:
 //   - **`close_match`**: The provided name is similar to the account name, the account type is correct.
 //     The actual name is returned.
 //   - **`individual_account_name_matched`**: The names match but the counterparty is an individual, not a business.
@@ -210,30 +210,30 @@ type AccountNameValidationReasonUk struct {
 //   - **`account_switched`**: The account has been switched using the Current Account Switching Service.
 //     Please contact the recipient for updated account details.
 //   - **`cannot_be_checked`**: The account cannot be checked.
-type AccountNameValidationReasonUkCode string
+type AccountNameValidationReasonUKCode string
 
 const (
-	AccountNameValidationReasonUkCodeCloseMatch                   AccountNameValidationReasonUkCode = "close_match"
-	AccountNameValidationReasonUkCodeIndividualAccountNameMatched AccountNameValidationReasonUkCode = "individual_account_name_matched"
-	AccountNameValidationReasonUkCodeCompanyAccountNameMatched    AccountNameValidationReasonUkCode = "company_account_name_matched"
-	AccountNameValidationReasonUkCodeIndividualAccountCloseMatch  AccountNameValidationReasonUkCode = "individual_account_close_match"
-	AccountNameValidationReasonUkCodeCompanyAccountCloseMatch     AccountNameValidationReasonUkCode = "company_account_close_match"
-	AccountNameValidationReasonUkCodeNotMatched                   AccountNameValidationReasonUkCode = "not_matched"
-	AccountNameValidationReasonUkCodeAccountDoesNotExist          AccountNameValidationReasonUkCode = "account_does_not_exist"
-	AccountNameValidationReasonUkCodeAccountSwitched              AccountNameValidationReasonUkCode = "account_switched"
-	AccountNameValidationReasonUkCodeCannotBeChecked              AccountNameValidationReasonUkCode = "cannot_be_checked"
+	AccountNameValidationReasonUKCodeCloseMatch                   AccountNameValidationReasonUKCode = "close_match"
+	AccountNameValidationReasonUKCodeIndividualAccountNameMatched AccountNameValidationReasonUKCode = "individual_account_name_matched"
+	AccountNameValidationReasonUKCodeCompanyAccountNameMatched    AccountNameValidationReasonUKCode = "company_account_name_matched"
+	AccountNameValidationReasonUKCodeIndividualAccountCloseMatch  AccountNameValidationReasonUKCode = "individual_account_close_match"
+	AccountNameValidationReasonUKCodeCompanyAccountCloseMatch     AccountNameValidationReasonUKCode = "company_account_close_match"
+	AccountNameValidationReasonUKCodeNotMatched                   AccountNameValidationReasonUKCode = "not_matched"
+	AccountNameValidationReasonUKCodeAccountDoesNotExist          AccountNameValidationReasonUKCode = "account_does_not_exist"
+	AccountNameValidationReasonUKCodeAccountSwitched              AccountNameValidationReasonUKCode = "account_switched"
+	AccountNameValidationReasonUKCodeCannotBeChecked              AccountNameValidationReasonUKCode = "cannot_be_checked"
 )
 
-// AccountNameValidationReasonUkType the reason type.
+// AccountNameValidationReasonUKType the reason type.
 // Determines the [service](https://developer.revolut.com/docs/guides/manage-accounts/counterparties/confirmation-of-payee#supported-regions-and-services) used for the validation that returned the reason code.
 // For UK, the values is: `uk_cop`.
-type AccountNameValidationReasonUkType string
+type AccountNameValidationReasonUKType string
 
 const (
-	AccountNameValidationReasonUkTypeUkCop AccountNameValidationReasonUkType = "uk_cop"
-	AccountNameValidationReasonUkTypeEuCop AccountNameValidationReasonUkType = "eu_cop"
-	AccountNameValidationReasonUkTypeRoCop AccountNameValidationReasonUkType = "ro_cop"
-	AccountNameValidationReasonUkTypeAuCop AccountNameValidationReasonUkType = "au_cop"
+	AccountNameValidationReasonUKTypeUKCop AccountNameValidationReasonUKType = "uk_cop"
+	AccountNameValidationReasonUKTypeEuCop AccountNameValidationReasonUKType = "eu_cop"
+	AccountNameValidationReasonUKTypeROCop AccountNameValidationReasonUKType = "ro_cop"
+	AccountNameValidationReasonUKTypeAUCop AccountNameValidationReasonUKType = "au_cop"
 )
 
 // AccountState indicates the state of the account.
@@ -1128,6 +1128,8 @@ type Expense struct {
 	Payer string `json:"payer,omitempty"`
 	// The IDs of the receipts related to the expense.
 	ReceiptIds []string `json:"receipt_ids"`
+	// The expense amount in billed currency.
+	SpentAmount *ExpenseSpentAmount `json:"spent_amount"`
 	// The splits of the expense.
 	Splits []ExpenseSplit `json:"splits"`
 	// Indicates the state of the expense. Possible values:
@@ -1140,11 +1142,29 @@ type Expense struct {
 	TransactionType ExpenseTransactionType `json:"transaction_type"`
 }
 
+// ExpenseSpentAmount the expense amount in billed currency.
+type ExpenseSpentAmount struct {
+	// The amount of money.
+	Amount Amount `json:"amount"`
+	// [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency code in upper case.
+	Currency Currency `json:"currency"`
+}
+
 type ExpenseSplit struct {
+	// The original amount of the expense split.
+	Amount *ExpenseSplitAmount `json:"amount"`
 	// The [accounting category](https://developer.revolut.com/docs/business/accounting-categories) of the expense split.
 	Category Category `json:"category"`
 	// The [tax rate](https://developer.revolut.com/docs/business/tax-rates) applied to the expense split.
 	TaxRate TaxRate `json:"tax_rate"`
+}
+
+// ExpenseSplitAmount the original amount of the expense split.
+type ExpenseSplitAmount struct {
+	// The amount of money.
+	Amount Amount `json:"amount,omitempty"`
+	// [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency code in upper case.
+	Currency Currency `json:"currency,omitempty"`
 }
 
 // ExpenseState indicates the state of the expense. Possible values:
@@ -1348,6 +1368,8 @@ type PaymentInfo struct {
 	Amount    AmountWithCurrency `json:"amount"`
 	// [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency code in upper case.
 	Currency Currency `json:"currency,omitempty"`
+	// The explanation of conversion process.
+	CurrentChargeOptions *PaymentInfoCurrentChargeOptions `json:"current_charge_options"`
 	// The description of the error message.
 	ErrorMessage string `json:"error_message,omitempty"`
 	// The ID of the payment.
@@ -1360,6 +1382,14 @@ type PaymentInfo struct {
 	Reference string `json:"reference,omitempty"`
 	// Indicates the state of the transaction.
 	State PaymentState `json:"state"`
+}
+
+// PaymentInfoCurrentChargeOptions the explanation of conversion process.
+type PaymentInfoCurrentChargeOptions struct {
+	Fee  AmountWithCurrency `json:"fee,omitempty"`
+	From AmountWithCurrency `json:"from"`
+	Rate string             `json:"rate,omitempty"`
+	To   AmountWithCurrency `json:"to"`
 }
 
 // PaymentOrderInfo a list of payments.
@@ -1443,9 +1473,9 @@ const (
 	PaymentSystemChaps          PaymentSystem = "chaps"
 	PaymentSystemBacs           PaymentSystem = "bacs"
 	PaymentSystemFasterPayments PaymentSystem = "faster_payments"
-	PaymentSystemSepa           PaymentSystem = "sepa"
+	PaymentSystemSEPA           PaymentSystem = "sepa"
 	PaymentSystemSWIFT          PaymentSystem = "swift"
-	PaymentSystemAch            PaymentSystem = "ach"
+	PaymentSystemACH            PaymentSystem = "ach"
 	PaymentSystemElixir         PaymentSystem = "elixir"
 	PaymentSystemSorbnet        PaymentSystem = "sorbnet"
 	PaymentSystemNics           PaymentSystem = "nics"
@@ -2091,10 +2121,10 @@ type UpdateWebhookRequest struct {
 }
 
 // Variants:
-//   - AU → ValidateAccountNameRequestAu
-//   - EUR → ValidateAccountNameRequestEur
-//   - RO → ValidateAccountNameRequestRo
-//   - UK → ValidateAccountNameRequestUk
+//   - AU → ValidateAccountNameRequestAU
+//   - EUR → ValidateAccountNameRequestEUR
+//   - RO → ValidateAccountNameRequestRO
+//   - UK → ValidateAccountNameRequestUK
 type ValidateAccountNameRequest interface {
 	isValidateAccountNameRequest()
 }
@@ -2108,97 +2138,149 @@ func decodeValidateAccountNameRequest(data []byte) (ValidateAccountNameRequest, 
 		return nil, err
 	}
 	if hasKey(probe, "account_no") && hasKey(probe, "bsb") {
-		var out ValidateAccountNameRequestAu
+		var out ValidateAccountNameRequestAU
 		if err := json.Unmarshal(data, &out); err != nil {
 			return nil, err
 		}
 		return out, nil
 	}
 	if hasKey(probe, "iban") && hasKey(probe, "recipient_country") && hasKey(probe, "recipient_currency") {
-		var out ValidateAccountNameRequestEur
+		var out ValidateAccountNameRequestEUR
 		if err := json.Unmarshal(data, &out); err != nil {
 			return nil, err
 		}
 		return out, nil
 	}
 	if hasKey(probe, "iban") && hasKey(probe, "recipient_country") && hasKey(probe, "recipient_currency") {
-		var out ValidateAccountNameRequestRo
+		var out ValidateAccountNameRequestRO
 		if err := json.Unmarshal(data, &out); err != nil {
 			return nil, err
 		}
 		return out, nil
 	}
 	if hasKey(probe, "account_no") && hasKey(probe, "sort_code") {
-		var out ValidateAccountNameRequestUk
+		var out ValidateAccountNameRequestUK
 		if err := json.Unmarshal(data, &out); err != nil {
 			return nil, err
 		}
 		return out, nil
 	}
-	var out ValidateAccountNameRequestAu
+	var out ValidateAccountNameRequestAU
 	if err := json.Unmarshal(data, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-type ValidateAccountNameRequestAu struct {
+type ValidateAccountNameRequestAU struct {
 	// The account number of the counterparty.
 	AccountNo string `json:"account_no"`
 	// The BSB (Bank-State-Branch) number for the counterparty's account.
 	Bsb string `json:"bsb"`
 	// The name of the business counterparty.
 	CompanyName string `json:"company_name,omitempty"`
+	// The name of the individual counterparty, split into first name and last name.
+	IndividualName *ValidateAccountNameRequestAUIndividualName `json:"individual_name,omitempty"`
 }
 
-func (ValidateAccountNameRequestAu) isValidateAccountNameRequest() {}
+func (ValidateAccountNameRequestAU) isValidateAccountNameRequest() {}
 
-type ValidateAccountNameRequestEur struct {
+// ValidateAccountNameRequestAUIndividualName the name of the individual counterparty, split into first name and last name.
+//
+// **Required** when the account type is personal (`company_name` isn't specified).
+type ValidateAccountNameRequestAUIndividualName struct {
+	// The first name of the recipient.
+	FirstName string `json:"first_name"`
+	// The last name of the recipient.
+	LastName string `json:"last_name"`
+}
+
+type ValidateAccountNameRequestEUR struct {
 	// The BIC (Bank Identifier Code) for the counterparty's account.
 	BIC string `json:"bic,omitempty"`
 	// The name of the business counterparty.
 	CompanyName string `json:"company_name,omitempty"`
 	// The IBAN (International Bank Account Number) for the counterparty's account.
 	IBAN string `json:"iban"`
+	// The name of the individual counterparty, split into first name and last name.
+	IndividualName *ValidateAccountNameRequestEURIndividualName `json:"individual_name,omitempty"`
 	// The counterparty's bank country, provided as a 2-letter [ISO 3166](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes) code.
 	RecipientCountry string `json:"recipient_country"`
 	// The counterparty account’s currency, provided as a 3-letter [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) code.
 	RecipientCurrency string `json:"recipient_currency"`
 }
 
-func (ValidateAccountNameRequestEur) isValidateAccountNameRequest() {}
+func (ValidateAccountNameRequestEUR) isValidateAccountNameRequest() {}
 
-type ValidateAccountNameRequestRo struct {
+// ValidateAccountNameRequestEURIndividualName the name of the individual counterparty, split into first name and last name.
+//
+// **Required** when the account type is personal (`company_name` isn't specified).
+type ValidateAccountNameRequestEURIndividualName struct {
+	// The first name of the recipient.
+	FirstName string `json:"first_name"`
+	// The last name of the recipient.
+	LastName string `json:"last_name"`
+}
+
+type ValidateAccountNameRequestRO struct {
 	// The BIC (Bank Identifier Code) for the counterparty's account.
 	BIC string `json:"bic,omitempty"`
 	// The name of the business counterparty.
 	CompanyName string `json:"company_name,omitempty"`
 	// The IBAN (International Bank Account Number) for the counterparty's account.
 	IBAN string `json:"iban"`
+	// The name of the individual counterparty, split into first name and last name.
+	IndividualName *ValidateAccountNameRequestROIndividualName `json:"individual_name,omitempty"`
 	// The counterparty's bank country, provided as a 2-letter [ISO 3166](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes) code.
 	RecipientCountry string `json:"recipient_country"`
 	// The counterparty account’s currency, provided as a 3-letter [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) code.
 	RecipientCurrency string `json:"recipient_currency"`
 }
 
-func (ValidateAccountNameRequestRo) isValidateAccountNameRequest() {}
+func (ValidateAccountNameRequestRO) isValidateAccountNameRequest() {}
 
-type ValidateAccountNameRequestUk struct {
+// ValidateAccountNameRequestROIndividualName the name of the individual counterparty, split into first name and last name.
+//
+// **Required** when the account type is personal (`company_name` isn't specified).
+//
+// ⓘ Note that for [RO](https://developer.revolut.com/docs/guides/manage-accounts/counterparties/confirmation-of-payee#supported-regions-and-services), the name you provide helps identify the request, but is **not** used for the actual check.
+// The API simply returns the partially masked name associated with the IBAN for you to validate.
+// Therefore, the returned name may differ from the one you provide.
+type ValidateAccountNameRequestROIndividualName struct {
+	// The first name of the recipient.
+	FirstName string `json:"first_name"`
+	// The last name of the recipient.
+	LastName string `json:"last_name"`
+}
+
+type ValidateAccountNameRequestUK struct {
 	// The account number of the counterparty.
 	AccountNo string `json:"account_no"`
 	// The name of the business counterparty.
 	CompanyName string `json:"company_name,omitempty"`
+	// The name of the individual counterparty, split into first name and last name.
+	IndividualName *ValidateAccountNameRequestUKIndividualName `json:"individual_name,omitempty"`
 	// The sort code of the counterparty's account.
 	SortCode string `json:"sort_code"`
 }
 
-func (ValidateAccountNameRequestUk) isValidateAccountNameRequest() {}
+func (ValidateAccountNameRequestUK) isValidateAccountNameRequest() {}
+
+// ValidateAccountNameRequestUKIndividualName the name of the individual counterparty, split into first name and last name.
+//
+// **Required** when the account type is personal (`company_name` isn't specified).
+type ValidateAccountNameRequestUKIndividualName struct {
+	// The first name of the recipient.
+	FirstName string `json:"first_name"`
+	// The last name of the recipient.
+	LastName string `json:"last_name"`
+}
 
 // Variants:
-//   - AU → ValidateAccountNameResponseAu
-//   - EUR → ValidateAccountNameResponseEur
-//   - RO → ValidateAccountNameResponseRo
-//   - UK → ValidateAccountNameResponseUk
+//   - AU → ValidateAccountNameResponseAU
+//   - EUR → ValidateAccountNameResponseEUR
+//   - RO → ValidateAccountNameResponseRO
+//   - UK → ValidateAccountNameResponseUK
 type ValidateAccountNameResponse interface {
 	isValidateAccountNameResponse()
 }
@@ -2212,52 +2294,71 @@ func decodeValidateAccountNameResponse(data []byte) (ValidateAccountNameResponse
 		return nil, err
 	}
 	if hasKey(probe, "result_code") {
-		var out ValidateAccountNameResponseAu
+		var out ValidateAccountNameResponseAU
 		if err := json.Unmarshal(data, &out); err != nil {
 			return nil, err
 		}
 		return out, nil
 	}
 	if hasKey(probe, "result_code") {
-		var out ValidateAccountNameResponseEur
+		var out ValidateAccountNameResponseEUR
 		if err := json.Unmarshal(data, &out); err != nil {
 			return nil, err
 		}
 		return out, nil
 	}
 	if hasKey(probe, "result_code") {
-		var out ValidateAccountNameResponseRo
+		var out ValidateAccountNameResponseRO
 		if err := json.Unmarshal(data, &out); err != nil {
 			return nil, err
 		}
 		return out, nil
 	}
 	if hasKey(probe, "result_code") {
-		var out ValidateAccountNameResponseUk
+		var out ValidateAccountNameResponseUK
 		if err := json.Unmarshal(data, &out); err != nil {
 			return nil, err
 		}
 		return out, nil
 	}
-	var out ValidateAccountNameResponseAu
+	var out ValidateAccountNameResponseAU
 	if err := json.Unmarshal(data, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-type ValidateAccountNameResponseAu struct {
+type ValidateAccountNameResponseAU struct {
 	// The name of the recipient when the account type is business.
 	CompanyName string `json:"company_name,omitempty"`
+	// The name of the recipient when the account type is personal.
+	IndividualName *ValidateAccountNameResponseAUIndividualName `json:"individual_name,omitempty"`
 	// A code which explains why a given result was returned, and the service that returned it.
-	Reason AccountNameValidationReasonAu `json:"reason,omitempty"`
+	Reason AccountNameValidationReasonAU `json:"reason,omitempty"`
 	// The result of the check.
-	ResultCode ValidateAccountNameResponseAuResultCode `json:"result_code"`
+	ResultCode ValidateAccountNameResponseAUResultCode `json:"result_code"`
 }
 
-func (ValidateAccountNameResponseAu) isValidateAccountNameResponse() {}
+func (ValidateAccountNameResponseAU) isValidateAccountNameResponse() {}
 
-// ValidateAccountNameResponseAuResultCode the result of the check.
+// ValidateAccountNameResponseAUIndividualName the name of the recipient when the account type is personal.
+// Provided only if `company_name` is not specified.
+//
+// When the name is a close match, the actual first and last names are returned.
+// Otherwise, the name you provided is returned.
+//
+// :::tip[Mismatched name type is corrected]
+// The mismatched name type in the request is corrected in the response.
+// This means that, for example, if an individual recipient's name was provided under `company_name`, in the response it is returned under `individual_name`.
+// :::
+type ValidateAccountNameResponseAUIndividualName struct {
+	// The first name of the recipient.
+	FirstName string `json:"first_name"`
+	// The last name of the recipient.
+	LastName string `json:"last_name"`
+}
+
+// ValidateAccountNameResponseAUResultCode the result of the check.
 //
 // Possible values for AU:
 //   - **`matched`:** The name matches the provided details.
@@ -2269,28 +2370,47 @@ func (ValidateAccountNameResponseAu) isValidateAccountNameResponse() {}
 //   - **`temporarily_unavailable`:** The check cannot be performed right now.
 //     For example, the recipient's bank didn't respond to our request.
 //     You should retry the request later.
-type ValidateAccountNameResponseAuResultCode string
+type ValidateAccountNameResponseAUResultCode string
 
 const (
-	ValidateAccountNameResponseAuResultCodeMatched                ValidateAccountNameResponseAuResultCode = "matched"
-	ValidateAccountNameResponseAuResultCodeCloseMatch             ValidateAccountNameResponseAuResultCode = "close_match"
-	ValidateAccountNameResponseAuResultCodeNotMatched             ValidateAccountNameResponseAuResultCode = "not_matched"
-	ValidateAccountNameResponseAuResultCodeCannotBeChecked        ValidateAccountNameResponseAuResultCode = "cannot_be_checked"
-	ValidateAccountNameResponseAuResultCodeTemporarilyUnavailable ValidateAccountNameResponseAuResultCode = "temporarily_unavailable"
+	ValidateAccountNameResponseAUResultCodeMatched                ValidateAccountNameResponseAUResultCode = "matched"
+	ValidateAccountNameResponseAUResultCodeCloseMatch             ValidateAccountNameResponseAUResultCode = "close_match"
+	ValidateAccountNameResponseAUResultCodeNotMatched             ValidateAccountNameResponseAUResultCode = "not_matched"
+	ValidateAccountNameResponseAUResultCodeCannotBeChecked        ValidateAccountNameResponseAUResultCode = "cannot_be_checked"
+	ValidateAccountNameResponseAUResultCodeTemporarilyUnavailable ValidateAccountNameResponseAUResultCode = "temporarily_unavailable"
 )
 
-type ValidateAccountNameResponseEur struct {
+type ValidateAccountNameResponseEUR struct {
 	// The name of the recipient when the account type is business.
 	CompanyName string `json:"company_name,omitempty"`
+	// The name of the recipient when the account type is personal.
+	IndividualName *ValidateAccountNameResponseEURIndividualName `json:"individual_name,omitempty"`
 	// A code which explains why a given result was returned, and the service that returned it.
-	Reason AccountNameValidationReasonEur `json:"reason,omitempty"`
+	Reason AccountNameValidationReasonEUR `json:"reason,omitempty"`
 	// The result of the check.
-	ResultCode ValidateAccountNameResponseEurResultCode `json:"result_code"`
+	ResultCode ValidateAccountNameResponseEURResultCode `json:"result_code"`
 }
 
-func (ValidateAccountNameResponseEur) isValidateAccountNameResponse() {}
+func (ValidateAccountNameResponseEUR) isValidateAccountNameResponse() {}
 
-// ValidateAccountNameResponseEurResultCode the result of the check.
+// ValidateAccountNameResponseEURIndividualName the name of the recipient when the account type is personal.
+// Provided only if `company_name` is not specified.
+//
+// When the name is a close match, the actual name is returned.
+// Otherwise, the name you provided is returned.
+//
+// :::caution[Mismatched name type is not corrected]
+// The name type in the response is returned as it was provided in the request.
+// For example, if an individual recipient's name was provided under `company_name`, in the response it's still returned under `company_name` (instead of `individual_name`).
+// :::
+type ValidateAccountNameResponseEURIndividualName struct {
+	// The first name of the recipient.
+	FirstName string `json:"first_name"`
+	// The last name of the recipient.
+	LastName string `json:"last_name"`
+}
+
+// ValidateAccountNameResponseEURResultCode the result of the check.
 //
 // Possible values for EUR:
 //   - **`matched`:** The name matches the provided details.
@@ -2303,28 +2423,49 @@ func (ValidateAccountNameResponseEur) isValidateAccountNameResponse() {}
 //   - **`temporarily_unavailable`:** The check cannot be performed right now.
 //     For example, the recipient's bank didn't respond to our request.
 //     You should retry the request later.
-type ValidateAccountNameResponseEurResultCode string
+type ValidateAccountNameResponseEURResultCode string
 
 const (
-	ValidateAccountNameResponseEurResultCodeMatched                ValidateAccountNameResponseEurResultCode = "matched"
-	ValidateAccountNameResponseEurResultCodeCloseMatch             ValidateAccountNameResponseEurResultCode = "close_match"
-	ValidateAccountNameResponseEurResultCodeNotMatched             ValidateAccountNameResponseEurResultCode = "not_matched"
-	ValidateAccountNameResponseEurResultCodeCannotBeChecked        ValidateAccountNameResponseEurResultCode = "cannot_be_checked"
-	ValidateAccountNameResponseEurResultCodeTemporarilyUnavailable ValidateAccountNameResponseEurResultCode = "temporarily_unavailable"
+	ValidateAccountNameResponseEURResultCodeMatched                ValidateAccountNameResponseEURResultCode = "matched"
+	ValidateAccountNameResponseEURResultCodeCloseMatch             ValidateAccountNameResponseEURResultCode = "close_match"
+	ValidateAccountNameResponseEURResultCodeNotMatched             ValidateAccountNameResponseEURResultCode = "not_matched"
+	ValidateAccountNameResponseEURResultCodeCannotBeChecked        ValidateAccountNameResponseEURResultCode = "cannot_be_checked"
+	ValidateAccountNameResponseEURResultCodeTemporarilyUnavailable ValidateAccountNameResponseEURResultCode = "temporarily_unavailable"
 )
 
-type ValidateAccountNameResponseRo struct {
+type ValidateAccountNameResponseRO struct {
 	// The **partially masked** name of the recipient when the account type is business.
 	CompanyName string `json:"company_name,omitempty"`
+	// The partial name of the recipient when the account type is personal, that is, the first name and the last name's initial.
+	IndividualName *ValidateAccountNameResponseROIndividualName `json:"individual_name,omitempty"`
 	// A code which explains why a given result was returned, and the service that returned it.
-	Reason AccountNameValidationReasonRo `json:"reason,omitempty"`
+	Reason AccountNameValidationReasonRO `json:"reason,omitempty"`
 	// The result of the check.
-	ResultCode ValidateAccountNameResponseRoResultCode `json:"result_code"`
+	ResultCode ValidateAccountNameResponseROResultCode `json:"result_code"`
 }
 
-func (ValidateAccountNameResponseRo) isValidateAccountNameResponse() {}
+func (ValidateAccountNameResponseRO) isValidateAccountNameResponse() {}
 
-// ValidateAccountNameResponseRoResultCode the result of the check.
+// ValidateAccountNameResponseROIndividualName the partial name of the recipient when the account type is personal, that is, the first name and the last name's initial.
+// Provided only if `company_name` is not specified.
+//
+// :::caution[Name considerations]
+//   - The name you provide helps identify the request, but is not used for the actual check.
+//     The API simply returns the partial name associated with the IBAN for you to validate.
+//     Therefore, the **returned name may differ** from the one you provided.
+//   - **Mismatched name type is not corrected**.
+//     This means that the name type in the response is returned as it was provided in the request.
+//     For example, if an individual recipient's name was provided under `company_name`, in the response it's still returned under `company_name` (instead of `individual_name`).
+//
+// :::
+type ValidateAccountNameResponseROIndividualName struct {
+	// The first name of the recipient.
+	FirstName string `json:"first_name"`
+	// The initial of the last name of the recipient.
+	LastName string `json:"last_name"`
+}
+
+// ValidateAccountNameResponseROResultCode the result of the check.
 //
 // For RO CoP, the API **checks if an account exists for the provided IBAN**.
 // Possible results are:
@@ -2336,28 +2477,41 @@ func (ValidateAccountNameResponseRo) isValidateAccountNameResponse() {}
 //   - **`temporarily_unavailable`:** The check cannot be performed right now.
 //     For example, the recipient's bank didn't respond to our request.
 //     You should retry the request later.
-type ValidateAccountNameResponseRoResultCode string
+type ValidateAccountNameResponseROResultCode string
 
 const (
-	ValidateAccountNameResponseRoResultCodeMatched                ValidateAccountNameResponseRoResultCode = "matched"
-	ValidateAccountNameResponseRoResultCodeCloseMatch             ValidateAccountNameResponseRoResultCode = "close_match"
-	ValidateAccountNameResponseRoResultCodeNotMatched             ValidateAccountNameResponseRoResultCode = "not_matched"
-	ValidateAccountNameResponseRoResultCodeCannotBeChecked        ValidateAccountNameResponseRoResultCode = "cannot_be_checked"
-	ValidateAccountNameResponseRoResultCodeTemporarilyUnavailable ValidateAccountNameResponseRoResultCode = "temporarily_unavailable"
+	ValidateAccountNameResponseROResultCodeMatched                ValidateAccountNameResponseROResultCode = "matched"
+	ValidateAccountNameResponseROResultCodeCloseMatch             ValidateAccountNameResponseROResultCode = "close_match"
+	ValidateAccountNameResponseROResultCodeNotMatched             ValidateAccountNameResponseROResultCode = "not_matched"
+	ValidateAccountNameResponseROResultCodeCannotBeChecked        ValidateAccountNameResponseROResultCode = "cannot_be_checked"
+	ValidateAccountNameResponseROResultCodeTemporarilyUnavailable ValidateAccountNameResponseROResultCode = "temporarily_unavailable"
 )
 
-type ValidateAccountNameResponseUk struct {
+type ValidateAccountNameResponseUK struct {
 	// The name of the recipient when the account type is business.
 	CompanyName string `json:"company_name,omitempty"`
+	// The name of the recipient when the account type is personal.
+	IndividualName *ValidateAccountNameResponseUKIndividualName `json:"individual_name,omitempty"`
 	// A code which explains why a given result was returned, and the service that returned it.
-	Reason AccountNameValidationReasonUk `json:"reason,omitempty"`
+	Reason AccountNameValidationReasonUK `json:"reason,omitempty"`
 	// The result of the check.
-	ResultCode ValidateAccountNameResponseUkResultCode `json:"result_code"`
+	ResultCode ValidateAccountNameResponseUKResultCode `json:"result_code"`
 }
 
-func (ValidateAccountNameResponseUk) isValidateAccountNameResponse() {}
+func (ValidateAccountNameResponseUK) isValidateAccountNameResponse() {}
 
-// ValidateAccountNameResponseUkResultCode the result of the check.
+// ValidateAccountNameResponseUKIndividualName the name of the recipient when the account type is personal.
+// Provided only if `company_name` is not specified.
+//
+// When the name is a close match, the actual first and last names are returned in full.
+type ValidateAccountNameResponseUKIndividualName struct {
+	// The first name of the recipient.
+	FirstName string `json:"first_name"`
+	// The last name of the recipient.
+	LastName string `json:"last_name"`
+}
+
+// ValidateAccountNameResponseUKResultCode the result of the check.
 //
 // Possible values for UK:
 // - **`matched`:** The name and account type match the provided details.
@@ -2381,14 +2535,14 @@ func (ValidateAccountNameResponseUk) isValidateAccountNameResponse() {}
 //   - **`temporarily_unavailable`:** The check cannot be performed right now.
 //     For example, the recipient's bank didn't respond to our request.
 //     You should retry the request later.
-type ValidateAccountNameResponseUkResultCode string
+type ValidateAccountNameResponseUKResultCode string
 
 const (
-	ValidateAccountNameResponseUkResultCodeMatched                ValidateAccountNameResponseUkResultCode = "matched"
-	ValidateAccountNameResponseUkResultCodeCloseMatch             ValidateAccountNameResponseUkResultCode = "close_match"
-	ValidateAccountNameResponseUkResultCodeNotMatched             ValidateAccountNameResponseUkResultCode = "not_matched"
-	ValidateAccountNameResponseUkResultCodeCannotBeChecked        ValidateAccountNameResponseUkResultCode = "cannot_be_checked"
-	ValidateAccountNameResponseUkResultCodeTemporarilyUnavailable ValidateAccountNameResponseUkResultCode = "temporarily_unavailable"
+	ValidateAccountNameResponseUKResultCodeMatched                ValidateAccountNameResponseUKResultCode = "matched"
+	ValidateAccountNameResponseUKResultCodeCloseMatch             ValidateAccountNameResponseUKResultCode = "close_match"
+	ValidateAccountNameResponseUKResultCodeNotMatched             ValidateAccountNameResponseUKResultCode = "not_matched"
+	ValidateAccountNameResponseUKResultCodeCannotBeChecked        ValidateAccountNameResponseUKResultCode = "cannot_be_checked"
+	ValidateAccountNameResponseUKResultCodeTemporarilyUnavailable ValidateAccountNameResponseUKResultCode = "temporarily_unavailable"
 )
 
 // WebhookEvent a webhook event

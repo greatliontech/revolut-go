@@ -268,7 +268,7 @@ func TestSandbox_AccountNameValidation(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	req := business.ValidateAccountNameRequestUk{
+	req := business.ValidateAccountNameRequestUK{
 		AccountNo:   "12345678",
 		SortCode:    "04-00-75",
 		CompanyName: "John Smith Co.",
@@ -285,10 +285,10 @@ func TestSandbox_AccountNameValidation(t *testing.T) {
 	// decoder may select any of them; what matters is that a typed
 	// variant came back (not a map).
 	switch v := got.(type) {
-	case business.ValidateAccountNameResponseUk,
-		business.ValidateAccountNameResponseAu,
-		business.ValidateAccountNameResponseRo,
-		business.ValidateAccountNameResponseEur:
+	case business.ValidateAccountNameResponseUK,
+		business.ValidateAccountNameResponseAU,
+		business.ValidateAccountNameResponseRO,
+		business.ValidateAccountNameResponseEUR:
 		t.Logf("variant %T: %+v", v, v)
 	default:
 		t.Fatalf("unknown variant %T", v)
