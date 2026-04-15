@@ -21,6 +21,28 @@ tasks:
       - task --list
     silent: true
 
+  build:
+    desc: Compile all packages.
+    cmds:
+      - go build ./...
+
+  vet:
+    desc: Run go vet on all packages.
+    cmds:
+      - go vet ./...
+
+  test:
+    desc: Run all tests with the race detector.
+    cmds:
+      - go test -race ./...
+
+  check:
+    desc: Build, vet, and test.
+    cmds:
+      - task: build
+      - task: vet
+      - task: test
+
   specs:update:
     desc: Fetch vendored OpenAPI specs from the pinned upstream tag.
     cmds:
