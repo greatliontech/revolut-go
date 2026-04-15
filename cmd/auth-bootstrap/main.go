@@ -96,7 +96,7 @@ func parseFlags() config {
 	}
 	flag.StringVar(&cfg.privateKey, "private-key", filepath.Join(sandboxDir, "private.pem"), "path to the RSA private key PEM")
 	flag.StringVar(&cfg.clientID, "client-id", "", "Revolut client ID (from the developer portal)")
-	flag.StringVar(&cfg.issuer, "issuer", "revolut-go-sandbox.local", "JWT iss claim (domain registered with the cert)")
+	flag.StringVar(&cfg.issuer, "issuer", "127.0.0.1", "JWT iss claim. Revolut derives this from the host of your registered redirect URI; override if yours differs")
 	env := flag.String("env", "sandbox", "sandbox or production")
 	flag.StringVar(&cfg.redirect, "redirect", "https://127.0.0.1:8787/callback", "OAuth redirect URI registered with Revolut")
 	flag.StringVar(&cfg.addr, "addr", "127.0.0.1:8787", "host:port for the local HTTPS callback server")
@@ -216,6 +216,10 @@ func run(cfg config) error {
 	defer cancelExchange()
 	tr, err := jwt.ExchangeCode(ctx, http.DefaultClient, tokenURL(cfg.env), signer, code)
 	if err != nil {
+		var tokErr *jwt.TokenError
+		if errors.As(err, &tokErr) && len(tokErr.Body) > 0 {
+			fmt.Fprintf(os.Stderr, "token endpoint response body: %s\n", tokErr.Body)
+		}
 		return fmt.Errorf("exchange: %w", err)
 	}
 	if tr.RefreshToken == "" {
