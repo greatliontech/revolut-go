@@ -85,8 +85,15 @@ func (b *Builder) unionFromDiscriminator(goName string, s *openapi3.Schema) *ir.
 		return nil
 	}
 
-	if s.Discriminator.PropertyName != "" {
-		// Real wire-tagged union.
+	// A non-empty propertyName declares a wire-tagged union, but
+	// only if the mapping tags can actually appear on the wire. If
+	// the referenced property's schema is an enum and the mapping
+	// tags are disjoint from its enum values, the mapping is
+	// editorial labelling (merchant's "Order or payment event"
+	// pattern) — falling through to the flatten path produces a
+	// usable struct instead of a decoder that rejects every real
+	// payload.
+	if s.Discriminator.PropertyName != "" && b.discriminatorTagsAreWireCompatible(s) {
 		variants := make([]ir.Variant, 0, len(mapping))
 		for _, m := range mapping {
 			variants = append(variants, ir.Variant{GoName: m.GoName, Tag: m.Tag})
@@ -101,11 +108,133 @@ func (b *Builder) unionFromDiscriminator(goName string, s *openapi3.Schema) *ir.
 		}
 	}
 
-	// propertyName absent: editorial grouping. Merge variants into
-	// a single flat struct. Every variant's fields become optional
-	// on the merged shape (since at most one set of fields applies
-	// per wire payload).
+	// Editorial grouping — either propertyName is absent or the
+	// mapping tags can't appear on the wire. Merge variants into a
+	// single flat struct. Every field becomes optional since at
+	// most one variant's fields apply per payload.
 	return b.flattenMappedVariants(goName, s, mapping)
+}
+
+// discriminatorTagsAreWireCompatible reports whether the
+// discriminator mapping's keys could plausibly appear as wire
+// values for the property named by PropertyName. The check is
+// conservative — it only rejects the mapping when the property's
+// schema is a string enum whose values share NO overlap with the
+// mapping keys. If the property is free-form, or if any overlap
+// exists, the union is still treated as wire-tagged.
+//
+// The property schema is resolved from the union schema itself
+// when present, otherwise from the first variant (oneOf/anyOf
+// branches share the propertyName field by definition in a
+// well-formed discriminator).
+func (b *Builder) discriminatorTagsAreWireCompatible(s *openapi3.Schema) bool {
+	if s == nil || s.Discriminator == nil {
+		return true
+	}
+	prop := b.findDiscriminatorProperty(s)
+	if prop == nil {
+		return true
+	}
+	enumValues := collectEnumValues(b, prop)
+	if len(enumValues) == 0 {
+		return true
+	}
+	for tag := range s.Discriminator.Mapping {
+		if enumValues[tag] {
+			return true
+		}
+	}
+	return false
+}
+
+// findDiscriminatorProperty locates the schema of the property named
+// by s.Discriminator.PropertyName. Checks: the union schema's own
+// Properties → the merged allOf → the first oneOf/anyOf variant's
+// properties (resolved through $ref).
+func (b *Builder) findDiscriminatorProperty(s *openapi3.Schema) *openapi3.SchemaRef {
+	name := s.Discriminator.PropertyName
+	if prop, ok := s.Properties[name]; ok && prop != nil {
+		return prop
+	}
+	if merged := mergeAllOf(s); merged != nil {
+		if prop, ok := merged.Properties[name]; ok && prop != nil {
+			return prop
+		}
+	}
+	branches := s.OneOf
+	if len(branches) == 0 {
+		branches = s.AnyOf
+	}
+	for _, br := range branches {
+		v := variantSchema(b, br)
+		if v == nil {
+			continue
+		}
+		if prop, ok := v.Properties[name]; ok && prop != nil {
+			return prop
+		}
+		if merged := mergeAllOf(v); merged != nil {
+			if prop, ok := merged.Properties[name]; ok && prop != nil {
+				return prop
+			}
+		}
+	}
+	return nil
+}
+
+// variantSchema dereferences a oneOf/anyOf branch, following the
+// $ref into components/schemas so callers see the concrete schema.
+func variantSchema(b *Builder, ref *openapi3.SchemaRef) *openapi3.Schema {
+	if ref == nil {
+		return nil
+	}
+	if ref.Value != nil && len(ref.Value.Properties) > 0 {
+		return ref.Value
+	}
+	if name := schemaRefName(ref); name != "" {
+		if target := b.doc.Components.Schemas[name]; target != nil {
+			return target.Value
+		}
+	}
+	return ref.Value
+}
+
+// collectEnumValues flattens an enum schema (direct or via $ref)
+// into a set. Returns nil when the schema isn't a string enum so
+// callers can distinguish "checked and empty" from "not applicable".
+func collectEnumValues(b *Builder, ref *openapi3.SchemaRef) map[string]bool {
+	if ref == nil {
+		return nil
+	}
+	s := ref.Value
+	if s == nil {
+		if name := schemaRefName(ref); name != "" {
+			target := b.doc.Components.Schemas[name]
+			if target != nil {
+				s = target.Value
+			}
+		}
+	}
+	// Fallback: the ref had a Value AND a Ref — prefer the Value side.
+	if s == nil && ref.Ref != "" {
+		const prefix = "#/components/schemas/"
+		if strings.HasPrefix(ref.Ref, prefix) {
+			name := strings.TrimPrefix(ref.Ref, prefix)
+			if target := b.doc.Components.Schemas[name]; target != nil {
+				s = target.Value
+			}
+		}
+	}
+	if s == nil || !schemaTypeIs(s, "string") || len(s.Enum) == 0 {
+		return nil
+	}
+	out := make(map[string]bool, len(s.Enum))
+	for _, v := range s.Enum {
+		if str, ok := v.(string); ok {
+			out[str] = true
+		}
+	}
+	return out
 }
 
 func (b *Builder) untaggedUnion(goName string, s *openapi3.Schema, variants []ir.Variant) *ir.Decl {

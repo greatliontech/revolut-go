@@ -54,7 +54,7 @@ func writeTypesAndCallbacks(spec *ir.Spec, imports []string) string {
 	}
 	w := newFileWriter(spec.Package, nil)
 	w.buf.WriteString(src)
-	writeCallbackHelpers(w, spec.Callbacks)
+	writeCallbackHelpers(w, spec, spec.Callbacks)
 	return w.buf.String()
 }
 

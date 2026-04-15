@@ -3414,21 +3414,6 @@ type RpayAccount struct {
 	Type RpayAccountType `json:"type"`
 }
 
-func (RpayAccount) isRevolutPay() {}
-
-// MarshalJSON injects the "subtype" tag ("revolut_pay_account") on the wire so the
-// server can dispatch this RevolutPay variant.
-func (v RpayAccount) MarshalJSON() ([]byte, error) {
-	type alias RpayAccount
-	return json.Marshal(struct {
-		T string `json:"subtype"`
-		alias
-	}{
-		T:     "revolut_pay_account",
-		alias: alias(v),
-	})
-}
-
 // RpayCardSubtype indicates whether the customer used their card or Revolut account via Revolut Pay.
 type RpayCardSubtype string
 
@@ -3460,21 +3445,6 @@ type RpayCard struct {
 
 	// The type of payment method used to pay for the order.
 	Type RpayCardType `json:"type"`
-}
-
-func (RpayCard) isRevolutPay() {}
-
-// MarshalJSON injects the "subtype" tag ("revolut_pay_card") on the wire so the
-// server can dispatch this RevolutPay variant.
-func (v RpayCard) MarshalJSON() ([]byte, error) {
-	type alias RpayCard
-	return json.Marshal(struct {
-		T string `json:"subtype"`
-		alias
-	}{
-		T:     "revolut_pay_card",
-		alias: alias(v),
-	})
 }
 
 // RedirectURL the URL your customer will be redirected to after a successful payment on the hosted checkout page (`checkout_url` parameter's value of the order).
@@ -3779,37 +3749,40 @@ const (
 	ReportRunTypePaymentsReport         ReportRunType = "payments_report"
 )
 
-// Variants:
-//   - revolut_pay_account → RpayAccount
-//   - revolut_pay_card → RpayCard
-type RevolutPay interface {
-	isRevolutPay()
-}
+// RevolutPaySubtype indicates whether the customer used their card or Revolut account via Revolut Pay.
+type RevolutPaySubtype string
 
-// decodeRevolutPay reads the "subtype" discriminator and decodes into the
-// matching variant.
-func decodeRevolutPay(data []byte) (RevolutPay, error) {
-	var tag struct {
-		T string `json:"subtype"`
-	}
-	if err := json.Unmarshal(data, &tag); err != nil {
-		return nil, err
-	}
-	switch tag.T {
-	case "revolut_pay_account":
-		var out RpayAccount
-		if err := json.Unmarshal(data, &out); err != nil {
-			return nil, err
-		}
-		return out, nil
-	case "revolut_pay_card":
-		var out RpayCard
-		if err := json.Unmarshal(data, &out); err != nil {
-			return nil, err
-		}
-		return out, nil
-	}
-	return nil, fmt.Errorf("unknown RevolutPay tag: %q", tag.T)
+const (
+	RevolutPaySubtypeRevolutAccount RevolutPaySubtype = "revolut_account"
+	RevolutPaySubtypeCard           RevolutPaySubtype = "card"
+)
+
+// RevolutPayType the type of payment method used to pay for the order.
+type RevolutPayType string
+
+const (
+	RevolutPayTypeCard       RevolutPayType = "card"
+	RevolutPayTypeRevolutPay RevolutPayType = "revolut_pay"
+)
+
+// RevolutPay the spec groups these shapes under a documentation-only discriminator (no wire-level propertyName); fill in the fields that apply to your scenario. Groupings:
+//   - revolut_pay_account: RPay-Account
+//   - revolut_pay_card: RPay-Card
+type RevolutPay struct {
+	// ID of the saved payment method.
+	ID string `json:"id,omitempty"`
+
+	// Indicates whether the customer used their card or Revolut account via Revolut Pay.
+	Subtype RevolutPaySubtype `json:"subtype,omitempty"`
+
+	// The type of payment method used to pay for the order.
+	Type RevolutPayType `json:"type,omitempty"`
+
+	// The type of the card.
+	Brand string `json:"brand,omitempty"`
+
+	// The last four digits of the card number.
+	LastFour string `json:"last_four,omitempty"`
 }
 
 type RevolutPayAccount struct {
@@ -5348,4 +5321,44 @@ const (
 type WebhooksBody struct {
 	// The expiration period of the signing secret in the [ISO 8601 format](https://en.wikipedia.org/wiki/ISO_8601#Durations).
 	ExpirationPeriod string `json:"expiration_period,omitempty"`
+}
+
+// SendWebhookEventPayload the spec groups these shapes under a documentation-only discriminator (no wire-level propertyName); fill in the fields that apply to your scenario. Groupings:
+//   - Dispute event: Webhook-Dispute-Event
+//   - Order or payment event: Webhook-Order-Event
+//   - Payout event: Webhook-Payout-Event
+//   - Subscription: Webhook-Subscription-Event
+type SendWebhookEventPayload struct {
+	// The ID of the dispute the event is related to.
+	DisputeID string `json:"dispute_id,omitempty"`
+
+	// The event type of the webhook notification that's sent by Revolut to your webhook URL.
+	Event WebhookCallbackEvent `json:"event,omitempty"`
+
+	// The reference sent in the `reference` field of the [Increment authorisation](https://developer.revolut.com/docs/merchant/increment-authorisation) request. Only present for incremental authorisation events.
+	IncrementalAuthorisationExtReference string `json:"incremental_authorisation_ext_reference,omitempty"`
+
+	// The information sent during order creation in the
+	MerchantOrderExtRef string `json:"merchant_order_ext_ref,omitempty"`
+
+	// The ID of the order the event is related to.
+	OrderID string `json:"order_id,omitempty"`
+
+	// The ID of the payout the event is related to.
+	PayoutID string `json:"payout_id,omitempty"`
+
+	// The information sent in the `external_reference` field of the [Create a subscription](https://developer.revolut.com/docs/merchant/create-subscription) request.
+	ExternalReference string `json:"external_reference,omitempty"`
+
+	// The ID of the subscription the event is related to.
+	SubscriptionID string `json:"subscription_id,omitempty"`
+}
+
+// DecodeSendWebhookEvent decodes the JSON body of an incoming SendWebhookEvent callback into a typed payload.
+func DecodeSendWebhookEvent(body io.Reader) (*SendWebhookEventPayload, error) {
+	var out SendWebhookEventPayload
+	if err := json.NewDecoder(body).Decode(&out); err != nil {
+		return nil, err
+	}
+	return &out, nil
 }

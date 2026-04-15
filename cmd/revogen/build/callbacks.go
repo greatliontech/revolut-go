@@ -36,7 +36,7 @@ func (b *Builder) buildCallbacks() {
 				if seen[cbName] {
 					continue
 				}
-				cb := b.callbackFor(op.Callbacks[cbName])
+				cb := b.callbackFor(op.Callbacks[cbName], cbName)
 				if cb == nil {
 					continue
 				}
@@ -48,7 +48,7 @@ func (b *Builder) buildCallbacks() {
 	}
 }
 
-func (b *Builder) callbackFor(ref *openapi3.CallbackRef) *ir.Callback {
+func (b *Builder) callbackFor(ref *openapi3.CallbackRef, cbName string) *ir.Callback {
 	if ref == nil || ref.Value == nil {
 		return nil
 	}
@@ -64,7 +64,7 @@ func (b *Builder) callbackFor(ref *openapi3.CallbackRef) *ir.Callback {
 			if mt == nil || mt.Schema == nil {
 				continue
 			}
-			payload := b.resolveType(mt.Schema, Context{Parent: "Callback", Field: "payload"})
+			payload := b.callbackPayloadType(mt.Schema, cbName)
 			if payload == nil {
 				continue
 			}
@@ -72,6 +72,39 @@ func (b *Builder) callbackFor(ref *openapi3.CallbackRef) *ir.Callback {
 		}
 	}
 	return nil
+}
+
+// callbackPayloadType resolves the callback's request-body schema to
+// an ir.Type. Concrete bodies go through resolveType verbatim; an
+// inline discriminator / oneOf / anyOf (the shape merchant webhooks
+// use) gets promoted to a named union Decl named "<CbName>Payload"
+// so the caller gets a typed interface they can type-switch on.
+// Without this path, resolveInlineSchema returns nil for the inline
+// union shape since that normally only gets realised from
+// components/schemas.
+func (b *Builder) callbackPayloadType(schema *openapi3.SchemaRef, cbName string) *ir.Type {
+	if t := b.resolveType(schema, Context{Parent: "Callback", Field: "payload"}); t != nil {
+		return t
+	}
+	if schema == nil || schema.Value == nil {
+		return nil
+	}
+	s := schema.Value
+	hasUnion := (s.Discriminator != nil && len(s.Discriminator.Mapping) > 0) ||
+		len(s.OneOf) > 0 || len(s.AnyOf) > 0
+	if !hasUnion {
+		return nil
+	}
+	goName := names.TypeName(cbName) + "Payload"
+	if existing := b.declByName[goName]; existing != nil {
+		return ir.Named(goName)
+	}
+	decl := b.unionDeclFromSchema(goName, s)
+	if decl == nil {
+		return nil
+	}
+	b.registerDecl(goName, decl)
+	return ir.Named(goName)
 }
 
 func sortedCallbackNames(m openapi3.Callbacks) []string {
