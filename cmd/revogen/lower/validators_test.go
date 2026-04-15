@@ -118,3 +118,69 @@ func TestValidators_AnyOfRequiredGroups(t *testing.T) {
 		t.Errorf("message missing group spelling: %q", msg)
 	}
 }
+
+// TestValidators_RequiredQueryParams pins the opts validator shape:
+// a struct with any required field emits an `opts == nil` check
+// first followed by per-field checks without a nil guard, so the
+// emitted Go short-circuits on the first failure.
+func TestValidators_RequiredQueryParams(t *testing.T) {
+	params := &ir.Decl{
+		Name: "GetRateParams",
+		Kind: ir.DeclStruct,
+		Fields: []*ir.Field{
+			{JSONName: "from", GoName: "From", Type: ir.Named("Currency"), Required: true},
+			{JSONName: "amount", GoName: "Amount", Type: ir.Prim("json.Number", "encoding/json")},
+			{JSONName: "to", GoName: "To", Type: ir.Named("Currency"), Required: true},
+		},
+	}
+	currency := &ir.Decl{Name: "Currency", Kind: ir.DeclEnum, EnumBase: ir.Prim("string")}
+	method := &ir.Method{
+		Receiver:  "ForeignExchange",
+		Name:      "GetRate",
+		OptsParam: &ir.Param{Name: "opts", Type: ir.Pointer(ir.Named("GetRateParams"))},
+	}
+	spec := &ir.Spec{
+		ErrPrefix: "business",
+		Decls:     []*ir.Decl{params, currency},
+		Resources: []*ir.Resource{{Name: "ForeignExchange", Methods: []*ir.Method{method}}},
+	}
+	Validators(spec)
+	if len(method.Validators) != 3 {
+		t.Fatalf("want 3 validators, got %d: %+v", len(method.Validators), method.Validators)
+	}
+	if got := method.Validators[0].Cond; got != "opts == nil" {
+		t.Errorf("first validator should be opts == nil; got %q", got)
+	}
+	for _, v := range method.Validators[1:] {
+		if strings.Contains(v.Cond, "!= nil") {
+			t.Errorf("inner validator has redundant nil guard: %q", v.Cond)
+		}
+	}
+}
+
+// TestValidators_OptionalQueryParamsNoValidators: opts with zero
+// required fields gets no validators — leaving the param genuinely
+// optional for callers.
+func TestValidators_OptionalQueryParamsNoValidators(t *testing.T) {
+	params := &ir.Decl{
+		Name: "ListParams",
+		Kind: ir.DeclStruct,
+		Fields: []*ir.Field{
+			{JSONName: "limit", GoName: "Limit", Type: ir.Prim("int")},
+		},
+	}
+	method := &ir.Method{
+		Receiver:  "X",
+		Name:      "List",
+		OptsParam: &ir.Param{Name: "opts", Type: ir.Pointer(ir.Named("ListParams"))},
+	}
+	spec := &ir.Spec{
+		ErrPrefix: "business",
+		Decls:     []*ir.Decl{params},
+		Resources: []*ir.Resource{{Name: "X", Methods: []*ir.Method{method}}},
+	}
+	Validators(spec)
+	if len(method.Validators) != 0 {
+		t.Errorf("expected no validators for all-optional opts; got %+v", method.Validators)
+	}
+}

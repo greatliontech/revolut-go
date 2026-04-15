@@ -110,6 +110,7 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 		goName   string
 		typ      *ir.Type
 		doc      string
+		required bool
 	}
 	var queries []queryParam
 	for _, paramRef := range concatParameters(item.Parameters, op.Parameters) {
@@ -135,6 +136,7 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 				goName:   names.FieldName(p.Name),
 				typ:      typ,
 				doc:      firstLine(p.Description),
+				required: p.Required,
 			})
 		case "header":
 			typ := b.resolveType(p.Schema, Context{Parent: m.Receiver, Field: p.Name})
@@ -166,6 +168,7 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 			GoName:   q.goName,
 			Type:     q.typ,
 			Doc:      q.doc,
+			Required: q.required,
 		})
 	}
 	b.registerDecl(paramsName, paramsDecl)

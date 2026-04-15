@@ -59,6 +59,15 @@ func (s *ForeignExchange) GetExchangeReasons(ctx context.Context) ([]ExchangeRea
 // Docs: https://developer.revolut.com/docs/business/get-rate
 // Required scopes: READ
 func (s *ForeignExchange) GetRate(ctx context.Context, opts *GetRateParams) (*ExchangeRateResponse, error) {
+	if opts == nil {
+		return nil, errors.New("business: GetRateParams is required")
+	}
+	if opts.From == "" {
+		return nil, errors.New("business: GetRateParams.from is required")
+	}
+	if opts.To == "" {
+		return nil, errors.New("business: GetRateParams.to is required")
+	}
 	path := "rate"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q

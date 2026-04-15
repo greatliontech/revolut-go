@@ -25,21 +25,55 @@ func Validators(spec *ir.Spec) {
 	declByName := indexDecls(spec.Decls)
 	for _, r := range spec.Resources {
 		for _, m := range r.Methods {
-			if m.BodyParam == nil {
-				continue
+			if m.BodyParam != nil {
+				if rootName := bodyDeclName(m.BodyParam.Type); rootName != "" {
+					if root := declByName[rootName]; root != nil && root.Kind == ir.DeclStruct {
+						visited := map[string]bool{rootName: true}
+						m.Validators = append(m.Validators,
+							walkValidators(root, "req", rootName, declByName, visited, spec.ErrPrefix)...)
+					}
+				}
 			}
-			rootName := bodyDeclName(m.BodyParam.Type)
-			if rootName == "" {
-				continue
+			if m.OptsParam != nil {
+				m.Validators = append(m.Validators,
+					optsValidators(m.OptsParam.Type, declByName, spec.ErrPrefix)...)
 			}
-			root := declByName[rootName]
-			if root == nil || root.Kind != ir.DeclStruct {
-				continue
-			}
-			visited := map[string]bool{rootName: true}
-			m.Validators = walkValidators(root, "req", rootName, declByName, visited, spec.ErrPrefix)
 		}
 	}
+}
+
+// optsValidators returns the required-field checks for a method's
+// opts (query params) struct. When the struct has any required
+// field, opts itself is required — we emit a single `opts == nil`
+// check first (which short-circuits via early-return in the caller)
+// so subsequent field checks can safely dereference opts without a
+// redundant nil guard.
+func optsValidators(optsType *ir.Type, declByName map[string]*ir.Decl, errPrefix string) []ir.Validator {
+	rootName := bodyDeclName(optsType) // shares the pointer-peeling logic
+	if rootName == "" {
+		return nil
+	}
+	root := declByName[rootName]
+	if root == nil || root.Kind != ir.DeclStruct {
+		return nil
+	}
+	hasRequired := false
+	for _, f := range root.Fields {
+		if f.Required {
+			hasRequired = true
+			break
+		}
+	}
+	if !hasRequired {
+		return nil
+	}
+	out := []ir.Validator{{
+		Cond:    "opts == nil",
+		Message: errPrefix + ": " + rootName + " is required",
+	}}
+	visited := map[string]bool{rootName: true}
+	out = append(out, walkValidators(root, "opts", rootName, declByName, visited, errPrefix)...)
+	return out
 }
 
 func walkValidators(d *ir.Decl, exprPrefix, jsonPathPrefix string, declByName map[string]*ir.Decl, visited map[string]bool, errPrefix string) []ir.Validator {
