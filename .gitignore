@@ -8,3 +8,7 @@
 .env
 .env.*
 !.env.example
+
+# Tool binaries accidentally built in the repo root.
+/auth-bootstrap
+/revogen

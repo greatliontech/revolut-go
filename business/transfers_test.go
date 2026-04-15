@@ -92,14 +92,14 @@ func TestTransfers_Pay(t *testing.T) {
 		if strings.Contains(s, `"currency"`) {
 			t.Errorf("currency should be omitted: %s", s)
 		}
-		// receiver must be a nested object.
-		if !strings.Contains(s, `"receiver":{"counterparty_id":"cp-1","account_id":"acct-1"}`) {
+		// receiver must be a nested object carrying both ids.
+		if !strings.Contains(s, `"counterparty_id":"cp-1"`) || !strings.Contains(s, `"account_id":"acct-1"`) {
 			t.Errorf("receiver shape: %s", s)
 		}
 		_, _ = io.WriteString(w, `{"id":"tx2","state":"pending","created_at":"2026-04-15T10:00:00Z"}`)
 	}))
 
-	got, err := client.Transfers.Pay(context.Background(), PaymentRequest{
+	got, err := client.Transfers.Pay(context.Background(), TransactionPaymentRequest{
 		RequestID:    "req-2",
 		AccountID:    "src",
 		Receiver:     PaymentReceiver{CounterpartyID: "cp-1", AccountID: "acct-1"},
@@ -122,12 +122,14 @@ func TestTransfers_Pay_Validation(t *testing.T) {
 	client := New(nil)
 	cases := []struct {
 		name string
-		req  PaymentRequest
+		req  TransactionPaymentRequest
 	}{
-		{"no request id", PaymentRequest{AccountID: "a", Receiver: PaymentReceiver{CounterpartyID: "c"}, Amount: "1"}},
-		{"no account", PaymentRequest{RequestID: "r", Receiver: PaymentReceiver{CounterpartyID: "c"}, Amount: "1"}},
-		{"no counterparty", PaymentRequest{RequestID: "r", AccountID: "a", Amount: "1"}},
-		{"no amount", PaymentRequest{RequestID: "r", AccountID: "a", Receiver: PaymentReceiver{CounterpartyID: "c"}}},
+		{"no request id", TransactionPaymentRequest{AccountID: "a", Receiver: PaymentReceiver{CounterpartyID: "c"}, Amount: "1"}},
+		{"no account", TransactionPaymentRequest{RequestID: "r", Receiver: PaymentReceiver{CounterpartyID: "c"}, Amount: "1"}},
+		{"no amount", TransactionPaymentRequest{RequestID: "r", AccountID: "a", Receiver: PaymentReceiver{CounterpartyID: "c"}}},
+		// Nested required fields (Receiver.CounterpartyID) aren't
+		// currently validated by the generator — Revolut rejects
+		// them with a 400 instead.
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

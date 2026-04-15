@@ -48,6 +48,12 @@ tasks:
       - task: vet
       - task: test
 
+  gen:
+    desc: Regenerate gen_*.go files from the vendored OpenAPI specs.
+    cmds:
+      - go run ./cmd/revogen -package business -out business -resource Accounts -resource Transfers
+      - task: build
+
   auth:bootstrap:
     desc: Run the one-time Revolut Business OAuth consent flow and capture a refresh token.
     summary: |
