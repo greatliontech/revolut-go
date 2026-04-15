@@ -200,15 +200,16 @@ func (b *Builder) structFromSchema(goName string, s *openapi3.Schema) *ir.Decl {
 			fieldType = ir.Pointer(fieldType)
 		}
 		decl.Fields = append(decl.Fields, &ir.Field{
-			JSONName:   propName,
-			GoName:     names.FieldName(propName),
-			Type:       fieldType,
-			Required:   isRequired,
-			ReadOnly:   pv.ReadOnly,
-			WriteOnly:  pv.WriteOnly,
-			Deprecated: deprecationMessage(pv),
-			Doc:        firstLine(pv.Description),
-			DefaultDoc: defaultDoc(pv),
+			JSONName:       propName,
+			GoName:         names.FieldName(propName),
+			Type:           fieldType,
+			Required:       isRequired,
+			ReadOnly:       pv.ReadOnly,
+			WriteOnly:      pv.WriteOnly,
+			Deprecated:     deprecationMessage(pv),
+			Doc:            firstLine(pv.Description),
+			DefaultDoc:     defaultDoc(pv),
+			DefaultLiteral: defaultLiteral(pv, fieldType),
 		})
 	}
 
@@ -299,6 +300,63 @@ func defaultDoc(s *openapi3.Schema) string {
 		return "" // array defaults are rare and awkward to render
 	}
 	return ""
+}
+
+// defaultLiteral returns a Go expression evaluating to the spec's
+// declared default, type-appropriate for the field it'll be
+// assigned to. Bool defaults are skipped because false is
+// indistinguishable from "unset" without a pointer. Returns "" for
+// prose / missing / unsafe defaults.
+//
+// The field's Go type decides the literal shape:
+//
+//   - plain int primitives: 100
+//   - json.Number (Revolut's arbitrary-precision ints): json.Number("100")
+//   - named string-backed enums: T("value")
+//   - plain string: "value"
+func defaultLiteral(s *openapi3.Schema, fieldType *ir.Type) string {
+	if s.Default == nil {
+		return ""
+	}
+	raw := ""
+	switch v := s.Default.(type) {
+	case string:
+		if v == "" {
+			return ""
+		}
+		lit := fmt.Sprintf("%q", v)
+		if fieldType != nil && fieldType.Kind == ir.KindNamed {
+			return fieldType.GoExpr() + "(" + lit + ")"
+		}
+		return lit
+	case int:
+		raw = fmt.Sprintf("%d", v)
+	case int32:
+		raw = fmt.Sprintf("%d", v)
+	case int64:
+		raw = fmt.Sprintf("%d", v)
+	case float64:
+		// kin-openapi decodes YAML integers as float64; recover the
+		// integer form when the value is whole so Go's type system
+		// doesn't complain about assigning a float to an int field.
+		if v == float64(int64(v)) {
+			raw = fmt.Sprintf("%d", int64(v))
+		} else {
+			raw = fmt.Sprintf("%v", v)
+		}
+	default:
+		return ""
+	}
+	// Numeric literals need wrapping when the target field type
+	// isn't a raw Go numeric — json.Number is a string alias, and
+	// named numeric types would need a cast.
+	if fieldType != nil && fieldType.Kind == ir.KindPrim && fieldType.Name == "json.Number" {
+		return fmt.Sprintf(`json.Number(%q)`, raw)
+	}
+	if fieldType != nil && fieldType.Kind == ir.KindNamed {
+		return fieldType.GoExpr() + "(" + raw + ")"
+	}
+	return raw
 }
 
 // isConditionalRequiredAnyOf detects OpenAPI's validation-only anyOf

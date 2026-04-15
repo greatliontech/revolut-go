@@ -208,7 +208,73 @@ func writeStruct(w *fileWriter, d *ir.Decl) {
 	}
 	if d.QueryParamsEncoder {
 		writeQueryParamsEncoder(w, d)
+		writeApplyDefaults(w, d)
 	}
+}
+
+// writeApplyDefaults emits ApplyDefaults on a Params struct when
+// at least one field carries a machine-readable default. Opt-in —
+// the caller decides when to apply defaults, since some endpoints
+// have server-side defaults that the caller may want to defer to
+// by leaving the field unset. Each assignment guards on the zero
+// value so an explicitly-set value isn't overwritten.
+func writeApplyDefaults(w *fileWriter, d *ir.Decl) {
+	hasDefault := false
+	for _, f := range d.Fields {
+		if f.DefaultLiteral != "" {
+			hasDefault = true
+			break
+		}
+	}
+	if !hasDefault {
+		return
+	}
+	w.printf("// ApplyDefaults sets the spec-declared default value on any\n")
+	w.printf("// field of %s that is still at its Go zero value. Call\n", d.Name)
+	w.printf("// before encode() if you want the SDK to pre-fill defaults\n")
+	w.write("// rather than letting the server apply them. A nil receiver\n")
+	w.write("// is a no-op.\n")
+	w.printf("func (p *%s) ApplyDefaults() {\n", d.Name)
+	w.write("\tif p == nil {\n\t\treturn\n\t}\n")
+	for _, f := range d.Fields {
+		if f.DefaultLiteral == "" {
+			continue
+		}
+		cond := defaultZeroCond(f)
+		if cond == "" {
+			continue
+		}
+		w.printf("\tif %s {\n\t\tp.%s = %s\n\t}\n", cond, f.GoName, f.DefaultLiteral)
+	}
+	w.write("}\n")
+}
+
+// defaultZeroCond returns a Go expression that is true when the
+// field is still at its Go zero value. Returns "" for field kinds
+// where auto-fill is unsafe (bool, pointer) so the caller of
+// writeApplyDefaults skips them.
+func defaultZeroCond(f *ir.Field) string {
+	t := f.Type
+	if t == nil || t.IsPointer() {
+		return ""
+	}
+	if t.Kind == ir.KindPrim {
+		switch t.Name {
+		case "string", "json.Number", "core.Currency":
+			return "p." + f.GoName + ` == ""`
+		case "int", "int32", "int64":
+			return "p." + f.GoName + " == 0"
+		case "float32", "float64":
+			return "p." + f.GoName + " == 0"
+		}
+	}
+	if t.Kind == ir.KindNamed {
+		// Named types are assumed string-backed enums here — the
+		// DefaultLiteral produced for them wraps the value in a
+		// cast, so the zero value is the empty string.
+		return "p." + f.GoName + ` == ""`
+	}
+	return ""
 }
 
 // writeQueryParamsEncoder emits encode() url.Values for a generated

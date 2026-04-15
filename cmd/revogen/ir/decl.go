@@ -88,6 +88,14 @@ type Field struct {
 	// machine-readable literal (e.g. the prose "the date-time at which
 	// the request is made"). Surfaced in godoc only.
 	DefaultDoc string
+	// DefaultLiteral, when non-empty, is a Go expression that
+	// evaluates to the field's default. Populated for literal int /
+	// string / named-string schema defaults; the emitter uses it to
+	// synthesize an ApplyDefaults method on the containing Params
+	// struct. Bool defaults are intentionally skipped: the caller
+	// may have set false on purpose, and zero-value detection would
+	// overwrite it.
+	DefaultLiteral string
 }
 
 // EnumValue is one entry in an enum.

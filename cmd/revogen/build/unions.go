@@ -377,15 +377,16 @@ func (b *Builder) flattenMappedVariants(goName string, s *openapi3.Schema, mappi
 				fieldType = ir.Pointer(fieldType)
 			}
 			decl.Fields = append(decl.Fields, &ir.Field{
-				JSONName:   propName,
-				GoName:     names.FieldName(propName),
-				Type:       fieldType,
-				Required:   false, // every field becomes optional on the merged shape
-				ReadOnly:   prop.Value.ReadOnly,
-				WriteOnly:  prop.Value.WriteOnly,
-				Deprecated: deprecationMessage(prop.Value),
-				Doc:        firstLine(prop.Value.Description),
-				DefaultDoc: defaultDoc(prop.Value),
+				JSONName:       propName,
+				GoName:         names.FieldName(propName),
+				Type:           fieldType,
+				Required:       false, // every field becomes optional on the merged shape
+				ReadOnly:       prop.Value.ReadOnly,
+				WriteOnly:      prop.Value.WriteOnly,
+				Deprecated:     deprecationMessage(prop.Value),
+				Doc:            firstLine(prop.Value.Description),
+				DefaultDoc:     defaultDoc(prop.Value),
+				DefaultLiteral: defaultLiteral(prop.Value, fieldType),
 			})
 		}
 	}

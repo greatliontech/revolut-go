@@ -125,11 +125,13 @@ func (b *Builder) applyResponseMetadata(m *ir.Method, op *openapi3.Operation) {
 // no operationId.
 func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *openapi3.Operation, verb, path string) {
 	type queryParam struct {
-		wireName string
-		goName   string
-		typ      *ir.Type
-		doc      string
-		required bool
+		wireName       string
+		goName         string
+		typ            *ir.Type
+		doc            string
+		required       bool
+		defaultDoc     string
+		defaultLiteral string
 	}
 	var queries []queryParam
 	for _, paramRef := range concatParameters(item.Parameters, op.Parameters) {
@@ -150,13 +152,18 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 			if typ == nil {
 				typ = ir.Prim("string")
 			}
-			queries = append(queries, queryParam{
+			q := queryParam{
 				wireName: p.Name,
 				goName:   names.FieldName(p.Name),
 				typ:      typ,
 				doc:      firstLine(p.Description),
 				required: p.Required,
-			})
+			}
+			if p.Schema != nil && p.Schema.Value != nil {
+				q.defaultDoc = defaultDoc(p.Schema.Value)
+				q.defaultLiteral = defaultLiteral(p.Schema.Value, typ)
+			}
+			queries = append(queries, q)
 		case "header":
 			typ := b.resolveType(p.Schema, Context{Parent: m.Receiver, Field: p.Name})
 			if typ == nil {
@@ -183,11 +190,13 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 	}
 	for _, q := range queries {
 		paramsDecl.Fields = append(paramsDecl.Fields, &ir.Field{
-			JSONName: q.wireName,
-			GoName:   q.goName,
-			Type:     q.typ,
-			Doc:      q.doc,
-			Required: q.required,
+			JSONName:       q.wireName,
+			GoName:         q.goName,
+			Type:           q.typ,
+			Doc:            q.doc,
+			Required:       q.required,
+			DefaultDoc:     q.defaultDoc,
+			DefaultLiteral: q.defaultLiteral,
 		})
 	}
 	b.registerDecl(paramsName, paramsDecl)

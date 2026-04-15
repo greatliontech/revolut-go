@@ -417,6 +417,12 @@ func (*Payouts) GetListAll
 func (*ReportRuns) Create
 func (*ReportRuns) DownloadReportFile
 func (*ReportRuns) GetDetails
+func (*RetrieveCustomerListParams) ApplyDefaults
+func (*RetrieveDisputeListParams) ApplyDefaults
+func (*RetrieveOrderListParams) ApplyDefaults
+func (*RetrieveSubscriptionCycleListParams) ApplyDefaults
+func (*RetrieveSubscriptionListParams) ApplyDefaults
+func (*RetrieveSubscriptionPlanListParams) ApplyDefaults
 func (*Subscriptions) CancelSubscription
 func (*Subscriptions) Create
 func (*Subscriptions) CreatePlan

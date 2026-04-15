@@ -833,6 +833,8 @@ type Trade struct {
 // GetCandlesParams query parameters for: Get historical OHLCV candles
 type GetCandlesParams struct {
 	// Time interval between candles in minutes.
+	//
+	// Default: 5.
 	Interval int32 `json:"interval,omitempty"`
 
 	// Start timestamp for the query in Unix epoch milliseconds.
@@ -860,6 +862,20 @@ func (p *GetCandlesParams) encode() url.Values {
 	return q
 }
 
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetCandlesParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetCandlesParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Interval == 0 {
+		p.Interval = 5
+	}
+}
+
 type GetCandlesResponse struct {
 	Data []Candle `json:"data"`
 }
@@ -867,6 +883,8 @@ type GetCandlesResponse struct {
 // GetOrderBookParams query parameters for: Get order book snapshot
 type GetOrderBookParams struct {
 	// Depth of the order book to return (number of levels).
+	//
+	// Default: 20.
 	Limit int32 `json:"limit,omitempty"`
 }
 
@@ -880,6 +898,20 @@ func (p *GetOrderBookParams) encode() url.Values {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
 	}
 	return q
+}
+
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetOrderBookParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetOrderBookParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 20
+	}
 }
 
 type OrdersOrderStatesItem string
@@ -923,6 +955,8 @@ type GetActiveOrdersParams struct {
 	Cursor string `json:"cursor,omitempty"`
 
 	// Maximum number of records to return.
+	//
+	// Default: 300.
 	Limit int32 `json:"limit,omitempty"`
 }
 
@@ -953,6 +987,20 @@ func (p *GetActiveOrdersParams) encode() url.Values {
 	return q
 }
 
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetActiveOrdersParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetActiveOrdersParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 300
+	}
+}
+
 type GetOrderFillsResponse struct {
 	Data []ClientTrade `json:"data"`
 }
@@ -978,6 +1026,8 @@ type GetHistoricalOrdersParams struct {
 	Cursor string `json:"cursor,omitempty"`
 
 	// Maximum number of records to return.
+	//
+	// Default: 1900.
 	Limit int32 `json:"limit,omitempty"`
 }
 
@@ -1009,6 +1059,20 @@ func (p *GetHistoricalOrdersParams) encode() url.Values {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
 	}
 	return q
+}
+
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetHistoricalOrdersParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetHistoricalOrdersParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 1900
+	}
 }
 
 type GetOrderResponse struct {
@@ -1045,6 +1109,8 @@ type GetAllTradesParams struct {
 	Cursor string `json:"cursor,omitempty"`
 
 	// Maximum number of records to return.
+	//
+	// Default: 1900.
 	Limit int32 `json:"limit,omitempty"`
 }
 
@@ -1069,6 +1135,20 @@ func (p *GetAllTradesParams) encode() url.Values {
 	return q
 }
 
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetAllTradesParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetAllTradesParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 1900
+	}
+}
+
 // GetPrivateTradesParams query parameters for: Get client trades (associated with the provided API key)
 type GetPrivateTradesParams struct {
 	// Start timestamp for the query range in Unix epoch milliseconds.
@@ -1081,6 +1161,8 @@ type GetPrivateTradesParams struct {
 	Cursor string `json:"cursor,omitempty"`
 
 	// Maximum number of records to return.
+	//
+	// Default: 1900.
 	Limit int32 `json:"limit,omitempty"`
 }
 
@@ -1103,4 +1185,18 @@ func (p *GetPrivateTradesParams) encode() url.Values {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
 	}
 	return q
+}
+
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetPrivateTradesParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetPrivateTradesParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 1900
+	}
 }

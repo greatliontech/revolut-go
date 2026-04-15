@@ -55,6 +55,12 @@ const SideSell Side = "sell"
 func (*Balance) GetAllBalances
 func (*Configuration) GetAllCurrencies
 func (*Configuration) GetAllCurrencyPairs
+func (*GetActiveOrdersParams) ApplyDefaults
+func (*GetAllTradesParams) ApplyDefaults
+func (*GetCandlesParams) ApplyDefaults
+func (*GetHistoricalOrdersParams) ApplyDefaults
+func (*GetOrderBookParams) ApplyDefaults
+func (*GetPrivateTradesParams) ApplyDefaults
 func (*MarketData) GetCandles
 func (*MarketData) GetOrderBook
 func (*MarketData) GetTicker

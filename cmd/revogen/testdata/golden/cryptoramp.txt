@@ -55,6 +55,7 @@ const PartnersPaymentApplePay PartnersPayment = "apple-pay"
 const PartnersPaymentCard PartnersPayment = "card"
 const PartnersPaymentGooglePay PartnersPayment = "google-pay"
 const PartnersPaymentRevolut PartnersPayment = "revolut"
+func (*GetOrdersParams) ApplyDefaults
 func (*Partners) GetOrder
 func (*Partners) ListBuy
 func (*Partners) ListConfig

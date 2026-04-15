@@ -405,9 +405,13 @@ type GetOrdersParams struct {
 	End time.Time `json:"end"`
 
 	// The number of orders to skip at the beginning of the range when fetching orders (sorted by creation date, oldest first).
+	//
+	// Default: 0.
 	Skip int32 `json:"skip,omitempty"`
 
 	// The maximum number of orders to fetch from the given range.
+	//
+	// Default: 100.
 	Limit int32 `json:"limit,omitempty"`
 }
 
@@ -430,6 +434,23 @@ func (p *GetOrdersParams) encode() url.Values {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
 	}
 	return q
+}
+
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetOrdersParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetOrdersParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Skip == 0 {
+		p.Skip = 0
+	}
+	if p.Limit == 0 {
+		p.Limit = 100
+	}
 }
 
 // GetOrdersParams2 query parameters for: Retrieve an order

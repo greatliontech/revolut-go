@@ -3015,6 +3015,8 @@ type WebhookSigningSecretRotateRequest struct {
 // GetAccountingCategoriesParams query parameters for: Retrieve a list of accounting categories
 type GetAccountingCategoriesParams struct {
 	// The page size, that is, the maximum number of accounting categories to return per page.
+	//
+	// Default: 100.
 	Limit int `json:"limit,omitempty"`
 
 	PageToken PageToken `json:"page_token,omitempty"`
@@ -3035,6 +3037,20 @@ func (p *GetAccountingCategoriesParams) encode() url.Values {
 	return q
 }
 
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetAccountingCategoriesParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetAccountingCategoriesParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 100
+	}
+}
+
 type GetAccountingCategoriesResponse struct {
 	// The list of accounting categories.
 	AccountingCategories []AccountingCategoryResponse `json:"accounting_categories"`
@@ -3046,9 +3062,13 @@ type GetAccountingCategoriesResponse struct {
 // GetCardInvitationsParams query parameters for: Retrieve a list of card invitations
 type GetCardInvitationsParams struct {
 	// Retrieves only card invitations created before this timestamp (`created_at` < `created_before`).
+	//
+	// Default: "the date-time at which the request is made".
 	CreatedBefore time.Time `json:"created_before,omitempty"`
 
 	// The maximum number of card invitations to return per page.
+	//
+	// Default: 100.
 	Limit json.Number `json:"limit,omitempty"`
 
 	// Retrieves card invitations filtered by the specified state(s).
@@ -3071,6 +3091,20 @@ func (p *GetCardInvitationsParams) encode() url.Values {
 		q.Add("state", string(v))
 	}
 	return q
+}
+
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetCardInvitationsParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetCardInvitationsParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == "" {
+		p.Limit = json.Number("100")
+	}
 }
 
 // CardInvitationsBodySpendingPeriodEndDateAction the action to take after the end date of the spending period.
@@ -3141,9 +3175,13 @@ type CardInvitationsBody struct {
 // GetCardsParams query parameters for: Retrieve a list of cards
 type GetCardsParams struct {
 	// Retrieves cards with `created_at` < `created_before`.
+	//
+	// Default: "the date-time at which the request is made".
 	CreatedBefore time.Time `json:"created_before,omitempty"`
 
 	// The maximum number of cards to return per page.
+	//
+	// Default: 100.
 	Limit json.Number `json:"limit,omitempty"`
 }
 
@@ -3160,6 +3198,20 @@ func (p *GetCardsParams) encode() url.Values {
 		q.Set("limit", string(p.Limit))
 	}
 	return q
+}
+
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetCardsParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetCardsParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == "" {
+		p.Limit = json.Number("100")
+	}
 }
 
 // CardsBodyProduct the card product offered by the card provider for this card.
@@ -3276,9 +3328,13 @@ type GetCounterpartiesParams struct {
 	BIC string `json:"bic,omitempty"`
 
 	// Retrieves counterparties with `created_at` < `created_before`.
+	//
+	// Default: "the date-time at which the request is made".
 	CreatedBefore time.Time `json:"created_before,omitempty"`
 
 	// The maximum number of counterparties returned per page.
+	//
+	// Default: 100.
 	Limit int `json:"limit,omitempty"`
 }
 
@@ -3310,6 +3366,20 @@ func (p *GetCounterpartiesParams) encode() url.Values {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
 	}
 	return q
+}
+
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetCounterpartiesParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetCounterpartiesParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 100
+	}
 }
 
 type ExpensesState string
@@ -3345,6 +3415,8 @@ type GetExpensesParams struct {
 	To time.Time `json:"to,omitempty"`
 
 	// The maximum number of the expenses to retrieve per page.
+	//
+	// Default: 100.
 	Count int `json:"count,omitempty"`
 
 	// Retrieves the expenses in the specified state.
@@ -3378,9 +3450,25 @@ func (p *GetExpensesParams) encode() url.Values {
 	return q
 }
 
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetExpensesParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetExpensesParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Count == 0 {
+		p.Count = 100
+	}
+}
+
 // GetLabelGroupsParams query parameters for: Retrieve a list of label groups
 type GetLabelGroupsParams struct {
 	// The page size, that is, the maximum number of label groups to return per page.
+	//
+	// Default: 100.
 	Limit int `json:"limit,omitempty"`
 
 	PageToken PageToken `json:"page_token,omitempty"`
@@ -3401,6 +3489,20 @@ func (p *GetLabelGroupsParams) encode() url.Values {
 	return q
 }
 
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetLabelGroupsParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetLabelGroupsParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 100
+	}
+}
+
 type GetLabelGroupsResponse struct {
 	// List of label groups.
 	LabelGroups []LabelGroupResponse `json:"label_groups"`
@@ -3412,6 +3514,8 @@ type GetLabelGroupsResponse struct {
 // GetLabelsParams query parameters for: Retrieve a list of labels from a label group
 type GetLabelsParams struct {
 	// The page size, that is, the maximum number of labels to return per page.
+	//
+	// Default: 100.
 	Limit int `json:"limit,omitempty"`
 
 	PageToken PageToken `json:"page_token,omitempty"`
@@ -3432,6 +3536,20 @@ func (p *GetLabelsParams) encode() url.Values {
 	return q
 }
 
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetLabelsParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetLabelsParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 100
+	}
+}
+
 type GetLabelsResponse struct {
 	// List of labels in the specified group
 	Labels []LabelResponse `json:"labels"`
@@ -3446,9 +3564,13 @@ type GetPayoutLinksParams struct {
 	State []PayoutLinkState `json:"state,omitempty"`
 
 	// Retrieves links with `created_at` < `created_before`.
+	//
+	// Default: "the date-time at which the request is made".
 	CreatedBefore time.Time `json:"created_before,omitempty"`
 
 	// The maximum number of links returned per page.
+	//
+	// Default: 100.
 	Limit int `json:"limit,omitempty"`
 }
 
@@ -3470,12 +3592,28 @@ func (p *GetPayoutLinksParams) encode() url.Values {
 	return q
 }
 
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetPayoutLinksParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetPayoutLinksParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 100
+	}
+}
+
 // GetRateParams query parameters for: Get an exchange rate
 type GetRateParams struct {
 	// The currency that you exchange from in [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) format.
 	From Currency `json:"from"`
 
 	// The amount of the currency to exchange **from**. The default value is `1.00`.
+	//
+	// Default: "1.00".
 	Amount json.Number `json:"amount,omitempty"`
 
 	// The currency that you exchange to in [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) format.
@@ -3500,12 +3638,30 @@ func (p *GetRateParams) encode() url.Values {
 	return q
 }
 
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetRateParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetRateParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Amount == "" {
+		p.Amount = "1.00"
+	}
+}
+
 // GetRolesParams query parameters for: Retrieve team roles
 type GetRolesParams struct {
 	// Retrieves roles with `created_at` < `created_before`.
+	//
+	// Default: "the date-time at which the request is made".
 	CreatedBefore time.Time `json:"created_before,omitempty"`
 
 	// The maximum number of roles returned per page.
+	//
+	// Default: 100.
 	Limit json.Number `json:"limit,omitempty"`
 }
 
@@ -3522,6 +3678,20 @@ func (p *GetRolesParams) encode() url.Values {
 		q.Set("limit", string(p.Limit))
 	}
 	return q
+}
+
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetRolesParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetRolesParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == "" {
+		p.Limit = json.Number("100")
+	}
 }
 
 // SimulationsBodyState the state to which you want to set the top-up transaction.
@@ -3610,6 +3780,8 @@ type SimulateTransferStateUpdateResponse struct {
 // GetTaxRatesParams query parameters for: Retrieve a list of tax rates
 type GetTaxRatesParams struct {
 	// The page size, that is, the maximum number of tax rates to return per page.
+	//
+	// Default: 100.
 	Limit int `json:"limit,omitempty"`
 
 	PageToken PageToken `json:"page_token,omitempty"`
@@ -3630,6 +3802,20 @@ func (p *GetTaxRatesParams) encode() url.Values {
 	return q
 }
 
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetTaxRatesParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetTaxRatesParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 100
+	}
+}
+
 type GetTaxRatesResponse struct {
 	// Cursor for the next page.
 	NextPageToken PageToken `json:"next_page_token,omitempty"`
@@ -3640,9 +3826,13 @@ type GetTaxRatesResponse struct {
 // GetTeamMembersParams query parameters for: Retrieve a list of team members
 type GetTeamMembersParams struct {
 	// Retrieves team members with `created_at` < `created_before`.
+	//
+	// Default: "the date-time at which the request is made".
 	CreatedBefore time.Time `json:"created_before,omitempty"`
 
 	// The maximum number of team members returned per page.
+	//
+	// Default: 100.
 	Limit json.Number `json:"limit,omitempty"`
 }
 
@@ -3659,6 +3849,20 @@ func (p *GetTeamMembersParams) encode() url.Values {
 		q.Set("limit", string(p.Limit))
 	}
 	return q
+}
+
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetTeamMembersParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetTeamMembersParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == "" {
+		p.Limit = json.Number("100")
+	}
 }
 
 type TeamMembersBody struct {
@@ -3716,12 +3920,16 @@ type GetTransactionsParams struct {
 	From time.Time `json:"from,omitempty"`
 
 	// The date and time you retrieve the historical transactions to, excluding this date-time.
+	//
+	// Default: "the date-time at which the request is made".
 	To time.Time `json:"to,omitempty"`
 
 	// The ID of the account
 	Account string `json:"account,omitempty"`
 
 	// The maximum number of the historical transactions to retrieve per page.
+	//
+	// Default: 100.
 	Count int `json:"count,omitempty"`
 
 	// The type of the historical transactions to retrieve.
@@ -3752,12 +3960,30 @@ func (p *GetTransactionsParams) encode() url.Values {
 	return q
 }
 
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetTransactionsParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetTransactionsParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Count == 0 {
+		p.Count = 100
+	}
+}
+
 // GetFailedWebhookEventsParams query parameters for: Retrieve a list of failed webhook events
 type GetFailedWebhookEventsParams struct {
 	// The maximum number of events returned per page.
+	//
+	// Default: 100.
 	Limit int `json:"limit,omitempty"`
 
 	// Retrieves events with `created_at` < `created_before`.
+	//
+	// Default: "the date-time at which the request is made".
 	CreatedBefore time.Time `json:"created_before,omitempty"`
 }
 
@@ -3774,4 +4000,18 @@ func (p *GetFailedWebhookEventsParams) encode() url.Values {
 		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
 	}
 	return q
+}
+
+// ApplyDefaults sets the spec-declared default value on any
+// field of GetFailedWebhookEventsParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *GetFailedWebhookEventsParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 100
+	}
 }

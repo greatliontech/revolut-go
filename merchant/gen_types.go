@@ -4871,6 +4871,8 @@ const (
 // RetrieveCustomerListParams query parameters for: Retrieve a customer list
 type RetrieveCustomerListParams struct {
 	// Maximum number of records to return. Used for **pagination**.
+	//
+	// Default: 100.
 	Limit int `json:"limit,omitempty"`
 
 	// Token for retrieving the next page of results. Used for **pagination**.
@@ -4902,6 +4904,20 @@ func (p *RetrieveCustomerListParams) encode() url.Values {
 		q.Set("to", p.To.UTC().Format(time.RFC3339Nano))
 	}
 	return q
+}
+
+// ApplyDefaults sets the spec-declared default value on any
+// field of RetrieveCustomerListParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *RetrieveCustomerListParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 100
+	}
 }
 
 // RetrievePaymentMethodListParams query parameters for: Retrieve payment method list of a customer
@@ -4944,6 +4960,8 @@ const (
 // RetrieveDisputeListParams query parameters for: Retrieve a dispute list
 type RetrieveDisputeListParams struct {
 	// The maximum number of disputes returned per request.
+	//
+	// Default: 100.
 	Limit int `json:"limit,omitempty"`
 
 	// Retrieve all diputes with a `created_at` value ≥ `from_created_date`.
@@ -4981,6 +4999,20 @@ func (p *RetrieveDisputeListParams) encode() url.Values {
 		q.Add("payment_id", v)
 	}
 	return q
+}
+
+// ApplyDefaults sets the spec-declared default value on any
+// field of RetrieveDisputeListParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *RetrieveDisputeListParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 100
+	}
 }
 
 type LocationsType string
@@ -5021,6 +5053,8 @@ const (
 // RetrieveOrderListParams query parameters for: Retrieve an order list
 type RetrieveOrderListParams struct {
 	// Maximum number of records to return. Used for **pagination**.
+	//
+	// Default: 100.
 	Limit int `json:"limit,omitempty"`
 
 	// Filter records created from this date/time. Used for **filtering**.
@@ -5070,6 +5104,20 @@ func (p *RetrieveOrderListParams) encode() url.Values {
 		q.Set("location_id", p.LocationID)
 	}
 	return q
+}
+
+// ApplyDefaults sets the spec-declared default value on any
+// field of RetrieveOrderListParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *RetrieveOrderListParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 100
+	}
 }
 
 type PaymentIntentsRevolutAPIVersion string
@@ -5165,6 +5213,8 @@ const (
 // RetrieveSubscriptionPlanListParams query parameters for: Retrieve a subscription plan list
 type RetrieveSubscriptionPlanListParams struct {
 	// Maximum number of records to return. Used for **pagination**.
+	//
+	// Default: 100.
 	Limit int `json:"limit,omitempty"`
 
 	// Filter records created from this date/time. Used for **filtering**.
@@ -5198,9 +5248,25 @@ func (p *RetrieveSubscriptionPlanListParams) encode() url.Values {
 	return q
 }
 
+// ApplyDefaults sets the spec-declared default value on any
+// field of RetrieveSubscriptionPlanListParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *RetrieveSubscriptionPlanListParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 100
+	}
+}
+
 // RetrieveSubscriptionListParams query parameters for: Retrieve a subscription list
 type RetrieveSubscriptionListParams struct {
 	// Maximum number of records to return. Used for **pagination**.
+	//
+	// Default: 100.
 	Limit int `json:"limit,omitempty"`
 
 	// Filter records created from this date/time. Used for **filtering**.
@@ -5240,9 +5306,25 @@ func (p *RetrieveSubscriptionListParams) encode() url.Values {
 	return q
 }
 
+// ApplyDefaults sets the spec-declared default value on any
+// field of RetrieveSubscriptionListParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *RetrieveSubscriptionListParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 100
+	}
+}
+
 // RetrieveSubscriptionCycleListParams query parameters for: Retrieve a subscription cycle list
 type RetrieveSubscriptionCycleListParams struct {
 	// Maximum number of records to return. Used for **pagination**.
+	//
+	// Default: 100.
 	Limit int `json:"limit,omitempty"`
 
 	// Filter records created from this date/time. Used for **filtering**.
@@ -5274,6 +5356,20 @@ func (p *RetrieveSubscriptionCycleListParams) encode() url.Values {
 		q.Set("page_token", p.PageToken)
 	}
 	return q
+}
+
+// ApplyDefaults sets the spec-declared default value on any
+// field of RetrieveSubscriptionCycleListParams that is still at its Go zero value. Call
+// before encode() if you want the SDK to pre-fill defaults
+// rather than letting the server apply them. A nil receiver
+// is a no-op.
+func (p *RetrieveSubscriptionCycleListParams) ApplyDefaults() {
+	if p == nil {
+		return
+	}
+	if p.Limit == 0 {
+		p.Limit = 100
+	}
 }
 
 type TerminalsRevolutAPIVersion string
