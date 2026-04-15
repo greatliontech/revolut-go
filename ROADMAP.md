@@ -3,6 +3,35 @@
 Follow-up work identified by the post-refactor audits. Grouped by
 horizon. Items within a group are roughly ordered by value.
 
+## Done (2026-04-15 batch)
+
+Items 1–4 and 12 from the batches below were shipped as a single
+run. Summary:
+
+- **1.** Request-body receivers normalised to value shape
+  (`be09528`). Inline-object bodies no longer leak a pointer into
+  the public signature. Breaking change for callers that wrote
+  `&X{...}` on the 6 affected Business methods.
+- **2.** Expenses `ListAll` iterator emitted (`fbb0b48`). Roadmap
+  premise was partly stale: Accounting already had iterators,
+  PaymentDrafts is unpaginated by spec (no opts, no cursor) — only
+  Expenses needed the fix.
+- **3.** Required query-param validation (`371f296`). Includes the
+  `opts == nil` early-return guard when any field is required.
+- **4.** `task test:gen-all` (`9a16ba2`) — regenerates every spec
+  into `.revogen-scratch/` and runs `go vet`. Caught two header-
+  type bugs that got fixed as adjacent work (`577c955`).
+- **12.** Merchant and Open Banking wired as public clients
+  (`d3d60b5`). Follow-up fix (`5fe471f`) makes per-operation
+  server-override URLs environment-aware via a generated
+  `SandboxHostAliases` map applied by the transport.
+
+The "sandbox token bootstrap per API" bullet on item 12 was
+closed by acknowledging the asymmetry: Merchant uses a static
+secret (no bootstrap needed), Open Banking requires full TPP
+onboarding (out of scope for a CLI). `cmd/auth-bootstrap` stays
+Business-only.
+
 ## Near-term — small, high leverage
 
 ### 1. Normalise request-body receiver types
@@ -144,5 +173,6 @@ work is plumbing:
 
 ---
 
-**Suggested immediate batch: 1, 2, 3, 4 (half-day),
-followed by 12 as the visible feature push.**
+**Outstanding: 5–11.** Natural next: 8 (now possible since
+Merchant is generated), then 9–10 (both lean on the `test:gen-all`
+scaffolding), then 5–7, then 11.

@@ -14,8 +14,12 @@ const (
 
 // NewOpenBankingClient builds a Revolut Open Banking API client. Open
 // Banking uses a PSD2/FAPI-compliant OAuth2 flow with MTLS and signed
-// request objects; pass an [Authenticator] that attaches the access
-// token to each request.
+// request objects. Set up is entirely manual: the caller completes
+// TPP onboarding with Revolut, obtains eIDAS certificates, performs
+// dynamic client registration, and constructs an [Authenticator]
+// that attaches the access token and signed request objects to each
+// request. There's no analogue of cmd/auth-bootstrap for Open
+// Banking — the bootstrap steps live outside this SDK.
 //
 // Some Open Banking endpoints (under /draft-payments, for example)
 // have per-operation server overrides that embed a production host

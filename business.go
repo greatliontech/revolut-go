@@ -12,10 +12,13 @@ const (
 	businessSandboxURL    = "https://sandbox-b2b.revolut.com/api/1.0/"
 )
 
-// NewBusinessClient builds a Revolut Business API client. An
-// [Authenticator] is required — the Business API uses an OAuth flow with a
-// JWT client assertion; helpers to construct one will be added under the
-// auth package.
+// NewBusinessClient builds a Revolut Business API client. The Business
+// API uses an OAuth2 access token refreshed with a JWT client assertion
+// — wire up
+// [github.com/greatliontech/revolut-go/auth/jwt.NewAccessTokenSource]
+// to produce an [Authenticator]. Run
+// [github.com/greatliontech/revolut-go/cmd/auth-bootstrap] once per
+// sandbox account to capture the initial refresh token.
 func NewBusinessClient(auth Authenticator, opts ...Option) (*business.Client, error) {
 	if auth == nil {
 		return nil, errors.New("revolut: NewBusinessClient: auth is required")

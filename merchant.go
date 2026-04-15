@@ -12,9 +12,13 @@ const (
 	merchantSandboxURL    = "https://sandbox-merchant.revolut.com/"
 )
 
-// NewMerchantClient builds a Revolut Merchant API client. The Merchant API
-// authenticates every request with a static API-key secret — pass an
-// [Authenticator] that sets the Authorization header accordingly.
+// NewMerchantClient builds a Revolut Merchant API client. The Merchant
+// API authenticates every request with a static secret issued from the
+// Revolut Business dashboard. Wrap it in an [Authenticator] such as
+// [AuthenticatorFunc] that calls
+// req.Header.Set("Authorization", "Bearer "+secret). No consent flow,
+// no refresh token — the generated cmd/auth-bootstrap tool is not
+// needed for Merchant.
 func NewMerchantClient(auth Authenticator, opts ...Option) (*merchant.Client, error) {
 	if auth == nil {
 		return nil, errors.New("revolut: NewMerchantClient: auth is required")
