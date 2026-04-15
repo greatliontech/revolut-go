@@ -23,6 +23,7 @@ type Cards struct {
 type GetCardsParams struct {
 	// Retrieves cards with `created_at` < `created_before`.
 	CreatedBefore time.Time `json:"created_before,omitempty"`
+
 	// The maximum number of cards to return per page.
 	Limit json.Number `json:"limit,omitempty"`
 }

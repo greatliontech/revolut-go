@@ -73,7 +73,7 @@ func New(cfg Config) (*Transport, error) {
 //   - On a 2xx response with a nil dst, the body is drained and discarded.
 //   - On a non-2xx response, the returned error is *[core.APIError].
 func (t *Transport) Do(ctx context.Context, method, path string, body, dst any) error {
-	req, err := t.newRequest(ctx, method, path, body)
+	req, err := t.newJSONRequest(ctx, method, path, body)
 	if err != nil {
 		return err
 	}
@@ -96,26 +96,94 @@ func (t *Transport) Do(ctx context.Context, method, path string, body, dst any) 
 	return decodeError(resp)
 }
 
-func (t *Transport) newRequest(ctx context.Context, method, path string, body any) (*http.Request, error) {
-	u, err := t.resolve(path)
-	if err != nil {
-		return nil, err
-	}
+// RawRequest describes a non-JSON HTTP request. Exactly one of
+// JSONBody, FormBody, or RawBody may be set; the transport picks the
+// matching Content-Type automatically. Accept, when non-empty,
+// overrides the default `application/json`.
+type RawRequest struct {
+	JSONBody    any       // JSON-encoded if non-nil
+	FormBody    url.Values // application/x-www-form-urlencoded if non-nil
+	RawBody     io.Reader  // raw body bytes; requires RawContentType
+	RawContentType string
+	Accept      string
+}
+
+// DoRaw performs an HTTP request that may carry a non-JSON body and/or
+// expect a non-JSON response. The 2xx response body is returned as
+// []byte along with the response headers. Non-2xx errors are surfaced
+// as *[core.APIError] just like Do.
+func (t *Transport) DoRaw(ctx context.Context, method, path string, r RawRequest) ([]byte, http.Header, error) {
 	var reader io.Reader
+	var contentType string
+	switch {
+	case r.JSONBody != nil:
+		buf, err := json.Marshal(r.JSONBody)
+		if err != nil {
+			return nil, nil, fmt.Errorf("revolut: encode %s %s body: %w", method, path, err)
+		}
+		reader = bytes.NewReader(buf)
+		contentType = "application/json"
+	case r.FormBody != nil:
+		reader = strings.NewReader(r.FormBody.Encode())
+		contentType = "application/x-www-form-urlencoded"
+	case r.RawBody != nil:
+		reader = r.RawBody
+		contentType = r.RawContentType
+		if contentType == "" {
+			return nil, nil, errors.New("revolut: RawBody set without RawContentType")
+		}
+	}
+	accept := r.Accept
+	if accept == "" {
+		accept = "application/json"
+	}
+	req, err := t.newRequestWithBody(ctx, method, path, reader, contentType, accept)
+	if err != nil {
+		return nil, nil, err
+	}
+	resp, err := t.httpc.Do(req)
+	if err != nil {
+		return nil, nil, fmt.Errorf("revolut: %s %s: %w", method, path, err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, nil, decodeError(resp)
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, nil, fmt.Errorf("revolut: read %s %s: %w", method, path, err)
+	}
+	return body, resp.Header, nil
+}
+
+func (t *Transport) newJSONRequest(ctx context.Context, method, path string, body any) (*http.Request, error) {
+	var reader io.Reader
+	var contentType string
 	if body != nil {
 		buf, err := json.Marshal(body)
 		if err != nil {
 			return nil, fmt.Errorf("revolut: encode %s %s body: %w", method, path, err)
 		}
 		reader = bytes.NewReader(buf)
+		contentType = "application/json"
 	}
-	req, err := http.NewRequestWithContext(ctx, method, u.String(), reader)
+	return t.newRequestWithBody(ctx, method, path, reader, contentType, "application/json")
+}
+
+func (t *Transport) newRequestWithBody(ctx context.Context, method, path string, body io.Reader, contentType, accept string) (*http.Request, error) {
+	u, err := t.resolve(path)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequestWithContext(ctx, method, u.String(), body)
 	if err != nil {
 		return nil, fmt.Errorf("revolut: build request: %w", err)
 	}
-	req.Header.Set("Accept", "application/json")
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
+	if accept != "" {
+		req.Header.Set("Accept", accept)
+	}
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
 	}
 	req.Header.Set("User-Agent", t.userAgent)
 	if t.auth != nil {

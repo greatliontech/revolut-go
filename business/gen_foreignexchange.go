@@ -58,8 +58,10 @@ func (s *ForeignExchange) ListExchangeReasons(ctx context.Context) ([]ExchangeRe
 type GetRateParams struct {
 	// The currency that you exchange from in [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) format.
 	From Currency `json:"from,omitempty"`
+
 	// The amount of the currency to exchange **from**. The default value is `1.00`.
 	Amount json.Number `json:"amount,omitempty"`
+
 	// The currency that you exchange to in [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) format.
 	To Currency `json:"to,omitempty"`
 }

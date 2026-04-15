@@ -40,6 +40,23 @@ type Operation struct {
 	ParamsType   string        // Go type name holding query params (empty if none)
 	ParamsStruct *NamedType    // the synthesised params struct (or nil)
 	Pagination   *Pagination   // how to iterate; nil if the op doesn't paginate
+
+	// RequestContentType and ResponseContentType are set when the
+	// operation uses a non-JSON MIME type. Empty strings mean
+	// application/json — the default path. Recognised values:
+	//
+	//   - ""                         → application/json
+	//   - "multipart/form-data"      → multipart body; RequestType is
+	//                                   a generated struct whose
+	//                                   encoder produces the wire form
+	//   - "application/x-www-form-urlencoded"
+	//                                → RequestType is a url.Values-shaped
+	//                                   struct
+	//   - "application/octet-stream" → RequestType is io.Reader
+	//   - "text/csv", "application/pdf", etc.
+	//                                → raw []byte response
+	RequestContentType  string
+	ResponseContentType string
 }
 
 // PaginationShape classifies the paging pattern an operation exposes.
@@ -67,9 +84,11 @@ type Pagination struct {
 	ItemType string
 
 	// Cursor shape only:
-	ItemsField     string // Go field on response holding the items slice
-	NextTokenField string // Go field on response holding the next cursor
-	PageTokenParam string // Go field on params that carries the cursor back
+	ItemsField      string // Go field on response holding the items slice
+	NextTokenField  string // Go field on response holding the next cursor
+	NextTokenType   string // Go type of NextTokenField (for pointer/alias handling)
+	PageTokenParam  string // Go field on params that carries the cursor back
+	PageTokenType   string // Go type of the param field (target of assignment)
 
 	// Time-window shape only:
 	AdvanceParam    string // Go field on params to overwrite each page (e.g. "To")
@@ -127,6 +146,13 @@ type NamedType struct {
 	// KindStruct
 	Fields []*StructField
 
+	// AnyOfRequiredGroups models OpenAPI's validation-only anyOf
+	// pattern ("at least one of these field groups must be supplied").
+	// Each inner slice is a JSON-name group; the struct is valid when
+	// at least one group has every named field non-zero. Only populated
+	// for KindStruct types whose source schema declared such a pattern.
+	AnyOfRequiredGroups [][]string
+
 	// KindEnum
 	EnumBase   string   // Go base type (e.g. "string")
 	EnumValues []EnumValue
@@ -153,9 +179,23 @@ type EnumValue struct {
 
 // StructField describes one JSON field on an emitted struct.
 type StructField struct {
-	JSONName  string
-	GoName    string
-	GoType    string // full Go type expression, ready to emit ("string", "*time.Time", "[]Foo", ...)
-	Required  bool   // controls omitempty and validator hints
-	Doc       string
+	JSONName string
+	GoName   string
+	GoType   string // full Go type expression, ready to emit ("string", "*time.Time", "[]Foo", ...)
+	Required bool   // controls omitempty and validator hints
+	Doc      string
+
+	// ReadOnly marks the field as server-populated (schema `readOnly:
+	// true`). Surfaced as a godoc annotation; the generator additionally
+	// strips read-only fields from request-body variants of a schema
+	// when it can identify them.
+	ReadOnly bool
+
+	// WriteOnly marks the field as input-only (schema `writeOnly: true`)
+	// so the response-body form can omit it.
+	WriteOnly bool
+
+	// Deprecated, when non-empty, is the message surfaced via a
+	// `// Deprecated:` godoc line above the field.
+	Deprecated string
 }

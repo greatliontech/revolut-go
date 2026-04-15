@@ -86,6 +86,7 @@ func (s *WebhooksV2) Delete(ctx context.Context, webhookID string) error {
 type GetFailedWebhookEventsParams struct {
 	// The maximum number of events returned per page.
 	Limit int `json:"limit,omitempty"`
+
 	// Retrieves events with `created_at` < `created_before`.
 	CreatedBefore time.Time `json:"created_before,omitempty"`
 }

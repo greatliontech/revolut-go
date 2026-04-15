@@ -34,11 +34,50 @@ func buildSpec(doc *openapi3.T, cfg buildConfig) (*Spec, error) {
 		emitted:     map[string]bool{},
 		typesByName: map[string]*NamedType{},
 	}
+	b.collectResourceNames()
 	b.buildTypes()
 	b.buildResources()
 	b.promoteRequestBodyPointers()
 	b.buildValidators()
 	return b.spec(cfg.PackageName), nil
+}
+
+// collectResourceNames pre-computes the set of Go identifiers that
+// will be used for per-tag resource structs. buildTypes consults this
+// set so a schema whose name collides with a tag gets a `Response`
+// suffix. Without this, Go emits a "redeclared in this block" error
+// when the spec has e.g. a `Customers` tag and a `Customers` schema.
+func (b *builder) collectResourceNames() {
+	b.resourceNames = map[string]bool{}
+	for _, path := range sortedPaths(b.doc) {
+		item := b.doc.Paths.Value(path)
+		if item == nil {
+			continue
+		}
+		for _, op := range item.Operations() {
+			if op == nil {
+				continue
+			}
+			if len(b.allow) > 0 && len(op.Tags) > 0 && !b.allow[op.Tags[0]] {
+				continue
+			}
+			tag := "Untagged"
+			if len(op.Tags) > 0 {
+				tag = op.Tags[0]
+			}
+			b.resourceNames[goTypeName(tag)] = true
+		}
+	}
+}
+
+// goTypeFromSpec resolves a spec schema name to its Go type name,
+// avoiding collisions with resource struct names.
+func (b *builder) goTypeFromSpec(specName string) string {
+	name := goTypeName(specName)
+	if b.resourceNames[name] {
+		return name + "Response"
+	}
+	return name
 }
 
 // buildValidators runs the recursive required-field walker for every
@@ -107,6 +146,13 @@ type builder struct {
 	types       []*NamedType
 	typesByName map[string]*NamedType
 	emitted     map[string]bool
+
+	// resourceNames is the set of Go identifiers reserved for
+	// generated resource structs (one per OpenAPI tag). Populated
+	// before buildTypes so schema names colliding with a resource
+	// (e.g. spec tag `Customers` + schema `Customers` as a pagination
+	// wrapper) get a `Response` suffix to disambiguate.
+	resourceNames map[string]bool
 }
 
 func (b *builder) spec(pkg string) *Spec {
@@ -141,7 +187,7 @@ func (b *builder) buildTypes() {
 // the schema is not renderable as a top-level Go type (e.g. an inline
 // array type that we handle as []T at reference sites).
 func (b *builder) typeFromSchema(name string, s *openapi3.Schema) *NamedType {
-	goName := goTypeName(name)
+	goName := b.goTypeFromSpec(name)
 
 	// Discriminated union. Must be detected before allOf/object fall-through
 	// since Revolut sometimes combines a `discriminator` with an empty-properties
@@ -167,6 +213,26 @@ func (b *builder) typeFromSchema(name string, s *openapi3.Schema) *NamedType {
 				Doc:           s.Description,
 				UnionVariants: variants,
 			}
+		}
+	}
+
+	// Untagged union: oneOf (or anyOf in a type-composition sense)
+	// where every branch is a component $ref. The tag string defaults
+	// to the variant's Go name since the spec provides no explicit one.
+	if variants := b.unionFromRefBranches(s.OneOf); len(variants) > 0 {
+		return &NamedType{
+			GoName:        goName,
+			Kind:          KindUnion,
+			Doc:           s.Description,
+			UnionVariants: variants,
+		}
+	}
+	if variants := b.unionFromRefBranches(s.AnyOf); len(variants) > 0 && !isConditionalRequiredAnyOf(s) {
+		return &NamedType{
+			GoName:        goName,
+			Kind:          KindUnion,
+			Doc:           s.Description,
+			UnionVariants: variants,
 		}
 	}
 
@@ -204,37 +270,7 @@ func (b *builder) typeFromSchema(name string, s *openapi3.Schema) *NamedType {
 
 	// Object with properties → struct.
 	if schemaTypeIs(s, "object") || len(s.Properties) > 0 {
-		required := stringSet(s.Required)
-		fields := make([]*StructField, 0, len(s.Properties))
-		for _, propName := range sortedKeys(s.Properties) {
-			propRef := s.Properties[propName]
-			if propRef == nil {
-				continue
-			}
-			isRequired := required[propName]
-			goType := b.goTypePromoteEnum(goName, propName, propRef)
-			if goType == "" {
-				continue
-			}
-			// Optional time.Time becomes *time.Time so "unset" is
-			// distinguishable from the zero time.
-			if goType == "time.Time" && !isRequired {
-				goType = "*time.Time"
-			}
-			fields = append(fields, &StructField{
-				JSONName: propName,
-				GoName:   goFieldName(propName),
-				GoType:   goType,
-				Required: isRequired,
-				Doc:      firstLine(propRef.Value.Description),
-			})
-		}
-		return &NamedType{
-			GoName: goName,
-			Kind:   KindStruct,
-			Doc:    s.Description,
-			Fields: fields,
-		}
+		return b.structFromSchema(goName, s)
 	}
 
 	// Primitive aliases.
@@ -285,10 +321,13 @@ func (b *builder) goTypeExpr(ref *openapi3.SchemaRef) string {
 	if name := schemaRefName(ref); name != "" {
 		if target := b.doc.Components.Schemas[name]; target != nil && target.Value != nil {
 			if schemaTypeIs(target.Value, "array") {
+				if inlineName, ok := b.maybePromoteArrayItemObject(name, target.Value); ok {
+					return "[]" + inlineName
+				}
 				return "[]" + b.goTypeExpr(target.Value.Items)
 			}
 		}
-		return goTypeName(name)
+		return b.goTypeFromSpec(name)
 	}
 	s := ref.Value
 	if s == nil {
@@ -298,6 +337,9 @@ func (b *builder) goTypeExpr(ref *openapi3.SchemaRef) string {
 	case schemaTypeIs(s, "string"):
 		if isDateTimeFormat(s.Format) {
 			return "time.Time"
+		}
+		if s.Format == "binary" {
+			return "io.Reader"
 		}
 		return "string"
 	case schemaTypeIs(s, "integer"):
@@ -328,10 +370,11 @@ func (b *builder) detectPagination(o *Operation) *Pagination {
 	// array-valued items field; params has a PageToken field.
 	if !strings.HasPrefix(o.ResponseType, "[]") {
 		if rt := b.typesByName[o.ResponseType]; rt != nil && rt.Kind == KindStruct {
-			var nextField, itemsField, itemType string
+			var nextField, nextType, itemsField, itemType string
 			for _, f := range rt.Fields {
 				if f.JSONName == "next_page_token" {
 					nextField = f.GoName
+					nextType = f.GoType
 					continue
 				}
 				if strings.HasPrefix(f.GoType, "[]") && itemsField == "" {
@@ -347,7 +390,9 @@ func (b *builder) detectPagination(o *Operation) *Pagination {
 							ItemType:       itemType,
 							ItemsField:     itemsField,
 							NextTokenField: nextField,
+							NextTokenType:  nextType,
 							PageTokenParam: pf.GoName,
+							PageTokenType:  pf.GoType,
 						}
 					}
 				}
@@ -415,13 +460,43 @@ func buildParamsStruct(goName string, params []*QueryParam, summary string) *Nam
 // at an operation's response (no $ref in components/schemas). Used for
 // paginated container shapes like "{ next_page_token, items[] }".
 func (b *builder) synthesizeInlineStruct(goName string, s *openapi3.Schema) *NamedType {
+	return b.structFromSchema(goName, s)
+}
+
+// structFromSchema produces a KindStruct NamedType from an OpenAPI
+// object schema. This is the single entry point for both top-level
+// component schemas and inline sub-schemas promoted to named types. It
+// honours `readOnly`, `writeOnly`, field-level `deprecated`, and
+// `nullable` on each property, and collapses `additionalProperties`
+// into a `map[string]T` when there are no fixed `properties`.
+func (b *builder) structFromSchema(goName string, s *openapi3.Schema) *NamedType {
+	var anyOfGroups [][]string
+	if isConditionalRequiredAnyOf(s) {
+		for _, br := range s.AnyOf {
+			group := append([]string(nil), br.Value.Required...)
+			sort.Strings(group)
+			anyOfGroups = append(anyOfGroups, group)
+		}
+	}
+	// Map-shaped object: no fixed properties, only additionalProperties.
+	if len(s.Properties) == 0 && hasAdditionalProperties(s) {
+		inner := additionalPropertyType(b, s)
+		return &NamedType{
+			GoName:      goName,
+			Kind:        KindAlias,
+			Doc:         s.Description,
+			AliasTarget: "map[string]" + inner,
+		}
+	}
+
 	required := stringSet(s.Required)
 	fields := make([]*StructField, 0, len(s.Properties))
 	for _, propName := range sortedKeys(s.Properties) {
 		propRef := s.Properties[propName]
-		if propRef == nil {
+		if propRef == nil || propRef.Value == nil {
 			continue
 		}
+		pv := propRef.Value
 		isRequired := required[propName]
 		goType := b.goTypePromoteEnum(goName, propName, propRef)
 		if goType == "" {
@@ -430,20 +505,154 @@ func (b *builder) synthesizeInlineStruct(goName string, s *openapi3.Schema) *Nam
 		if goType == "time.Time" && !isRequired {
 			goType = "*time.Time"
 		}
+		if pv.Nullable && !strings.HasPrefix(goType, "*") && !strings.HasPrefix(goType, "[]") && !strings.HasPrefix(goType, "map[") {
+			goType = "*" + goType
+		}
 		fields = append(fields, &StructField{
-			JSONName: propName,
-			GoName:   goFieldName(propName),
-			GoType:   goType,
-			Required: isRequired,
-			Doc:      firstLine(propRef.Value.Description),
+			JSONName:   propName,
+			GoName:     goFieldName(propName),
+			GoType:     goType,
+			Required:   isRequired,
+			Doc:        firstLine(pv.Description),
+			ReadOnly:   pv.ReadOnly,
+			WriteOnly:  pv.WriteOnly,
+			Deprecated: deprecationMessage(pv),
 		})
 	}
 	return &NamedType{
-		GoName: goName,
-		Kind:   KindStruct,
-		Doc:    s.Description,
-		Fields: fields,
+		GoName:              goName,
+		Kind:                KindStruct,
+		Doc:                 s.Description,
+		Fields:              fields,
+		AnyOfRequiredGroups: anyOfGroups,
 	}
+}
+
+// unionFromRefBranches converts a oneOf/anyOf slice whose every branch
+// is a simple component $ref into an ordered list of UnionVariants.
+// Returns nil if any branch is inline (then we lack a stable name for
+// the variant) or if the slice is empty.
+func (b *builder) unionFromRefBranches(branches openapi3.SchemaRefs) []UnionVariant {
+	if len(branches) == 0 {
+		return nil
+	}
+	out := make([]UnionVariant, 0, len(branches))
+	for _, br := range branches {
+		if br == nil {
+			return nil
+		}
+		name := schemaRefName(br)
+		if name == "" {
+			return nil
+		}
+		out = append(out, UnionVariant{Tag: name, GoName: b.goTypeFromSpec(name)})
+	}
+	return out
+}
+
+// isConditionalRequiredAnyOf detects OpenAPI's validation-only anyOf
+// pattern: every branch is an inline schema with only a `required:`
+// list (and no type / properties / refs of its own). These describe
+// "at least one of these field groups must be supplied", not a type
+// union. Callers use this to decide whether to emit a union or lift
+// the constraint into the parent struct's validator.
+func isConditionalRequiredAnyOf(s *openapi3.Schema) bool {
+	if len(s.AnyOf) == 0 {
+		return false
+	}
+	for _, br := range s.AnyOf {
+		if br == nil || br.Ref != "" || br.Value == nil {
+			return false
+		}
+		v := br.Value
+		if len(v.Required) == 0 {
+			return false
+		}
+		if v.Type != nil || len(v.Properties) > 0 || len(v.AllOf) > 0 ||
+			len(v.OneOf) > 0 || len(v.AnyOf) > 0 || v.Items != nil {
+			return false
+		}
+	}
+	return true
+}
+
+// sanitisePath reduces a spec path template to a set of word-safe
+// tokens suitable for feeding into goTypeName — strip curly params
+// and leading slash, collapse separators.
+func sanitisePath(p string) string {
+	p = strings.TrimPrefix(p, "/")
+	var out strings.Builder
+	skip := false
+	for _, r := range p {
+		switch {
+		case r == '{':
+			skip = true
+		case r == '}':
+			skip = false
+		case skip:
+			// inside {param}: drop
+		default:
+			out.WriteRune(r)
+		}
+	}
+	return out.String()
+}
+
+// pickRawResponseContent returns the preferred non-JSON response
+// MIME type for an operation's content map, or "" when none of the
+// known raw types are declared. Preference order: text/csv,
+// application/pdf, text/plain, then any other text/* entry.
+func pickRawResponseContent(content openapi3.Content) string {
+	for _, preferred := range []string{"text/csv", "application/pdf", "text/plain", "application/octet-stream", "*/*"} {
+		if _, ok := content[preferred]; ok {
+			return preferred
+		}
+	}
+	for mime := range content {
+		if strings.HasPrefix(mime, "text/") || strings.HasPrefix(mime, "image/") || strings.HasPrefix(mime, "application/") {
+			return mime
+		}
+	}
+	return ""
+}
+
+// hasAdditionalProperties reports whether a schema's
+// `additionalProperties` is a non-trivial declaration — either a
+// typed sub-schema or an explicit `true`. `false` and the default
+// behaviour (absent) both yield false.
+func hasAdditionalProperties(s *openapi3.Schema) bool {
+	if s.AdditionalProperties.Schema != nil {
+		return true
+	}
+	if s.AdditionalProperties.Has != nil && *s.AdditionalProperties.Has {
+		return true
+	}
+	return false
+}
+
+// additionalPropertyType returns the Go type expression for the
+// value type of a map-shaped schema.
+func additionalPropertyType(b *builder, s *openapi3.Schema) string {
+	if sub := s.AdditionalProperties.Schema; sub != nil {
+		if t := b.resolveRefTypeExpr(sub); t != "" {
+			return t
+		}
+	}
+	return "any"
+}
+
+// deprecationMessage returns the text for a `// Deprecated:` comment
+// if the schema is marked `deprecated: true`. A schema's description
+// often doubles as the deprecation reason, but the flag alone is
+// enough to surface the annotation.
+func deprecationMessage(s *openapi3.Schema) string {
+	if !s.Deprecated {
+		return ""
+	}
+	if s.Description != "" {
+		return firstLine(s.Description)
+	}
+	return "retained for backwards compatibility; the API may remove it."
 }
 
 // mergeAllOf flattens an allOf composition into a single inline object
@@ -564,8 +773,13 @@ func (b *builder) promoteInlineObject(parentGoName, propName string, ref *openap
 	if !schemaTypeIs(v, "object") && len(v.Properties) == 0 {
 		return "", false
 	}
+	// Map-shaped object: type: object with no fixed properties but
+	// additionalProperties (typed or `true`). Emit `map[string]T`
+	// directly without synthesising a named type.
 	if len(v.Properties) == 0 {
-		// type: object with no properties — leave to goTypeExpr fallback.
+		if hasAdditionalProperties(v) {
+			return "map[string]" + additionalPropertyType(b, v), true
+		}
 		return "", false
 	}
 	name := parentGoName + goTypeName(propName)
@@ -626,15 +840,39 @@ func (b *builder) resolveRefTypeExprRaw(ref *openapi3.SchemaRef) string {
 	if name := schemaRefName(ref); name != "" {
 		if target := b.doc.Components.Schemas[name]; target != nil && target.Value != nil {
 			if schemaTypeIs(target.Value, "array") {
+				if inlineName, ok := b.maybePromoteArrayItemObject(name, target.Value); ok {
+					return "[]" + inlineName
+				}
 				return "[]" + b.resolveRefTypeExprRaw(target.Value.Items)
 			}
 		}
-		return goTypeName(name)
+		return b.goTypeFromSpec(name)
 	}
 	if ref.Value != nil && schemaTypeIs(ref.Value, "array") {
 		return "[]" + b.resolveRefTypeExprRaw(ref.Value.Items)
 	}
 	return b.goTypeExpr(ref)
+}
+
+// maybePromoteArrayItemObject synthesizes a named type for the items
+// of a named array schema when those items are an inline object. Uses
+// `<ContainerName>Item` as the generated Go name. Returns (name, true)
+// when a type was produced, ("", false) when the items are a $ref or
+// primitive and need no synthesis.
+func (b *builder) maybePromoteArrayItemObject(containerName string, arr *openapi3.Schema) (string, bool) {
+	items := arr.Items
+	if items == nil || items.Ref != "" || items.Value == nil {
+		return "", false
+	}
+	iv := items.Value
+	if !schemaTypeIs(iv, "object") || len(iv.Properties) == 0 {
+		return "", false
+	}
+	name := goTypeName(containerName) + "Item"
+	if b.typesByName[name] == nil {
+		b.addType(b.synthesizeInlineStruct(name, iv))
+	}
+	return name, true
 }
 
 func (b *builder) addType(t *NamedType) {
@@ -727,22 +965,45 @@ func (b *builder) buildOperation(httpMethod, path string, op *openapi3.Operation
 		// header/cookie params are ignored.
 	}
 
-	// Request body.
+	// Request body. Look up MIME types by exact key rather than
+	// Content.Get, which falls back to `*/*` when a specific MIME is
+	// absent — that would mask non-JSON bodies declared only as `*/*`
+	// and accidentally treat them as JSON.
 	if op.RequestBody != nil && op.RequestBody.Value != nil {
-		if mt := op.RequestBody.Value.Content.Get("application/json"); mt != nil {
-			o.RequestType = b.resolveRefTypeExpr(mt.Schema)
+		content := op.RequestBody.Value.Content
+		switch {
+		case content["application/json"] != nil:
+			o.RequestType = b.resolveRefTypeExpr(content["application/json"].Schema)
+		case content["application/x-www-form-urlencoded"] != nil:
+			o.RequestContentType = "application/x-www-form-urlencoded"
+			o.RequestType = b.resolveRefTypeExpr(content["application/x-www-form-urlencoded"].Schema)
+		case content["multipart/form-data"] != nil:
+			o.RequestContentType = "multipart/form-data"
+			o.RequestType = b.resolveRefTypeExpr(content["multipart/form-data"].Schema)
+		case content["application/octet-stream"] != nil:
+			o.RequestContentType = "application/octet-stream"
+			o.RequestType = "io.Reader"
 		}
 	}
 
-	// 2xx response.
+	// 2xx response. Same precedence: JSON first, then text/* and
+	// application/pdf (both returned to the caller as []byte), then
+	// octet-stream as an io.ReadCloser is out of scope — callers can
+	// reach for Transport.DoRaw directly for that.
 	if op.Responses != nil {
-		for _, code := range []string{"200", "201"} {
+		for _, code := range []string{"200", "201", "204"} {
 			rr := op.Responses.Value(code)
 			if rr == nil || rr.Value == nil {
 				continue
 			}
-			mt := rr.Value.Content.Get("application/json")
+			mt := rr.Value.Content["application/json"]
 			if mt == nil {
+				// Non-JSON responses surface as []byte.
+				if alt := pickRawResponseContent(rr.Value.Content); alt != "" {
+					o.ResponseType = "[]byte"
+					o.ResponseContentType = alt
+					break
+				}
 				continue
 			}
 			o.ResponseType = b.resolveRefTypeExpr(mt.Schema)
@@ -773,10 +1034,16 @@ func (b *builder) buildOperation(httpMethod, path string, op *openapi3.Operation
 	o.DocURL = b.docURL(op.OperationID)
 
 	// Synthesise a <OperationID>Params struct for operations that have
-	// any query parameters. Colocated with the resource file at emit
-	// time so users can discover it alongside the method.
+	// any query parameters. The OperationID is the preferred source,
+	// but when a spec leaves it blank we fall back to a name derived
+	// from the HTTP method plus a sanitised path so two parameterless
+	// operations on the same resource don't both become `Params`.
 	if len(o.QueryParams) > 0 {
-		o.ParamsType = goTypeName(op.OperationID) + "Params"
+		base := goTypeName(op.OperationID)
+		if base == "" {
+			base = goTypeName(httpMethod) + goTypeName(sanitisePath(path))
+		}
+		o.ParamsType = base + "Params"
 		o.ParamsStruct = buildParamsStruct(o.ParamsType, o.QueryParams, op.Summary)
 	}
 
@@ -793,6 +1060,40 @@ func (b *builder) walkRequired(t *NamedType, exprPrefix, jsonPathPrefix string, 
 		return nil
 	}
 	var out []FieldCheck
+	// Emit the "at least one required group" check from an
+	// OpenAPI conditional-required anyOf, if this struct has one.
+	// See isConditionalRequiredAnyOf for the pattern.
+	if len(t.AnyOfRequiredGroups) > 0 {
+		jsonByName := map[string]*StructField{}
+		for _, f := range t.Fields {
+			jsonByName[f.JSONName] = f
+		}
+		var groupExprs []string
+		for _, group := range t.AnyOfRequiredGroups {
+			parts := make([]string, 0, len(group))
+			for _, jsonName := range group {
+				f := jsonByName[jsonName]
+				if f == nil {
+					continue
+				}
+				cond := unsetCond(f.GoType, exprPrefix+"."+f.GoName, b.typesByName)
+				if cond == "" {
+					continue
+				}
+				parts = append(parts, "!("+cond+")")
+			}
+			if len(parts) == 0 {
+				continue
+			}
+			groupExprs = append(groupExprs, "("+strings.Join(parts, " && ")+")")
+		}
+		if len(groupExprs) > 0 {
+			out = append(out, FieldCheck{
+				Cond:    "!(" + strings.Join(groupExprs, " || ") + ")",
+				Message: b.cfg.ErrPrefix + ": " + jsonPathPrefix + " requires one of the anyOf groups to be satisfied",
+			})
+		}
+	}
 	for _, f := range t.Fields {
 		if !f.Required {
 			continue

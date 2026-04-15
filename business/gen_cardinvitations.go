@@ -22,8 +22,10 @@ type CardInvitations struct {
 type GetCardInvitationsParams struct {
 	// Retrieves only card invitations created before this timestamp (`created_at` < `created_before`).
 	CreatedBefore time.Time `json:"created_before,omitempty"`
+
 	// The maximum number of card invitations to return per page.
 	Limit json.Number `json:"limit,omitempty"`
+
 	// Retrieves card invitations filtered by the specified state(s).
 	State []CardInvitationState `json:"state,omitempty"`
 }

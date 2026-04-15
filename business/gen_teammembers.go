@@ -23,6 +23,7 @@ type TeamMembers struct {
 type GetRolesParams struct {
 	// Retrieves roles with `created_at` < `created_before`.
 	CreatedBefore time.Time `json:"created_before,omitempty"`
+
 	// The maximum number of roles returned per page.
 	Limit json.Number `json:"limit,omitempty"`
 }
@@ -93,6 +94,7 @@ func (s *TeamMembers) ListRolesAll(ctx context.Context, opts *GetRolesParams) it
 type GetTeamMembersParams struct {
 	// Retrieves team members with `created_at` < `created_before`.
 	CreatedBefore time.Time `json:"created_before,omitempty"`
+
 	// The maximum number of team members returned per page.
 	Limit json.Number `json:"limit,omitempty"`
 }

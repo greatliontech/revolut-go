@@ -22,12 +22,16 @@ type Expenses struct {
 type GetExpensesParams struct {
 	// The date and time to retrieve the expenses from, including this date-time.
 	From time.Time `json:"from,omitempty"`
+
 	// The date and time to retrieve the expenses to, excluding this date-time.
 	To time.Time `json:"to,omitempty"`
+
 	// The maximum number of the expenses to retrieve per page.
 	Count int `json:"count,omitempty"`
+
 	// Retrieves the expenses in the specified state.
 	State string `json:"state,omitempty"`
+
 	// The type of the transaction related to the expense.
 	TransactionType string `json:"transaction_type,omitempty"`
 }
@@ -84,19 +88,22 @@ func (s *Expenses) Get(ctx context.Context, expenseID string) (*Expense, error) 
 	return &out, nil
 }
 
-// GetContent retrieve a receipt related to an expense
+// ListContent retrieve a receipt related to an expense
 //
 // Docs: https://developer.revolut.com/docs/business/get-expense-receipt
-func (s *Expenses) GetContent(ctx context.Context, expenseID string, receiptID string) (*string, error) {
+func (s *Expenses) ListContent(ctx context.Context, expenseID string, receiptID string) ([]byte, error) {
 	if expenseID == "" {
 		return nil, errors.New("business: expense_id is required")
 	}
 	if receiptID == "" {
 		return nil, errors.New("business: receipt_id is required")
 	}
-	var out string
-	if err := s.t.Do(ctx, http.MethodGet, "expenses/"+url.PathEscape(expenseID)+"/receipts/"+url.PathEscape(receiptID)+"/content", nil, &out); err != nil {
+	r := transport.RawRequest{
+		Accept: "*/*",
+	}
+	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "expenses/"+url.PathEscape(expenseID)+"/receipts/"+url.PathEscape(receiptID)+"/content", r)
+	if err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return body, nil
 }

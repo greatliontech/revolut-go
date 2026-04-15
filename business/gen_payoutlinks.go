@@ -23,8 +23,10 @@ type PayoutLinks struct {
 type GetPayoutLinksParams struct {
 	// Retrieves links in the specified state(s). Possible states are:
 	State []PayoutLinkState `json:"state,omitempty"`
+
 	// Retrieves links with `created_at` < `created_before`.
 	CreatedBefore time.Time `json:"created_before,omitempty"`
+
 	// The maximum number of links returned per page.
 	Limit int `json:"limit,omitempty"`
 }

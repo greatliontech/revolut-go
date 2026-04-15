@@ -35,16 +35,22 @@ func (s *Counterparties) AccountNameValidation(ctx context.Context, req Validate
 type GetCounterpartiesParams struct {
 	// The name of the counterparty to retrieve. It does not need to be an exact match, partial match is also supported.
 	Name string `json:"name,omitempty"`
+
 	// The exact account number of the counterparty to retrieve.
 	AccountNo string `json:"account_no,omitempty"`
+
 	// The exact sort code of the counterparty to retrieve.
 	SortCode string `json:"sort_code,omitempty"`
+
 	// The exact IBAN of the counterparty to retrieve.
 	IBAN string `json:"iban,omitempty"`
+
 	// The exact BIC of the counterparty to retrieve.
 	BIC string `json:"bic,omitempty"`
+
 	// Retrieves counterparties with `created_at` < `created_before`.
 	CreatedBefore time.Time `json:"created_before,omitempty"`
+
 	// The maximum number of counterparties returned per page.
 	Limit int `json:"limit,omitempty"`
 }

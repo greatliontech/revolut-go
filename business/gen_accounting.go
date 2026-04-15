@@ -21,7 +21,8 @@ type Accounting struct {
 // GetAccountingCategoriesParams query parameters for: Retrieve a list of accounting categories
 type GetAccountingCategoriesParams struct {
 	// The page size, that is, the maximum number of accounting categories to return per page.
-	Limit     int       `json:"limit,omitempty"`
+	Limit int `json:"limit,omitempty"`
+
 	PageToken PageToken `json:"page_token,omitempty"`
 }
 
@@ -141,7 +142,8 @@ func (s *Accounting) DeleteCategory(ctx context.Context, accountingCategoryID st
 // GetLabelGroupsParams query parameters for: Retrieve a list of label groups
 type GetLabelGroupsParams struct {
 	// The page size, that is, the maximum number of label groups to return per page.
-	Limit     int       `json:"limit,omitempty"`
+	Limit int `json:"limit,omitempty"`
+
 	PageToken PageToken `json:"page_token,omitempty"`
 }
 
@@ -264,7 +266,8 @@ func (s *Accounting) DeleteLabelGroup(ctx context.Context, groupID string) error
 // GetLabelsParams query parameters for: Retrieve a list of labels from a label group
 type GetLabelsParams struct {
 	// The page size, that is, the maximum number of labels to return per page.
-	Limit     int       `json:"limit,omitempty"`
+	Limit int `json:"limit,omitempty"`
+
 	PageToken PageToken `json:"page_token,omitempty"`
 }
 
@@ -387,7 +390,8 @@ func (s *Accounting) DeleteLabel(ctx context.Context, groupID string, labelID st
 // GetTaxRatesParams query parameters for: Retrieve a list of tax rates
 type GetTaxRatesParams struct {
 	// The page size, that is, the maximum number of tax rates to return per page.
-	Limit     int       `json:"limit,omitempty"`
+	Limit int `json:"limit,omitempty"`
+
 	PageToken PageToken `json:"page_token,omitempty"`
 }
 

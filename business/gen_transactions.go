@@ -58,12 +58,16 @@ func (s *Transactions) Get(ctx context.Context, id string, opts *GetTransactionP
 type GetTransactionsParams struct {
 	// The date and time you retrieve the historical transactions from, including this date-time.
 	From time.Time `json:"from,omitempty"`
+
 	// The date and time you retrieve the historical transactions to, excluding this date-time.
 	To time.Time `json:"to,omitempty"`
+
 	// The ID of the account
 	Account string `json:"account,omitempty"`
+
 	// The maximum number of the historical transactions to retrieve per page.
 	Count int `json:"count,omitempty"`
+
 	// The type of the historical transactions to retrieve.
 	Type TransactionType `json:"type,omitempty"`
 }
