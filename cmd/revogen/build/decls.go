@@ -57,6 +57,14 @@ func (b *Builder) declFromSchema(goName string, s *openapi3.Schema) *ir.Decl {
 		}
 	}
 
+	// Unions (discriminated, untagged oneOf/anyOf with named-only
+	// branches) classify before the enum / object / alias paths so
+	// schemas that carry both a discriminator and an empty type tag
+	// don't accidentally fall through to the alias fallback.
+	if d := b.unionDeclFromSchema(goName, s); d != nil {
+		return d
+	}
+
 	// Enums take precedence over primitive aliases: a `type: string,
 	// enum: [...]` schema is a named enum, not an alias for string.
 	if len(s.Enum) > 0 {
