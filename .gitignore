@@ -1,0 +1,10 @@
+# Never commit secrets or local env files.
+*.pem
+*.key
+*.cer
+*.crt
+*.p12
+*.pfx
+.env
+.env.*
+!.env.example

@@ -43,6 +43,16 @@ tasks:
       - task: vet
       - task: test
 
+  auth:bootstrap:
+    desc: Run the one-time Revolut Business OAuth consent flow and capture a refresh token.
+    summary: |
+      Requires --client-id (pass as CLI_ARGS='--client-id XXX'). The tool
+      generates a local TLS cert on first run, serves 127.0.0.1:8787, opens
+      the consent URL, captures the code from the redirect, exchanges it
+      for tokens, and writes them to ~/.config/revolut-go/sandbox/tokens.json.
+    cmds:
+      - go run ./cmd/auth-bootstrap {{.CLI_ARGS}}
+
   specs:update:
     desc: Fetch vendored OpenAPI specs from the pinned upstream tag.
     cmds:
