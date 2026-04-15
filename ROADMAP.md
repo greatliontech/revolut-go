@@ -3,34 +3,71 @@
 Follow-up work identified by the post-refactor audits. Grouped by
 horizon. Items within a group are roughly ordered by value.
 
-## Done (2026-04-15 batch)
+## Done
 
-Items 1–4 and 12 from the batches below were shipped as a single
-run. Summary:
+All ROADMAP items either shipped or explicitly closed.
+
+**Near-term (items 1–4):**
 
 - **1.** Request-body receivers normalised to value shape
   (`be09528`). Inline-object bodies no longer leak a pointer into
-  the public signature. Breaking change for callers that wrote
-  `&X{...}` on the 6 affected Business methods.
+  the public signature.
 - **2.** Expenses `ListAll` iterator emitted (`fbb0b48`). Roadmap
   premise was partly stale: Accounting already had iterators,
-  PaymentDrafts is unpaginated by spec (no opts, no cursor) — only
-  Expenses needed the fix.
-- **3.** Required query-param validation (`371f296`). Includes the
+  PaymentDrafts is unpaginated by spec — only Expenses needed
+  the fix.
+- **3.** Required query-param validation (`371f296`). Emits
   `opts == nil` early-return guard when any field is required.
 - **4.** `task test:gen-all` (`9a16ba2`) — regenerates every spec
   into `.revogen-scratch/` and runs `go vet`. Caught two header-
-  type bugs that got fixed as adjacent work (`577c955`).
-- **12.** Merchant and Open Banking wired as public clients
-  (`d3d60b5`). Follow-up fix (`5fe471f`) makes per-operation
-  server-override URLs environment-aware via a generated
-  `SandboxHostAliases` map applied by the transport.
+  type bugs fixed as adjacent work (`577c955`).
 
-The "sandbox token bootstrap per API" bullet on item 12 was
-closed by acknowledging the asymmetry: Merchant uses a static
-secret (no bootstrap needed), Open Banking requires full TPP
-onboarding (out of scope for a CLI). `cmd/auth-bootstrap` stays
-Business-only.
+**Medium-term (items 5–8):**
+
+- **5.** Spec-driven response-header exposure (`80f6c06`,
+  `f60065b`). Allowlist classifier → per-package
+  `ResponseMetadata` struct; OB methods return
+  `(T, ResponseMetadata, error)`; 33 endpoints with
+  `x-jws-signature` also emit `<Name>Signed` returning
+  `Signed[T]{Typed, Raw, Metadata}` so callers can run detached-
+  JWS verification. No in-SDK JWS helper — SDK stays plumbing.
+  Plus `APIError.RetryAfter` (`89f8b01`) parsed unconditionally
+  on 4xx/5xx.
+- **6.** Machine-readable defaults (`13db46c`). `ApplyDefaults()`
+  method on Params structs, opt-in, skips zero-ambiguous bool
+  defaults and prose defaults.
+- **7.** `format:` validation — **SKIPPED**. Value is marginal
+  (server validates anyway) and the code-volume cost was not
+  justified. Revisit if a real user hits bad-input friction.
+- **8.** Callback decoder regression test (`9a8b79b`). Adjacent
+  discovery: merchant's callback declared an editorial
+  discriminator (`propertyName: event` with prose mapping keys
+  never appearing on the wire); classifier now detects mismatch
+  and flattens to a struct instead of emitting a dispatch that
+  rejects every real payload.
+
+**Longer-term (items 9–11):**
+
+- **9.** Pipeline order enforcement (`bf2c9cd`). `lower.RunAll`
+  owns the sequence.
+- **10.** Golden-signature snapshot (`0b7bcc5`). Every generated
+  package's public API pinned to `cmd/revogen/testdata/golden/*.txt`.
+- **11.** Decouple build/ from openapi3 — **SKIPPED**. Speculative
+  (kin-openapi isn't blocking anything, parser swap isn't on any
+  near-term path). Revisit if we actually need to migrate the
+  parser or adopt 3.1.
+
+**Separate track (item 12) — Merchant, Open Banking, Crypto Ramp,
+Revolut X all wired:**
+
+- Merchant + Open Banking (`d3d60b5`); Crypto Ramp + Revolut X
+  (`483bf86`). Host-alias rewriting (`5fe471f`) makes
+  per-operation server-override URLs environment-aware via a
+  generated `SandboxHostAliases` map applied by the transport.
+- Sandbox token bootstrap per API closed by design: Merchant uses
+  a static secret (no bootstrap needed), Open Banking requires
+  full TPP onboarding (out of scope for a CLI).
+  `cmd/auth-bootstrap` stays Business-only.
 
 ## Near-term — small, high leverage
 
@@ -173,6 +210,6 @@ work is plumbing:
 
 ---
 
-**Outstanding: 5–11.** Natural next: 8 (now possible since
-Merchant is generated), then 9–10 (both lean on the `test:gen-all`
-scaffolding), then 5–7, then 11.
+**Status: ROADMAP closed.** Items 7 and 11 deliberately skipped
+(rationale above). If new work surfaces from spec updates or user
+feedback, start a fresh ROADMAP.
