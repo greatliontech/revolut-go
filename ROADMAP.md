@@ -27,18 +27,24 @@ All ROADMAP items either shipped or explicitly closed.
 - **5.** Spec-driven response-header exposure (`80f6c06`,
   `f60065b`). Allowlist classifier → per-package
   `ResponseMetadata` struct; OB methods return
-  `(T, ResponseMetadata, error)`; 33 endpoints with
-  `x-jws-signature` also emit `<Name>Signed` returning
-  `Signed[T]{Typed, Raw, Metadata}` so callers can run detached-
-  JWS verification. No in-SDK JWS helper — SDK stays plumbing.
-  Plus `APIError.RetryAfter` (`89f8b01`) parsed unconditionally
-  on 4xx/5xx.
+  `(T, ResponseMetadata, error)`; 32 endpoints with a JSON-typed
+  2xx response and `x-jws-signature` also emit `<Name>Signed`
+  returning `Signed[T]{Typed, Raw, Metadata}` so callers can
+  run detached-JWS verification. A 33rd endpoint
+  (`GetConsentsConsentIDFile`) also declares the header but
+  returns `[]byte` already, so no wrapper is needed. No in-SDK
+  JWS helper — SDK stays plumbing. Plus `APIError.RetryAfter`
+  (`89f8b01`) parsed unconditionally on 4xx/5xx.
 - **6.** Machine-readable defaults (`13db46c`). `ApplyDefaults()`
   method on Params structs, opt-in, skips zero-ambiguous bool
   defaults and prose defaults.
-- **7.** `format:` validation — **SKIPPED**. Value is marginal
-  (server validates anyway) and the code-volume cost was not
-  justified. Revisit if a real user hits bad-input friction.
+- **7.** `format:` validation for path-param UUIDs — reopened
+  after audit found the skip-rationale weak (64 UUID path params;
+  typo retries on refund / capture endpoints consume idempotency
+  keys; crypto-ramp's `uuid | ulid` multi-format leaves server
+  errors ambiguous). Scope kept narrow: path-param UUIDs only —
+  email / uri / body-level format checks stay out because the
+  server error messages there are already actionable.
 - **8.** Callback decoder regression test (`9a8b79b`). Adjacent
   discovery: merchant's callback declared an editorial
   discriminator (`propertyName: event` with prose mapping keys
@@ -52,10 +58,12 @@ All ROADMAP items either shipped or explicitly closed.
   owns the sequence.
 - **10.** Golden-signature snapshot (`0b7bcc5`). Every generated
   package's public API pinned to `cmd/revogen/testdata/golden/*.txt`.
-- **11.** Decouple build/ from openapi3 — **SKIPPED**. Speculative
-  (kin-openapi isn't blocking anything, parser swap isn't on any
-  near-term path). Revisit if we actually need to migrate the
-  parser or adopt 3.1.
+- **11.** Decouple build/ from openapi3 — **SKIPPED**. The "adopt
+  3.1" motivator turned out to be already-resolved: kin-openapi
+  accepts 3.1 specs transparently (revolut-x.yaml ships as 3.1.0
+  and generates cleanly). Nothing in the git log or codebase
+  flags the coupling as painful. Revisit only if we actually
+  need to migrate parsers.
 
 **Separate track (item 12) — Merchant, Open Banking, Crypto Ramp,
 Revolut X all wired:**

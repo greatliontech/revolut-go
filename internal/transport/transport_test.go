@@ -334,6 +334,34 @@ func TestDo_HostAliasRewrites_AbsoluteURL(t *testing.T) {
 	}
 }
 
+// TestDo_HostAliasesAreDefensivelyCopied: mutating the source
+// map after New returns must not change the transport's view.
+// Guards against the foot-gun where the generator exposes
+// SandboxHostAliases as an exported var.
+func TestDo_HostAliasesAreDefensivelyCopied(t *testing.T) {
+	src := map[string]string{"apis.revolut.com": "sandbox-apis.revolut.com"}
+	tr, err := New(Config{
+		BaseURL:     "https://unused.example.com/",
+		HostAliases: src,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Mutate the source map the way a misguided caller might —
+	// the transport must still have the original alias.
+	src["apis.revolut.com"] = "hijacked.example.com"
+	delete(src, "apis.revolut.com")
+	src["apis.revolut.com"] = "hijacked.example.com"
+
+	resolved, err := tr.resolve("http://apis.revolut.com/x")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resolved.Host != "sandbox-apis.revolut.com" {
+		t.Errorf("transport view shifted after caller mutation: host=%q", resolved.Host)
+	}
+}
+
 // TestDo_HostAliasNoRewrite_WhenHostNotInMap: a host not listed in
 // the alias map is left alone, so the transport never surprises
 // callers that deliberately hit a non-Revolut URL.

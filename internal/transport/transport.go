@@ -68,12 +68,24 @@ func New(cfg Config) (*Transport, error) {
 	if ua == "" {
 		ua = defaultUserAgent
 	}
+	// Defensive copy: SandboxHostAliases is exposed as an exported
+	// package-level var in each generated client so the revolut
+	// constructors can pass it in. If a caller mutates the source
+	// map after New returns, the transport's view must not shift
+	// under live requests.
+	var aliases map[string]string
+	if len(cfg.HostAliases) > 0 {
+		aliases = make(map[string]string, len(cfg.HostAliases))
+		for k, v := range cfg.HostAliases {
+			aliases[k] = v
+		}
+	}
 	return &Transport{
 		baseURL:     u,
 		httpc:       hc,
 		auth:        cfg.Auth,
 		userAgent:   ua,
-		hostAliases: cfg.HostAliases,
+		hostAliases: aliases,
 	}, nil
 }
 
