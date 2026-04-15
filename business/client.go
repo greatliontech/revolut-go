@@ -10,15 +10,20 @@ import "github.com/greatliontech/revolut-go/internal/transport"
 
 // Client is the Revolut Business API client.
 //
-// Resource fields (Accounts, Transfers, ...) will be added in later steps;
-// the current type is intentionally bare to lock in the wiring shape first.
+// Resource fields (Accounts, Transfers, ...) group endpoints by their
+// Revolut API path prefix. Access them as, e.g., client.Accounts.List(ctx).
 type Client struct {
 	transport *transport.Transport
+
+	// Accounts groups the /accounts endpoints.
+	Accounts *Accounts
 }
 
 // New wraps an HTTP transport in a Business client. Callers configure the
 // transport (base URL, authenticator, HTTP client) at the root revolut
 // package level.
 func New(t *transport.Transport) *Client {
-	return &Client{transport: t}
+	c := &Client{transport: t}
+	c.Accounts = &Accounts{t: t}
+	return c
 }

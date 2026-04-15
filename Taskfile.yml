@@ -36,6 +36,11 @@ tasks:
     cmds:
       - go test -race ./...
 
+  test:integration:
+    desc: Run live sandbox integration tests (requires ~/.config/revolut-go/sandbox/tokens.json).
+    cmds:
+      - go test -race -v -run Sandbox ./...
+
   check:
     desc: Build, vet, and test.
     cmds:
