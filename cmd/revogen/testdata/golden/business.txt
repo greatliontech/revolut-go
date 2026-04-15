@@ -647,3 +647,4 @@ type WebhookV1 struct { URL string `json:"url"` }
 type WebhookV2 struct { Events []WebhookEventType `json:"events"` ID string `json:"id"` SigningSecret string `json:"signing_secret"` URL string `json:"url"` }
 type WebhookV2Basic struct { Events []WebhookEventType `json:"events"` ID string `json:"id"` URL string `json:"url"` }
 type WebhooksV2 struct { t *transport.Transport }
+var SandboxHostAliases = map[string]string{ "b2b.revolut.com": "sandbox-b2b.revolut.com", }

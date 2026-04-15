@@ -824,3 +824,4 @@ type Webhooks struct { t *transport.Transport }
 type WebhooksBody struct { ExpirationPeriod string `json:"expiration_period,omitempty"` }
 type WebhooksResponse struct { Webhooks []WebhookV2 `json:"webhooks"` }
 type WebhooksRevolutAPIVersion string
+var SandboxHostAliases = map[string]string{}

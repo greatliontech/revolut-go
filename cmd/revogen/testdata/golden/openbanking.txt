@@ -433,3 +433,4 @@ type ResponseMetadata struct { InteractionID string JWSSignature string }
 type Signed struct { Typed *T Raw []byte Metadata ResponseMetadata }
 type TransactionInformation string
 type Transactions struct { t *transport.Transport }
+var SandboxHostAliases = map[string]string{ "apis.revolut.com": "sandbox-apis.revolut.com", "oba-auth.revolut.com": "sandbox-oba-auth.revolut.com", }

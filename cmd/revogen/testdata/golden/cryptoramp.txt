@@ -104,3 +104,4 @@ type Webhook struct { Events []EventType `json:"events"` ID string `json:"id"` S
 type WebhookCreateRequest struct { Events []EventType `json:"events"` URL string `json:"url"` }
 type WebhookUpdateRequest struct { Events []EventType `json:"events,omitempty"` URL string `json:"url,omitempty"` }
 type Webhooks struct { t *transport.Transport }
+var SandboxHostAliases = map[string]string{}

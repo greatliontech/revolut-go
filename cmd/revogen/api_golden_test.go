@@ -121,9 +121,10 @@ func extractAPI(dir string) (string, error) {
 
 // genDeclLines expands an ast.GenDecl (type/const/var) into one
 // signature line per exported spec. Non-exported specs are
-// skipped; variables are skipped entirely (the generator emits
-// only `SandboxHostAliases` which is already covered implicitly
-// and would otherwise be noisy to snapshot).
+// skipped. Vars are included — exported package-level vars are
+// part of the public API surface (e.g. SandboxHostAliases) and
+// regressions that rename, retype, or drop them would otherwise
+// slip past the golden.
 func genDeclLines(fset *token.FileSet, d *ast.GenDecl) []string {
 	var out []string
 	for _, spec := range d.Specs {
@@ -134,14 +135,14 @@ func genDeclLines(fset *token.FileSet, d *ast.GenDecl) []string {
 			}
 			out = append(out, formatTypeSpec(fset, s))
 		case *ast.ValueSpec:
-			if d.Tok != token.CONST {
+			if d.Tok != token.CONST && d.Tok != token.VAR {
 				continue
 			}
 			for i, name := range s.Names {
 				if !name.IsExported() {
 					continue
 				}
-				out = append(out, formatValueSpec(fset, name, s, i))
+				out = append(out, formatValueSpec(fset, d.Tok, name, s, i))
 			}
 		}
 	}
@@ -177,9 +178,13 @@ func formatFuncDecl(fset *token.FileSet, d *ast.FuncDecl) string {
 	return normaliseWhitespace(b.String())
 }
 
-func formatValueSpec(fset *token.FileSet, name *ast.Ident, s *ast.ValueSpec, idx int) string {
+func formatValueSpec(fset *token.FileSet, tok token.Token, name *ast.Ident, s *ast.ValueSpec, idx int) string {
 	var b strings.Builder
-	b.WriteString("const ")
+	if tok == token.VAR {
+		b.WriteString("var ")
+	} else {
+		b.WriteString("const ")
+	}
 	b.WriteString(name.Name)
 	if s.Type != nil {
 		b.WriteString(" ")

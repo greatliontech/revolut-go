@@ -151,3 +151,4 @@ type TickersResponse struct { Data []Ticker `json:"data"` Metadata *TickersRespo
 type TickersResponseMetadata struct { Timestamp int64 `json:"timestamp"` }
 type Trade struct { Aid string `json:"aid"` Anm string `json:"anm"` P string `json:"p"` Pc string `json:"pc"` Pdt int64 `json:"pdt"` Pn string `json:"pn"` Q string `json:"q"` Qc string `json:"qc"` Qn string `json:"qn"` Tdt int64 `json:"tdt"` Tid string `json:"tid"` Ve string `json:"ve"` Vp string `json:"vp"` }
 type Trades struct { t *transport.Transport }
+var SandboxHostAliases = map[string]string{}
