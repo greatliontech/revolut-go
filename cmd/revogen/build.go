@@ -1317,7 +1317,15 @@ func stripTagPrefix(segs []string, tags []string) []string {
 	if len(segs) == 0 || len(tags) == 0 {
 		return segs
 	}
-	tagTokens := splitWords(strings.ToLower(tags[0]))
+	// Split on the original (case-preserving) tag so camelCase humps are
+	// respected, then lowercase each token for comparison against path
+	// segments. Lowercasing *before* splitting would collapse humps and
+	// mis-handle tags like "CardInvitations".
+	raw := splitWords(tags[0])
+	tagTokens := make([]string, 0, len(raw))
+	for _, p := range raw {
+		tagTokens = append(tagTokens, strings.ToLower(p))
+	}
 	if len(tagTokens) == 0 {
 		return segs
 	}
