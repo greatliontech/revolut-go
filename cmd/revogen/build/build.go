@@ -35,6 +35,7 @@ func FromOpenAPI(doc *openapi3.T, cfg Config) (*ir.Spec, error) {
 	b.reserveResourceNames()
 	b.buildDecls()
 	b.buildOperations()
+	b.finalizePagination()
 	b.buildCallbacks()
 	b.buildErrorType()
 	return b.finalize(), nil
@@ -143,20 +144,3 @@ func (b *Builder) finalize() *ir.Spec {
 // FromOpenAPI readable; the real logic lives next to the data it
 // touches.
 
-// buildOperations is defined in operations.go.
-func (b *Builder) buildOperations() {
-	// Stub: Phase 3c.
-}
-
-// buildCallbacks is defined in callbacks.go.
-func (b *Builder) buildCallbacks() {
-	// Stub: Phase 3d.
-}
-
-// buildErrorType is defined in errors.go.
-func (b *Builder) buildErrorType() {
-	// Stub: Phase 3d.
-	if b.doc.Info != nil {
-		b.apiVer = b.doc.Info.Version
-	}
-}

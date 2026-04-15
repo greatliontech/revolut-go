@@ -1,0 +1,187 @@
+package build
+
+import (
+	"strings"
+
+	"github.com/greatliontech/revolut-go/cmd/revogen/ir"
+)
+
+// detectPagination classifies a method's pagination shape by
+// inspecting its response and params-struct. Runs after the Decls
+// and Methods are otherwise finalized so it can consult the fields
+// directly rather than re-parsing schemas.
+//
+// Shapes:
+//
+//   - Cursor: response is a struct with `next_page_token` + an
+//     array field; params has `page_token` (or equivalent cursor).
+//   - TimeWindow: response is []Item whose items carry `created_at`
+//     as time.Time; params has `to` or `created_before` typed as
+//     time.Time.
+//   - Limit: params has `limit` with no cursor or time-window field;
+//     response is []Item with no explicit terminator.
+//
+// The method returns nil when no shape applies; callers leave
+// Method.Pagination as nil in that case.
+func (b *Builder) detectPagination(m *ir.Method) *ir.Pagination {
+	if m.OptsParam == nil || m.Returns == nil {
+		return nil
+	}
+	paramsDecl := b.declFromParamsType(m.OptsParam.Type)
+	if paramsDecl == nil {
+		return nil
+	}
+	if p := b.cursorPagination(m, paramsDecl); p != nil {
+		return p
+	}
+	if p := b.timeWindowPagination(m, paramsDecl); p != nil {
+		return p
+	}
+	if p := b.limitPagination(m, paramsDecl); p != nil {
+		return p
+	}
+	return nil
+}
+
+// declFromParamsType dereferences the Method.OptsParam.Type (which
+// is *<Name>Params) and returns the underlying Decl.
+func (b *Builder) declFromParamsType(t *ir.Type) *ir.Decl {
+	t = t.Deref()
+	if t == nil || !t.IsNamed() {
+		return nil
+	}
+	return b.declByName[t.Name]
+}
+
+func (b *Builder) cursorPagination(m *ir.Method, params *ir.Decl) *ir.Pagination {
+	if m.Returns.IsSlice() || !m.Returns.IsNamed() {
+		return nil
+	}
+	respDecl := b.declByName[m.Returns.Name]
+	if respDecl == nil || respDecl.Kind != ir.DeclStruct {
+		return nil
+	}
+	var nextField, itemsField string
+	var nextType, itemType *ir.Type
+	for _, f := range respDecl.Fields {
+		if f.JSONName == "next_page_token" {
+			nextField = f.GoName
+			nextType = f.Type
+			continue
+		}
+		if f.Type.IsSlice() && itemsField == "" {
+			itemsField = f.GoName
+			itemType = f.Type.Elem
+		}
+	}
+	if nextField == "" || itemsField == "" {
+		return nil
+	}
+	for _, f := range params.Fields {
+		if f.JSONName == "page_token" {
+			return &ir.Pagination{
+				Shape:          ir.PaginationCursor,
+				ItemType:       itemType,
+				ItemsField:     itemsField,
+				NextTokenField: nextField,
+				NextTokenType:  nextType,
+				PageTokenParam: f.GoName,
+				PageTokenType:  f.Type,
+			}
+		}
+	}
+	return nil
+}
+
+func (b *Builder) timeWindowPagination(m *ir.Method, params *ir.Decl) *ir.Pagination {
+	if !m.Returns.IsSlice() {
+		return nil
+	}
+	itemType := m.Returns.Elem
+	if itemType == nil || !itemType.IsNamed() {
+		return nil
+	}
+	itemDecl := b.declByName[itemType.Name]
+	if itemDecl == nil || itemDecl.Kind != ir.DeclStruct {
+		return nil
+	}
+	var fromItem string
+	for _, f := range itemDecl.Fields {
+		if f.JSONName == "created_at" && isTimeType(f.Type) {
+			fromItem = f.GoName
+			break
+		}
+	}
+	if fromItem == "" {
+		return nil
+	}
+	for _, f := range params.Fields {
+		if (f.JSONName == "to" || f.JSONName == "created_before") && isTimeType(f.Type) {
+			return &ir.Pagination{
+				Shape:           ir.PaginationTimeWindow,
+				ItemType:        itemType,
+				AdvanceParam:    f.GoName,
+				AdvanceFromItem: fromItem,
+			}
+		}
+	}
+	return nil
+}
+
+// limitPagination detects params with a bare `limit` field (no
+// cursor, no time advance). The iterator walks pages by inferring
+// "no more pages" from an empty response — the same signal as
+// time-window, but without a timestamp to echo back.
+func (b *Builder) limitPagination(m *ir.Method, params *ir.Decl) *ir.Pagination {
+	if !m.Returns.IsSlice() {
+		return nil
+	}
+	itemType := m.Returns.Elem
+	if itemType == nil {
+		return nil
+	}
+	hasLimit := false
+	var pageField string
+	for _, f := range params.Fields {
+		switch f.JSONName {
+		case "limit", "per_page", "page_size":
+			hasLimit = true
+		case "page", "offset":
+			pageField = f.GoName
+		}
+	}
+	if !hasLimit {
+		return nil
+	}
+	return &ir.Pagination{
+		Shape:         ir.PaginationLimit,
+		ItemType:      itemType,
+		PageSizeParam: "limit",
+		PageParam:     pageField,
+	}
+}
+
+// isTimeType tests whether a Type expresses a time value (plain or
+// pointer-wrapped).
+func isTimeType(t *ir.Type) bool {
+	if t == nil {
+		return false
+	}
+	if t.IsPointer() {
+		t = t.Elem
+	}
+	return t != nil && strings.HasSuffix(t.GoExpr(), "time.Time")
+}
+
+// finalizePagination is the buildOperations hook that annotates
+// every Method with its pagination shape. Called from FromOpenAPI
+// after types and operations are registered.
+func (b *Builder) finalizePagination() {
+	for _, r := range b.resourceByName {
+		for _, m := range r.Methods {
+			if p := b.detectPagination(m); p != nil {
+				m.Pagination = p
+			}
+		}
+	}
+}
