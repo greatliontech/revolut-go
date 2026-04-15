@@ -182,6 +182,88 @@ func TestSandbox_Merchant_GetMalformedOrder_LocalValidation(t *testing.T) {
 	}
 }
 
+// TestSandbox_Merchant_CustomerLifecycle exercises
+// Create → Get → Delete on the Customers resource. Runs every
+// time, so each invocation seeds one customer and removes it at
+// the end; email uses a timestamp + random suffix so parallel
+// runs don't collide.
+func TestSandbox_Merchant_CustomerLifecycle(t *testing.T) {
+	c := merchantClient(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	// Unique lowercase email per run — the server lowercases
+	// what it stores, so matching on value requires already-lower.
+	email := merchant.Email("sdktest+" + time.Now().UTC().Format("20060102t150405.000000000") + "@example.com")
+
+	created, err := c.Customers.Create(ctx, merchantAuthPlaceholder, merchantAPIVersion, merchant.CustomerCreationV2{
+		Email:    email,
+		FullName: "SDK Test Customer",
+	})
+	if err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	if created == nil || created.ID == "" {
+		t.Fatalf("nil id on created customer: %+v", created)
+	}
+	t.Cleanup(func() {
+		// Best-effort cleanup — swallow error on teardown so a
+		// sandbox hiccup doesn't mask the real test failure.
+		deleteCtx, deleteCancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer deleteCancel()
+		if err := c.Customers.Delete(deleteCtx, string(created.ID), merchantAuthPlaceholder, merchantAPIVersion); err != nil {
+			t.Logf("cleanup delete: %v", err)
+		}
+	})
+
+	got, err := c.Customers.Get(ctx, string(created.ID), merchantAuthPlaceholder, merchantAPIVersion)
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+	if got.Email != email {
+		t.Errorf("Get: email=%q; want %q", got.Email, email)
+	}
+	if got.FullName != "SDK Test Customer" {
+		t.Errorf("Get: FullName=%q", got.FullName)
+	}
+}
+
+// TestSandbox_Merchant_DisputesList probes the Disputes
+// resource. The spec declares /api/disputes but at least as of
+// 2026-04 the sandbox returns 404 for it — a sandbox parity gap,
+// not a generator bug. The test skips on 404 so the suite stays
+// green while keeping the coverage for the day the sandbox adds
+// the endpoint.
+func TestSandbox_Merchant_DisputesList(t *testing.T) {
+	c := merchantClient(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	resp, err := c.Disputes.GetList(ctx, merchantAuthPlaceholder, merchant.DisputesRevolutAPIVersion20251204, nil)
+	if err != nil {
+		if apiErr, ok := revolut.AsAPIError(err); ok && apiErr.StatusCode == http.StatusNotFound {
+			t.Skipf("sandbox parity gap: /api/disputes returns 404")
+		}
+		t.Fatalf("Disputes.GetList: %v", err)
+	}
+	t.Logf("disputes: %d", len(resp))
+}
+
+// TestSandbox_Merchant_LocationsList exercises the Locations
+// resource. Unlike Customers/Orders/Webhooks it doesn't take the
+// Revolut-Api-Version header (spec declares no version on
+// Locations), so it separately proves the generator handles
+// resources with and without version headers uniformly.
+func TestSandbox_Merchant_LocationsList(t *testing.T) {
+	c := merchantClient(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	resp, err := c.Locations.GetList(ctx, merchantAuthPlaceholder, nil)
+	if err != nil {
+		t.Fatalf("Locations.GetList: %v", err)
+	}
+	t.Logf("locations: %d", len(resp))
+}
+
 // TestSandbox_Merchant_WebhooksList exercises a different
 // resource (Webhooks) to confirm auth + version-header plumbing
 // works uniformly across resources, not just Customers / Orders.
