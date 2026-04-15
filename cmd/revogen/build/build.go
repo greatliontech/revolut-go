@@ -125,8 +125,9 @@ func (b *Builder) finalize() *ir.Spec {
 		APIVersion: b.apiVer,
 		ErrorType:  b.errorType,
 		ErrPrefix:  b.cfg.ErrPrefix,
-		DocsBase:   b.cfg.DocsBase,
-		Callbacks:  b.callbacks,
+		DocsBase:    b.cfg.DocsBase,
+		Callbacks:   b.callbacks,
+		HostAliases: b.collectHostAliases(),
 	}
 	spec.Decls = make([]*ir.Decl, 0, len(b.declOrder))
 	for _, name := range b.declOrder {

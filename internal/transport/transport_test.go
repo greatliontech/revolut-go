@@ -235,3 +235,60 @@ func TestNew_ValidatesBaseURL(t *testing.T) {
 		t.Error("want error for malformed BaseURL")
 	}
 }
+
+// TestDo_HostAliasRewrites_AbsoluteURL pins the rewrite behaviour:
+// a generator-embedded absolute URL whose host matches a configured
+// alias is redirected to the aliased host; relative paths routed
+// via BaseURL are untouched.
+func TestDo_HostAliasRewrites_AbsoluteURL(t *testing.T) {
+	var gotHost string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotHost = r.Host
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	defer srv.Close()
+
+	// Parse the test server's host so we can use the real port in the
+	// alias table; the production host in the override URL is
+	// fictional — its only role is to trigger the rewrite.
+	tgt, err := url.Parse(srv.URL)
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	tr, err := New(Config{
+		BaseURL: "https://unused.example.com/",
+		HostAliases: map[string]string{
+			"apis.revolut.com": tgt.Host,
+		},
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+
+	// Generator-style embedded URL: overlapping the production host
+	// that should be rewritten onto the test server. http:// here so
+	// httptest.NewServer's plain-HTTP listener accepts the request.
+	path := "http://apis.revolut.com/draft-payments/42"
+	if err := tr.Do(context.Background(), http.MethodGet, path, nil, &struct{}{}); err != nil {
+		t.Fatalf("Do: %v", err)
+	}
+	if gotHost != tgt.Host {
+		t.Errorf("request hit %q; want %q (alias rewrite didn't fire)", gotHost, tgt.Host)
+	}
+}
+
+// TestDo_HostAliasNoRewrite_WhenHostNotInMap: a host not listed in
+// the alias map is left alone, so the transport never surprises
+// callers that deliberately hit a non-Revolut URL.
+func TestDo_HostAliasNoRewrite_WhenHostNotInMap(t *testing.T) {
+	resolved, err := (&Transport{
+		hostAliases: map[string]string{"apis.revolut.com": "sandbox-apis.revolut.com"},
+	}).resolve("https://other.example.com/path")
+	if err != nil {
+		t.Fatalf("resolve: %v", err)
+	}
+	if resolved.Host != "other.example.com" {
+		t.Errorf("unexpected host rewrite to %q", resolved.Host)
+	}
+}

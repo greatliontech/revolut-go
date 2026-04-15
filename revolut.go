@@ -90,3 +90,14 @@ func resolveOptions(opts []Option) clientOptions {
 	}
 	return o
 }
+
+// sandboxAliases returns aliases only when the caller picked
+// sandbox without also setting an explicit BaseURL. A custom
+// BaseURL means the caller has taken manual control of routing and
+// shouldn't get silent host rewrites on absolute-URL endpoints.
+func sandboxAliases(o clientOptions, aliases map[string]string) map[string]string {
+	if o.env != EnvironmentSandbox || o.baseURL != "" || len(aliases) == 0 {
+		return nil
+	}
+	return aliases
+}

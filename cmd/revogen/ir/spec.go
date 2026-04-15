@@ -20,6 +20,22 @@ type Spec struct {
 	Decls     []*Decl
 	Resources []*Resource
 	Callbacks []*Callback
+
+	// HostAliases lists per-operation / per-path server pairs the
+	// spec declares. Each entry pairs a production host with its
+	// sandbox counterpart so the transport can rewrite absolute URLs
+	// emitted by [ServerOverride] methods when the client targets
+	// sandbox. Doc-level servers don't appear here — those drive
+	// base-URL selection in the revolut constructors directly.
+	HostAliases []HostAlias
+}
+
+// HostAlias pairs a production host with its sandbox equivalent.
+// Only the host portion of each URL is significant; paths are
+// preserved from the incoming request.
+type HostAlias struct {
+	Production string
+	Sandbox    string
 }
 
 // Resource is one tag-grouped set of methods — emitted as

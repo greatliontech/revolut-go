@@ -28,5 +28,30 @@ func writeClientFile(spec *ir.Spec, imports []string) string {
 		w.printf("\tc.%s = &%s{t: t}\n", r.Name, r.Name)
 	}
 	w.write("\treturn c\n}\n")
+	writeHostAliases(w, spec)
 	return w.buf.String()
+}
+
+// writeHostAliases emits a package-level SandboxHostAliases map the
+// root-level revolut constructors consult when
+// WithEnvironment(EnvironmentSandbox) is active. Keys are the
+// production hosts the spec embeds verbatim in the path argument
+// of server-override endpoints; values are their sandbox
+// equivalents. Always emitted so callers can reference the symbol
+// even when a particular spec has no overrides.
+func writeHostAliases(w *fileWriter, spec *ir.Spec) {
+	w.write("\n// SandboxHostAliases maps every production host the spec embeds in\n")
+	w.write("// per-operation server-override endpoints to its sandbox counterpart.\n")
+	w.write("// The revolut package applies this map to the transport when\n")
+	w.write("// WithEnvironment(EnvironmentSandbox) is in effect so absolute-URL\n")
+	w.write("// requests targeting production hosts are rewritten to sandbox.\n")
+	if len(spec.HostAliases) == 0 {
+		w.write("var SandboxHostAliases = map[string]string{}\n")
+		return
+	}
+	w.write("var SandboxHostAliases = map[string]string{\n")
+	for _, a := range spec.HostAliases {
+		w.printf("\t%q: %q,\n", a.Production, a.Sandbox)
+	}
+	w.write("}\n")
 }

@@ -60,3 +60,12 @@ func New(t *transport.Transport) *Client {
 	c.WebhooksV2 = &WebhooksV2{t: t}
 	return c
 }
+
+// SandboxHostAliases maps every production host the spec embeds in
+// per-operation server-override endpoints to its sandbox counterpart.
+// The revolut package applies this map to the transport when
+// WithEnvironment(EnvironmentSandbox) is in effect so absolute-URL
+// requests targeting production hosts are rewritten to sandbox.
+var SandboxHostAliases = map[string]string{
+	"b2b.revolut.com": "sandbox-b2b.revolut.com",
+}

@@ -25,10 +25,11 @@ func NewMerchantClient(auth Authenticator, opts ...Option) (*merchant.Client, er
 		baseURL = merchantBaseURL(o.env)
 	}
 	t, err := transport.New(transport.Config{
-		BaseURL:    baseURL,
-		HTTPClient: o.httpClient,
-		Auth:       auth,
-		UserAgent:  o.userAgent,
+		BaseURL:     baseURL,
+		HTTPClient:  o.httpClient,
+		Auth:        auth,
+		UserAgent:   o.userAgent,
+		HostAliases: sandboxAliases(o, merchant.SandboxHostAliases),
 	})
 	if err != nil {
 		return nil, err

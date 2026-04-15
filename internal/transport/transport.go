@@ -26,10 +26,11 @@ const defaultUserAgent = "revolut-go"
 //
 // A zero Transport is not usable; construct via [New].
 type Transport struct {
-	baseURL   *url.URL
-	httpc     *http.Client
-	auth      core.Authenticator
-	userAgent string
+	baseURL     *url.URL
+	httpc       *http.Client
+	auth        core.Authenticator
+	userAgent   string
+	hostAliases map[string]string // production host → substitute host
 }
 
 // Config configures a [Transport]. BaseURL is required.
@@ -38,6 +39,14 @@ type Config struct {
 	HTTPClient *http.Client
 	Auth       core.Authenticator
 	UserAgent  string
+	// HostAliases lets the caller remap hostnames on absolute-URL
+	// requests. Used by the revolut constructors to redirect the
+	// spec's per-operation production server overrides (e.g.
+	// https://apis.revolut.com) onto their sandbox equivalents
+	// when WithEnvironment(EnvironmentSandbox) is in effect.
+	// Requests whose URL is already relative (and therefore
+	// resolved against BaseURL) are untouched.
+	HostAliases map[string]string
 }
 
 // New builds a Transport from cfg.
@@ -58,10 +67,11 @@ func New(cfg Config) (*Transport, error) {
 		ua = defaultUserAgent
 	}
 	return &Transport{
-		baseURL:   u,
-		httpc:     hc,
-		auth:      cfg.Auth,
-		userAgent: ua,
+		baseURL:     u,
+		httpc:       hc,
+		auth:        cfg.Auth,
+		userAgent:   ua,
+		hostAliases: cfg.HostAliases,
 	}, nil
 }
 
@@ -220,7 +230,14 @@ func (t *Transport) newRequestWithBody(ctx context.Context, method, path string,
 
 func (t *Transport) resolve(path string) (*url.URL, error) {
 	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
-		return url.Parse(path)
+		u, err := url.Parse(path)
+		if err != nil {
+			return nil, fmt.Errorf("revolut: parse path %q: %w", path, err)
+		}
+		if alt, ok := t.hostAliases[u.Host]; ok {
+			u.Host = alt
+		}
+		return u, nil
 	}
 	ref, err := url.Parse(path)
 	if err != nil {
