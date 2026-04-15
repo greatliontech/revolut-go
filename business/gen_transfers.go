@@ -61,10 +61,10 @@ func (s *Transfers) Create(ctx context.Context, req TransferRequest) (*TransferR
 	return &out, nil
 }
 
-// ListTransferReasons get transfer reasons
+// ListReasons get transfer reasons
 //
 // Docs: https://developer.revolut.com/docs/business/get-transfer-reasons
-func (s *Transfers) ListTransferReasons(ctx context.Context) ([]TransferReason, error) {
+func (s *Transfers) ListReasons(ctx context.Context) ([]TransferReason, error) {
 	var out []TransferReason
 	if err := s.t.Do(ctx, http.MethodGet, "transfer-reasons", nil, &out); err != nil {
 		return nil, err

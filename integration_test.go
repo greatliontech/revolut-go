@@ -183,6 +183,32 @@ func randomHex(n int) string {
 	return hex.EncodeToString(b)
 }
 
+func TestSandbox_CounterpartiesList(t *testing.T) {
+	client := newSandboxClient(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	counterparties, err := client.Counterparties.List(ctx)
+	if err != nil {
+		t.Fatalf("Counterparties.List: %v", err)
+	}
+	t.Logf("got %d counterparties", len(counterparties))
+	// Sandbox may have zero counterparties for a fresh account; we
+	// just exercise the network path + decoding here, not data shape.
+}
+
+func TestSandbox_TransactionsList(t *testing.T) {
+	client := newSandboxClient(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	transactions, err := client.Transactions.List(ctx)
+	if err != nil {
+		t.Fatalf("Transactions.List: %v", err)
+	}
+	t.Logf("got %d transactions", len(transactions))
+}
+
 func TestSandbox_AccountsGet(t *testing.T) {
 	client := newSandboxClient(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)

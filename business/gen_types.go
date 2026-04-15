@@ -507,7 +507,21 @@ type CardInvitationSpendingLimits struct {
 //
 // They specify the dates when the card will become available or unavailable for spending, and define what happens after the end date.
 type CardInvitationSpendingPeriod struct {
+	// The end date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
+	EndDate string `json:"end_date,omitempty"`
+	// The action to take after the end date of the spending period.
+	EndDateAction CardInvitationSpendingPeriodEndDateAction `json:"end_date_action,omitempty"`
+	// The start date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
+	StartDate string `json:"start_date,omitempty"`
 }
+
+// CardInvitationSpendingPeriodEndDateAction the action to take after the end date of the spending period.
+type CardInvitationSpendingPeriodEndDateAction string
+
+const (
+	CardInvitationSpendingPeriodEndDateActionLock      CardInvitationSpendingPeriodEndDateAction = "lock"
+	CardInvitationSpendingPeriodEndDateActionTerminate CardInvitationSpendingPeriodEndDateAction = "terminate"
+)
 
 // CardInvitationState the current state of the card invitation:
 // - **`created`**: Invitation has been created but not yet claimed.
@@ -917,6 +931,16 @@ type CreatePayoutLinkRequest struct {
 	TransferReasonCode TransferReasonCode `json:"transfer_reason_code,omitempty"`
 }
 
+// CreateTaxRateRequest the tax rate that can be applied to financial records, such as expenses.
+//
+// The tax rate to create.
+type CreateTaxRateRequest struct {
+	// The name of the tax.
+	Name string `json:"name"`
+	// The tax rate percentage applied to the taxable amount. For example, `23` for 23%.
+	Percentage json.Number `json:"percentage"`
+}
+
 type CreateWebhookRequest struct {
 	// A list of event types to subscribe to.
 	Events []WebhookEventType `json:"events,omitempty"`
@@ -938,7 +962,13 @@ type Error struct {
 //
 // Returned, for example, when the credentials you used to make the request are invalid.
 // For more information, see the **Authorization** section.
+//
+// Error returning a status instead of code.
 type ErrorUnauthorized struct {
+	// The description of the error.
+	Message string `json:"message"`
+	// The error code.
+	Status int `json:"status"`
 }
 
 // ErrorUnprocessableEntity unprocessable entity
@@ -1185,6 +1215,42 @@ type Fee struct {
 	Currency Currency `json:"currency,omitempty"`
 }
 
+type GetAccountingCategoriesResponse struct {
+	// The list of accounting categories.
+	AccountingCategories []AccountingCategoryResponse `json:"accounting_categories"`
+	// Cursor for the next page.
+	NextPageToken PageToken `json:"next_page_token,omitempty"`
+}
+
+type GetLabelGroupsResponse struct {
+	// List of label groups.
+	LabelGroups []LabelGroupResponse `json:"label_groups"`
+	// Cursor for the next page.
+	NextPageToken PageToken `json:"next_page_token,omitempty"`
+}
+
+type GetLabelsResponse struct {
+	// List of labels in the specified group
+	Labels []LabelResponse `json:"labels"`
+	// Cursor for the next page.
+	NextPageToken PageToken `json:"next_page_token,omitempty"`
+}
+
+type GetSensitiveCardDetailsResponse struct {
+	// The CVV (Card Verification Value) of the card.
+	Cvv string `json:"cvv"`
+	// The card expiration date.
+	Expiry string `json:"expiry"`
+	// The PAN (Primary Account Number) of the card.
+	Pan string `json:"pan"`
+}
+
+type GetTaxRatesResponse struct {
+	// Cursor for the next page.
+	NextPageToken PageToken         `json:"next_page_token,omitempty"`
+	TaxRates      []TaxRateResponse `json:"tax_rates"`
+}
+
 // IndividualName the name of the counterparty, provided when the counterparty is an **individual** (personal account type) and is **not** being added via Revtag.
 //
 // If specified, `company_name` and `name` must be empty.
@@ -1193,6 +1259,19 @@ type IndividualName struct {
 	FirstName string `json:"first_name,omitempty"`
 	// The last name of the individual counterparty.
 	LastName string `json:"last_name,omitempty"`
+}
+
+type InviteTeamMemberResponse struct {
+	// The date and time when the member was created.
+	CreatedAt time.Time `json:"created_at"`
+	// The email address of the invited member.
+	Email string `json:"email"`
+	// The ID of the invited member.
+	ID string `json:"id"`
+	// The ID of the [role](https://developer.revolut.com/docs/business/get-roles) assigned to the member.
+	RoleID string `json:"role_id"`
+	// The date and time when the member was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type LabelGroupResponse struct {
@@ -1367,6 +1446,45 @@ const (
 	PaymentSystemSumclearing    PaymentSystem = "sumclearing"
 )
 
+type PayoutLink struct {
+	// The ID of the sender's account.
+	AccountID PayoutLinkAccountID `json:"account_id"`
+	// The amount of money to be transferred.
+	Amount PayoutLinkAmount `json:"amount"`
+	// The reason for which the payout link was cancelled.
+	CancellationReason PayoutLinkCancellationReason `json:"cancellation_reason,omitempty"`
+	// The ID of the counterparty created based on the recipient's details.
+	CounterpartyID string `json:"counterparty_id,omitempty"`
+	// The name of the counterparty provided by the sender.
+	CounterpartyName PayoutLinkCounterpartyName `json:"counterparty_name"`
+	// The date and time the payout link was created in [ISO 8601 format](https://en.wikipedia.org/wiki/ISO_8601).
+	CreatedAt time.Time `json:"created_at"`
+	// [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency code in upper case.
+	Currency Currency `json:"currency"`
+	// The date and time after which the payout link expires in [ISO 8601 format](https://en.wikipedia.org/wiki/ISO_8601).
+	ExpiryDate PayoutLinkExpiryDate `json:"expiry_date,omitempty"`
+	// The ID of the payout link.
+	ID string `json:"id"`
+	// The list of payout methods that the recipient can use to claim the payout, where:
+	PayoutMethods []PayoutMethod `json:"payout_methods"`
+	// The reference for the payout transaction, provided by the sender.
+	Reference PayoutLinkReference `json:"reference"`
+	// The ID of the request, provided by the sender.
+	RequestID PayoutLinkRequestID `json:"request_id"`
+	// Indicates whether you chose to save the recipient as your counterparty upon link claim.
+	SaveCounterparty bool `json:"save_counterparty"`
+	// The state that the payout link is in. Possible states are:
+	State PayoutLinkState `json:"state"`
+	// The ID of the created transaction. Returned only if the payout has been claimed.
+	TransactionID string `json:"transaction_id,omitempty"`
+	// The reason code for the transaction. Transactions to certain countries and currencies might require you to provide a transfer reason.
+	TransferReasonCode TransferReasonCode `json:"transfer_reason_code,omitempty"`
+	// The date and time the payout link was last updated in [ISO 8601 format](https://en.wikipedia.org/wiki/ISO_8601).
+	UpdatedAt time.Time `json:"updated_at"`
+	// The URL of the payout link. Returned only for active payout links.
+	URL string `json:"url,omitempty"`
+}
+
 // PayoutLinkAccountID the ID of the sender's account.
 type PayoutLinkAccountID = string
 
@@ -1392,6 +1510,13 @@ const (
 // The amount must be between £1 and £2,500, or equivalent in the selected currency.
 // :::
 type PayoutLinkAmount = json.Number
+
+// PayoutLinkCancellationReason the reason for which the payout link was cancelled.
+type PayoutLinkCancellationReason string
+
+const (
+	PayoutLinkCancellationReasonTooManyNameCheckAttempts PayoutLinkCancellationReason = "too_many_name_check_attempts"
+)
 
 // PayoutLinkCounterpartyName the name of the counterparty provided by the sender.
 type PayoutLinkCounterpartyName = string
@@ -1502,6 +1627,52 @@ type Role struct {
 	// The date and time the role was last updated in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type SimulateTopUpResponse struct {
+	// The date and time the transaction was completed in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
+	// The date and time the transaction was created in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
+	CreatedAt time.Time `json:"created_at"`
+	// The ID of the account that was topped up.
+	ID string `json:"id"`
+	// The state of the top-up transaction.
+	State SimulateTopUpResponseState `json:"state"`
+}
+
+// SimulateTopUpResponseState the state of the top-up transaction.
+type SimulateTopUpResponseState string
+
+const (
+	SimulateTopUpResponseStatePending   SimulateTopUpResponseState = "pending"
+	SimulateTopUpResponseStateCompleted SimulateTopUpResponseState = "completed"
+	SimulateTopUpResponseStateReverted  SimulateTopUpResponseState = "reverted"
+	SimulateTopUpResponseStateFailed    SimulateTopUpResponseState = "failed"
+)
+
+type SimulateTransferStateUpdateResponse struct {
+	// The date and time the transfer was completed in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
+	// The date and time the transfer was created in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
+	CreatedAt time.Time `json:"created_at"`
+	// The ID of the transfer whose state was updated.
+	ID string `json:"id"`
+	// Indicates the simulated transaction state. Possible values:
+	State SimulateTransferStateUpdateResponseState `json:"state"`
+}
+
+// SimulateTransferStateUpdateResponseState indicates the simulated transaction state. Possible values:
+// - `completed` - Transaction was successfully processed.
+// - `reverted` - Transaction was reverted by the system or company, but not the user. This can happen for a variety of reasons, for example, the receiver being inaccessible.
+// - `declined` - Transaction was declined to the user for a good reason, such as insufficient account balance, wrong receiver information, etc.
+// - `failed` - Transaction failed during initiation or completion. This can happen for a variety of reasons, for example, invalid API calls, blocked payments, etc.
+type SimulateTransferStateUpdateResponseState string
+
+const (
+	SimulateTransferStateUpdateResponseStateCompleted SimulateTransferStateUpdateResponseState = "completed"
+	SimulateTransferStateUpdateResponseStateReverted  SimulateTransferStateUpdateResponseState = "reverted"
+	SimulateTransferStateUpdateResponseStateDeclined  SimulateTransferStateUpdateResponseState = "declined"
+	SimulateTransferStateUpdateResponseStateFailed    SimulateTransferStateUpdateResponseState = "failed"
+)
 
 // SpendProgram the [spend program](https://help.revolut.com/business/help/making-paymentsbusiness/spend-controls/setting-card-presets-for-my-team-members/) assigned to the card.
 // :::note
@@ -1912,6 +2083,8 @@ type UpdateWebhookRequest struct {
 	URL URL `json:"url,omitempty"`
 }
 
+type ValidateAccountNameRequest = any
+
 type ValidateAccountNameRequestAu struct {
 	// The account number of the counterparty.
 	AccountNo string `json:"account_no"`
@@ -1955,6 +2128,8 @@ type ValidateAccountNameRequestUk struct {
 	// The sort code of the counterparty's account.
 	SortCode string `json:"sort_code"`
 }
+
+type ValidateAccountNameResponse = any
 
 type ValidateAccountNameResponseAu struct {
 	// The name of the recipient when the account type is business.
