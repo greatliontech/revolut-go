@@ -49,10 +49,27 @@ tasks:
       - task: test
 
   gen:
-    desc: Regenerate gen_*.go files from the vendored OpenAPI specs.
+    desc: Regenerate gen_*.go files for every wired client.
+    cmds:
+      - task: gen:business
+      - task: gen:merchant
+      - task: gen:openbanking
+      - task: build
+
+  gen:business:
+    desc: Regenerate the Business API client.
     cmds:
       - go run ./cmd/revogen -package business -out business
-      - task: build
+
+  gen:merchant:
+    desc: Regenerate the Merchant API client.
+    cmds:
+      - go run ./cmd/revogen -spec specs/merchant.yaml -package merchant -out merchant
+
+  gen:openbanking:
+    desc: Regenerate the Open Banking API client.
+    cmds:
+      - go run ./cmd/revogen -spec specs/open-banking.yaml -package openbanking -out openbanking
 
   test:gen-all:
     desc: Regenerate every vendored spec into a scratch dir and run go vet on each output. Catches cross-spec regressions before they reach committed code.
