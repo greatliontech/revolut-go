@@ -143,6 +143,35 @@ func TestBuildDecls_ConditionalAnyOf(t *testing.T) {
 	}
 }
 
+// TestBuildDecls_EnumDedupsByValue pins the fix for the
+// open-banking ObbalanceType1code duplicate-enum-value spec bug.
+// The spec lists "InterimAvailable" twice; without dedup the
+// generator would emit two constants with identical wire values,
+// the second of which is unreachable by a switch statement.
+func TestBuildDecls_EnumDedupsByValue(t *testing.T) {
+	b := newTestBuilder()
+	seedSchemas(b, "Kind", inline(&openapi3.Schema{
+		Type: &openapi3.Types{"string"},
+		Enum: []any{"foo", "bar", "foo", "baz", "bar"},
+	}))
+	b.buildDecls()
+	d := b.declByName["Kind"]
+	if d == nil {
+		t.Fatal("no Kind decl")
+	}
+	if len(d.EnumValues) != 3 {
+		t.Fatalf("want 3 deduped values; got %d: %+v", len(d.EnumValues), d.EnumValues)
+	}
+	seen := map[string]bool{}
+	for _, ev := range d.EnumValues {
+		s := ev.Value.(string)
+		if seen[s] {
+			t.Errorf("duplicate value survived dedup: %q", s)
+		}
+		seen[s] = true
+	}
+}
+
 func TestBuildDecls_ReadOnlyField(t *testing.T) {
 	b := newTestBuilder()
 	prop := inline(primSchema("string", "uuid"))

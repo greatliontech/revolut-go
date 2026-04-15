@@ -281,8 +281,6 @@ const (
 	ObbalanceType1codeExpected               ObbalanceType1code = "Expected"
 	ObbalanceType1codeForwardAvailable       ObbalanceType1code = "ForwardAvailable"
 	ObbalanceType1codeInformation            ObbalanceType1code = "Information"
-	ObbalanceType1codeInterimAvailableV2     ObbalanceType1code = "InterimAvailable"
-	ObbalanceType1codeInterimBookedV2        ObbalanceType1code = "InterimBooked"
 	ObbalanceType1codeInterimCleared         ObbalanceType1code = "InterimCleared"
 	ObbalanceType1codeOpeningAvailable       ObbalanceType1code = "OpeningAvailable"
 	ObbalanceType1codeOpeningBooked          ObbalanceType1code = "OpeningBooked"

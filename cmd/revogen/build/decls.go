@@ -106,26 +106,41 @@ func (b *Builder) enumFromSchema(goName string, s *openapi3.Schema) *ir.Decl {
 		base = ir.Prim("int64")
 	}
 	values := make([]ir.EnumValue, 0, len(s.Enum))
+	// Dedup by wire value. Some upstream specs list the same string
+	// twice (open-banking's ObbalanceType1code repeats InterimAvailable
+	// and InterimBooked); without this guard the generator emits two
+	// constants with identical values and the second is unreachable
+	// by a switch — worse, the collision resolver V2-suffixes the
+	// name and buries the duplication.
+	seen := map[string]bool{}
 	for _, v := range s.Enum {
 		ev := ir.EnumValue{}
+		var key string
 		switch x := v.(type) {
 		case string:
 			ev.Value = x
 			ev.GoName = goName + names.TypeName(x)
+			key = "s:" + x
 		case int, int32, int64:
 			ev.Value = x
 			ev.GoName = fmt.Sprintf("%s%v", goName, x)
+			key = fmt.Sprintf("i:%v", x)
 		case float64:
 			// OpenAPI YAML parser often produces float64 for numeric enums.
 			if x == float64(int64(x)) {
 				ev.Value = int64(x)
 				ev.GoName = fmt.Sprintf("%s%d", goName, int64(x))
+				key = fmt.Sprintf("i:%d", int64(x))
 			} else {
 				continue // skip non-integer numeric enums; no ergonomic mapping
 			}
 		default:
 			continue
 		}
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
 		values = append(values, ev)
 	}
 	return &ir.Decl{
