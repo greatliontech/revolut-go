@@ -97,15 +97,19 @@ func (t *Transport) Do(ctx context.Context, method, path string, body, dst any) 
 }
 
 // RawRequest describes a non-JSON HTTP request. Exactly one of
-// JSONBody, FormBody, or RawBody may be set; the transport picks the
-// matching Content-Type automatically. Accept, when non-empty,
-// overrides the default `application/json`.
+// JSONBody, FormBody, or RawBody may be set; the transport picks
+// the matching Content-Type automatically. Accept, when non-empty,
+// overrides the default `application/json`. Headers, when non-nil,
+// are merged into the outgoing request after auth/UA but before
+// Content-Type / Accept, so those two can't be accidentally
+// overridden.
 type RawRequest struct {
-	JSONBody    any       // JSON-encoded if non-nil
-	FormBody    url.Values // application/x-www-form-urlencoded if non-nil
-	RawBody     io.Reader  // raw body bytes; requires RawContentType
+	JSONBody       any        // JSON-encoded if non-nil
+	FormBody       url.Values // application/x-www-form-urlencoded if non-nil
+	RawBody        io.Reader  // raw body bytes; requires RawContentType
 	RawContentType string
-	Accept      string
+	Accept         string
+	Headers        http.Header
 }
 
 // DoRaw performs an HTTP request that may carry a non-JSON body and/or
@@ -140,6 +144,15 @@ func (t *Transport) DoRaw(ctx context.Context, method, path string, r RawRequest
 	req, err := t.newRequestWithBody(ctx, method, path, reader, contentType, accept)
 	if err != nil {
 		return nil, nil, err
+	}
+	for k, vs := range r.Headers {
+		// Don't let the caller override Content-Type / Accept via
+		// Headers; those are authoritative on this method.
+		switch http.CanonicalHeaderKey(k) {
+		case "Content-Type", "Accept":
+			continue
+		}
+		req.Header[http.CanonicalHeaderKey(k)] = append([]string(nil), vs...)
 	}
 	resp, err := t.httpc.Do(req)
 	if err != nil {

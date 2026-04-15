@@ -147,9 +147,20 @@ func writeHTTPCall(w *fileWriter, spec *ir.Spec, m *ir.Method) {
 		bodyArg = m.BodyParam.Name
 	}
 
+	// Methods that need to attach request headers (open-banking's
+	// x-fapi-*, etc.) always go through DoRaw because it's the only
+	// transport entry point that forwards a header map. JSON
+	// request/response bodies still work — DoRaw marshals the
+	// JSONBody and the emitted code json.Unmarshals the returned
+	// byte slice.
+	forceRaw := len(m.HeaderParams) > 0
 	switch m.HTTPCall.BodyKind {
 	case ir.BodyJSON, ir.BodyNone:
-		writeJSONHTTPCall(w, m, pathExpr, bodyArg)
+		if forceRaw {
+			writeRawHTTPCall(w, m, pathExpr)
+		} else {
+			writeJSONHTTPCall(w, m, pathExpr, bodyArg)
+		}
 	case ir.BodyForm, ir.BodyMultipart, ir.BodyRawStream:
 		writeRawHTTPCall(w, m, pathExpr)
 	}
@@ -208,6 +219,29 @@ func writeRawHTTPCall(w *fileWriter, m *ir.Method, pathExpr string) {
 		w.printf("\t\tAccept: %q,\n", m.HTTPCall.Accept)
 	}
 	w.write("\t}\n")
+
+	// Attach caller-supplied header params (open-banking's
+	// x-fapi-*, etc.) to the outgoing request.
+	if len(m.HeaderParams) > 0 {
+		w.write("\tr.Headers = http.Header{}\n")
+		for _, hp := range m.HeaderParams {
+			// WireName preserves the original header name; Name is
+			// the camelCase Go identifier the user passes in.
+			wire := hp.Name
+			for _, p := range m.HeaderParams {
+				if p.Name == hp.Name && p.Doc != "" {
+					_ = p
+				}
+			}
+			// Prefer the wire name on the outgoing request; since
+			// HeaderParam doesn't currently track WireName, the Go
+			// identifier works if callers match it to the spec.
+			_ = wire
+			w.printf("\tif %s != \"\" {\n", hp.Name)
+			w.printf("\t\tr.Headers.Set(%q, %s)\n", headerWireName(hp), hp.Name)
+			w.write("\t}\n")
+		}
+	}
 
 	if m.HTTPCall.BodyKind == ir.BodyMultipart {
 		w.write("\tmpBody, mpCT, err := req.encodeMultipart()\n")
@@ -296,6 +330,16 @@ func renderPathExpr(m *ir.Method) string {
 }
 
 func quote(s string) string { return "\"" + s + "\"" }
+
+// headerWireName returns the wire header name for a header param.
+// Prefers the spec-side WireName if available (e.g. "x-fapi-*"
+// survives verbatim); falls back to the Go identifier.
+func headerWireName(p ir.Param) string {
+	if p.WireName != "" {
+		return p.WireName
+	}
+	return p.Name
+}
 
 func httpVerbWord(verb string) string {
 	if verb == "" {

@@ -96,6 +96,12 @@ func FileImports(spec *ir.Spec) map[string][]string {
 			if m.HTTPCall.BodyKind == ir.BodyMultipart || m.HTTPCall.BodyKind == ir.BodyForm || m.HTTPCall.BodyKind == ir.BodyRawStream {
 				needsJSON = true // typed JSON responses on raw bodies still decode through json.Unmarshal
 			}
+			if len(m.HeaderParams) > 0 && m.HTTPCall.RespKind != ir.RespNone && m.HTTPCall.RespKind != ir.RespRawBytes {
+				// Header-carrying methods route through DoRaw; JSON
+				// responses decode via encoding/json on the returned
+				// byte slice.
+				needsJSON = true
+			}
 			if m.HTTPCall.RespKind == ir.RespUnionTagged || m.HTTPCall.RespKind == ir.RespUnionProbe {
 				needsJSON = true
 			}

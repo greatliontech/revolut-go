@@ -142,9 +142,10 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 				typ = ir.Prim("string")
 			}
 			m.HeaderParams = append(m.HeaderParams, ir.Param{
-				Name: names.ParamName(p.Name),
-				Type: typ,
-				Doc:  firstLine(p.Description),
+				Name:     names.ParamName(p.Name),
+				Type:     typ,
+				Doc:      firstLine(p.Description),
+				WireName: p.Name,
 			})
 		}
 		// cookie params are ignored; no vendored spec uses them.
