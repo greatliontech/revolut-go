@@ -56,17 +56,17 @@ func TestAccounts_List(t *testing.T) {
 func TestAccounts_Get(t *testing.T) {
 	t.Parallel()
 	client := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/accounts/abc123" {
+		if r.URL.Path != "/accounts/11111111-1111-1111-1111-111111111111" {
 			t.Errorf("path: %s", r.URL.Path)
 		}
-		_, _ = io.WriteString(w, `{"id":"abc123","balance":1,"currency":"USD","state":"active","public":false,"created_at":"2026-01-01T00:00:00Z","updated_at":"2026-01-01T00:00:00Z"}`)
+		_, _ = io.WriteString(w, `{"id":"11111111-1111-1111-1111-111111111111","balance":1,"currency":"USD","state":"active","public":false,"created_at":"2026-01-01T00:00:00Z","updated_at":"2026-01-01T00:00:00Z"}`)
 	}))
 
-	got, err := client.Accounts.Get(context.Background(), "abc123")
+	got, err := client.Accounts.Get(context.Background(), "11111111-1111-1111-1111-111111111111")
 	if err != nil {
 		t.Fatalf("Get: %v", err)
 	}
-	if got.ID != "abc123" || got.Currency != "USD" {
+	if got.ID != "11111111-1111-1111-1111-111111111111" || got.Currency != "USD" {
 		t.Errorf("got: %+v", got)
 	}
 }

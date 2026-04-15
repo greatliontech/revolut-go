@@ -82,6 +82,9 @@ func (s *Orders) Get(ctx context.Context, orderID string, authorization string, 
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
+	if !isUUID(orderID) {
+		return nil, errors.New("merchant: order_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -107,6 +110,9 @@ func (s *Orders) Get(ctx context.Context, orderID string, authorization string, 
 func (s *Orders) Update(ctx context.Context, orderID string, authorization string, revolutAPIVersion OrdersRevolutAPIVersion, req OrderUpdateV6) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
+	}
+	if !isUUID(orderID) {
+		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -136,6 +142,9 @@ func (s *Orders) CancelOrder(ctx context.Context, orderID string, authorization 
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
+	if !isUUID(orderID) {
+		return nil, errors.New("merchant: order_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -161,6 +170,9 @@ func (s *Orders) CancelOrder(ctx context.Context, orderID string, authorization 
 func (s *Orders) CaptureOrder(ctx context.Context, orderID string, authorization string, revolutAPIVersion OrdersRevolutAPIVersion, req OrderCaptureV2) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
+	}
+	if !isUUID(orderID) {
+		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -189,6 +201,9 @@ func (s *Orders) CaptureOrder(ctx context.Context, orderID string, authorization
 func (s *Orders) IncrementAuthorisation(ctx context.Context, orderID string, authorization string, revolutAPIVersion OrdersRevolutAPIVersion, req IncrementalAuthorisationRequest) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
+	}
+	if !isUUID(orderID) {
+		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
 	if req.Amount == 0 {
 		return nil, errors.New("merchant: IncrementalAuthorisationRequest.amount is required")
@@ -221,6 +236,9 @@ func (s *Orders) GetPaymentList(ctx context.Context, orderID string, authorizati
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
+	if !isUUID(orderID) {
+		return nil, errors.New("merchant: order_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -243,6 +261,9 @@ func (s *Orders) GetPaymentList(ctx context.Context, orderID string, authorizati
 func (s *Orders) PayOrder(ctx context.Context, orderID string, authorization string, req SavedPaymentMethod) (*PaymentRetrieval, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
+	}
+	if !isUUID(orderID) {
+		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
 	if req.SavedPaymentMethod == nil {
 		return nil, errors.New("merchant: SavedPaymentMethod.saved_payment_method is required")
@@ -283,6 +304,9 @@ func (s *Orders) PayOrder(ctx context.Context, orderID string, authorization str
 func (s *Orders) RefundOrder(ctx context.Context, orderID string, authorization string, revolutAPIVersion OrdersRevolutAPIVersion, idempotencyKey string, req OrderRefundV2) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
+	}
+	if !isUUID(orderID) {
+		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
 	if req.Amount == 0 {
 		return nil, errors.New("merchant: OrderRefundV2.amount is required")

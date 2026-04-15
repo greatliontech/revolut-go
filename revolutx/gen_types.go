@@ -1200,3 +1200,29 @@ func (p *GetPrivateTradesParams) ApplyDefaults() {
 		p.Limit = 1900
 	}
 }
+
+// isUUID reports whether s matches the RFC 4122 canonical form
+// (8-4-4-4-12 hex digits). Used by generated path-param validators
+// to reject malformed IDs before issuing the HTTP call.
+func isUUID(s string) bool {
+	if len(s) != 36 {
+		return false
+	}
+	for i, r := range s {
+		switch i {
+		case 8, 13, 18, 23:
+			if r != '-' {
+				return false
+			}
+		default:
+			switch {
+			case r >= '0' && r <= '9':
+			case r >= 'a' && r <= 'f':
+			case r >= 'A' && r <= 'F':
+			default:
+				return false
+			}
+		}
+	}
+	return true
+}

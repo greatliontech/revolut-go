@@ -52,6 +52,9 @@ func (s *WebhooksV2) Get(ctx context.Context, webhookID string) (*WebhookV2, err
 	if webhookID == "" {
 		return nil, errors.New("business: webhook_id is required")
 	}
+	if !isUUID(webhookID) {
+		return nil, errors.New("business: webhook_id must be a valid UUID")
+	}
 	var out WebhookV2
 	if err := s.t.Do(ctx, http.MethodGet, "https://b2b.revolut.com/api/2.0/"+"webhooks/"+url.PathEscape(webhookID), nil, &out); err != nil {
 		return nil, err
@@ -66,6 +69,9 @@ func (s *WebhooksV2) Get(ctx context.Context, webhookID string) (*WebhookV2, err
 func (s *WebhooksV2) Update(ctx context.Context, webhookID string, req UpdateWebhookRequest) (*WebhookV2Basic, error) {
 	if webhookID == "" {
 		return nil, errors.New("business: webhook_id is required")
+	}
+	if !isUUID(webhookID) {
+		return nil, errors.New("business: webhook_id must be a valid UUID")
 	}
 	var out WebhookV2Basic
 	if err := s.t.Do(ctx, http.MethodPatch, "https://b2b.revolut.com/api/2.0/"+"webhooks/"+url.PathEscape(webhookID), req, &out); err != nil {
@@ -82,6 +88,9 @@ func (s *WebhooksV2) Delete(ctx context.Context, webhookID string) error {
 	if webhookID == "" {
 		return errors.New("business: webhook_id is required")
 	}
+	if !isUUID(webhookID) {
+		return errors.New("business: webhook_id must be a valid UUID")
+	}
 	return s.t.Do(ctx, http.MethodDelete, "https://b2b.revolut.com/api/2.0/"+"webhooks/"+url.PathEscape(webhookID), nil, nil)
 }
 
@@ -92,6 +101,9 @@ func (s *WebhooksV2) Delete(ctx context.Context, webhookID string) error {
 func (s *WebhooksV2) GetFailedWebhookEvents(ctx context.Context, webhookID string, opts *GetFailedWebhookEventsParams) ([]WebhookEvent, error) {
 	if webhookID == "" {
 		return nil, errors.New("business: webhook_id is required")
+	}
+	if !isUUID(webhookID) {
+		return nil, errors.New("business: webhook_id must be a valid UUID")
 	}
 	path := "https://b2b.revolut.com/api/2.0/" + "webhooks/" + url.PathEscape(webhookID) + "/failed-events"
 	if q := opts.encode().Encode(); q != "" {
@@ -144,6 +156,9 @@ func (s *WebhooksV2) GetFailedWebhookEventsAll(ctx context.Context, webhookID st
 func (s *WebhooksV2) RotateWebhookSigningSecret(ctx context.Context, webhookID string, req WebhookSigningSecretRotateRequest) (*WebhookV2, error) {
 	if webhookID == "" {
 		return nil, errors.New("business: webhook_id is required")
+	}
+	if !isUUID(webhookID) {
+		return nil, errors.New("business: webhook_id must be a valid UUID")
 	}
 	var out WebhookV2
 	if err := s.t.Do(ctx, http.MethodPost, "https://b2b.revolut.com/api/2.0/"+"webhooks/"+url.PathEscape(webhookID)+"/rotate-signing-secret", req, &out); err != nil {

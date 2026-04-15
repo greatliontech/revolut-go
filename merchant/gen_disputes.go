@@ -82,6 +82,9 @@ func (s *Disputes) Get(ctx context.Context, disputeID string, authorization stri
 	if disputeID == "" {
 		return nil, errors.New("merchant: dispute_id is required")
 	}
+	if !isUUID(disputeID) {
+		return nil, errors.New("merchant: dispute_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -108,6 +111,9 @@ func (s *Disputes) AcceptDispute(ctx context.Context, disputeID string, authoriz
 	if disputeID == "" {
 		return errors.New("merchant: dispute_id is required")
 	}
+	if !isUUID(disputeID) {
+		return errors.New("merchant: dispute_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -130,6 +136,9 @@ func (s *Disputes) AcceptDispute(ctx context.Context, disputeID string, authoriz
 func (s *Disputes) ChallengeDispute(ctx context.Context, disputeID string, authorization string, revolutAPIVersion DisputesRevolutAPIVersion, req DisputeChallenge) error {
 	if disputeID == "" {
 		return errors.New("merchant: dispute_id is required")
+	}
+	if !isUUID(disputeID) {
+		return errors.New("merchant: dispute_id must be a valid UUID")
 	}
 	if len(req.Evidences) == 0 {
 		return errors.New("merchant: DisputeChallenge.evidences is required")
@@ -161,6 +170,9 @@ func (s *Disputes) ChallengeDispute(ctx context.Context, disputeID string, autho
 func (s *Disputes) UploadDisputeEvidence(ctx context.Context, disputeID string, authorization string, revolutAPIVersion DisputesRevolutAPIVersion, contentType string, req DisputeEvidenceCreation) (*DisputeEvidence, error) {
 	if disputeID == "" {
 		return nil, errors.New("merchant: dispute_id is required")
+	}
+	if !isUUID(disputeID) {
+		return nil, errors.New("merchant: dispute_id must be a valid UUID")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

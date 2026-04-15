@@ -33,7 +33,60 @@ func writeTypesFile(spec *ir.Spec, imports []string) string {
 		writeDecl(w, d)
 	}
 	writeResponseMetadata(w, spec)
+	writeFormatHelpers(w, spec)
 	return w.buf.String()
+}
+
+// writeFormatHelpers emits the local format-validation helpers
+// path-param validators call. Currently just isUUID — emitted
+// only when at least one path param in the spec declares
+// `format: uuid`, so packages that never reference it stay flat.
+//
+// The check is a single RFC 4122 canonical-form match: 8-4-4-4-12
+// hex digits with no brace/URN wrapper. Forgiving-but-typical, to
+// reject obvious typos without second-guessing server-side
+// dialects (UUIDv1/v4/v6 look identical structurally; we don't
+// version-discriminate).
+func writeFormatHelpers(w *fileWriter, spec *ir.Spec) {
+	if !specUsesUUIDValidator(spec) {
+		return
+	}
+	w.write("\n// isUUID reports whether s matches the RFC 4122 canonical form\n")
+	w.write("// (8-4-4-4-12 hex digits). Used by generated path-param validators\n")
+	w.write("// to reject malformed IDs before issuing the HTTP call.\n")
+	w.write("func isUUID(s string) bool {\n")
+	w.write("\tif len(s) != 36 {\n\t\treturn false\n\t}\n")
+	w.write("\tfor i, r := range s {\n")
+	w.write("\t\tswitch i {\n")
+	w.write("\t\tcase 8, 13, 18, 23:\n")
+	w.write("\t\t\tif r != '-' { return false }\n")
+	w.write("\t\tdefault:\n")
+	w.write("\t\t\tswitch {\n")
+	w.write("\t\t\tcase r >= '0' && r <= '9':\n")
+	w.write("\t\t\tcase r >= 'a' && r <= 'f':\n")
+	w.write("\t\t\tcase r >= 'A' && r <= 'F':\n")
+	w.write("\t\t\tdefault: return false\n")
+	w.write("\t\t\t}\n")
+	w.write("\t\t}\n")
+	w.write("\t}\n")
+	w.write("\treturn true\n")
+	w.write("}\n")
+}
+
+// specUsesUUIDValidator reports whether any method in spec has
+// a path param typed `format: uuid`, so writeFormatHelpers knows
+// whether to emit the helper.
+func specUsesUUIDValidator(spec *ir.Spec) bool {
+	for _, r := range spec.Resources {
+		for _, m := range r.Methods {
+			for _, p := range m.PathParams {
+				if p.Format == "uuid" {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 // writeResponseMetadata emits the per-package ResponseMetadata

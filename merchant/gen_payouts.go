@@ -82,6 +82,9 @@ func (s *Payouts) Get(ctx context.Context, payoutID string, authorization string
 	if payoutID == "" {
 		return nil, errors.New("merchant: payout_id is required")
 	}
+	if !isUUID(payoutID) {
+		return nil, errors.New("merchant: payout_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {

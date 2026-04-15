@@ -24,6 +24,9 @@ func (s *Payments) GetDetails(ctx context.Context, paymentID string, authorizati
 	if paymentID == "" {
 		return nil, errors.New("merchant: payment_id is required")
 	}
+	if !isUUID(paymentID) {
+		return nil, errors.New("merchant: payment_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {

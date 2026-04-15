@@ -44,6 +44,9 @@ func (s *ReportRuns) GetDetails(ctx context.Context, reportRunID string, authori
 	if reportRunID == "" {
 		return nil, errors.New("merchant: report_run_id is required")
 	}
+	if !isUUID(reportRunID) {
+		return nil, errors.New("merchant: report_run_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -66,6 +69,9 @@ func (s *ReportRuns) GetDetails(ctx context.Context, reportRunID string, authori
 func (s *ReportRuns) DownloadReportFile(ctx context.Context, reportRunID string, authorization string) ([]byte, error) {
 	if reportRunID == "" {
 		return nil, errors.New("merchant: report_run_id is required")
+	}
+	if !isUUID(reportRunID) {
+		return nil, errors.New("merchant: report_run_id must be a valid UUID")
 	}
 	r := transport.RawRequest{
 		Accept: "text/csv",

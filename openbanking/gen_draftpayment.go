@@ -66,6 +66,9 @@ func (s *DraftPayment) FindDraftPayment(ctx context.Context, draftPaymentID stri
 	if draftPaymentID == "" {
 		return nil, errors.New("openbanking: DraftPaymentId is required")
 	}
+	if !isUUID(draftPaymentID) {
+		return nil, errors.New("openbanking: DraftPaymentId must be a valid UUID")
+	}
 	var out DraftPaymentResponse
 	if err := s.t.Do(ctx, http.MethodGet, "https://apis.revolut.com/"+"draft-payments/"+url.PathEscape(draftPaymentID), nil, &out); err != nil {
 		return nil, err
@@ -80,6 +83,9 @@ func (s *DraftPayment) FindDraftPayment(ctx context.Context, draftPaymentID stri
 func (s *DraftPayment) Delete(ctx context.Context, draftPaymentID string) ([]byte, error) {
 	if draftPaymentID == "" {
 		return nil, errors.New("openbanking: DraftPaymentId is required")
+	}
+	if !isUUID(draftPaymentID) {
+		return nil, errors.New("openbanking: DraftPaymentId must be a valid UUID")
 	}
 	r := transport.RawRequest{
 		Accept: "text/plain",
@@ -99,8 +105,14 @@ func (s *DraftPayment) DeleteTransfer(ctx context.Context, draftPaymentID string
 	if draftPaymentID == "" {
 		return nil, errors.New("openbanking: DraftPaymentId is required")
 	}
+	if !isUUID(draftPaymentID) {
+		return nil, errors.New("openbanking: DraftPaymentId must be a valid UUID")
+	}
 	if draftPaymentTransferID == "" {
 		return nil, errors.New("openbanking: DraftPaymentTransferId is required")
+	}
+	if !isUUID(draftPaymentTransferID) {
+		return nil, errors.New("openbanking: DraftPaymentTransferId must be a valid UUID")
 	}
 	r := transport.RawRequest{
 		Accept: "text/plain",

@@ -36,6 +36,9 @@ func (s *Accounts) Get(ctx context.Context, accountID string) (*Account, error) 
 	if accountID == "" {
 		return nil, errors.New("business: account_id is required")
 	}
+	if !isUUID(accountID) {
+		return nil, errors.New("business: account_id must be a valid UUID")
+	}
 	var out Account
 	if err := s.t.Do(ctx, http.MethodGet, "accounts/"+url.PathEscape(accountID), nil, &out); err != nil {
 		return nil, err
@@ -50,6 +53,9 @@ func (s *Accounts) Get(ctx context.Context, accountID string) (*Account, error) 
 func (s *Accounts) GetDetails(ctx context.Context, accountID string) ([]AccountBankDetailsItem, error) {
 	if accountID == "" {
 		return nil, errors.New("business: account_id is required")
+	}
+	if !isUUID(accountID) {
+		return nil, errors.New("business: account_id must be a valid UUID")
 	}
 	var out []AccountBankDetailsItem
 	if err := s.t.Do(ctx, http.MethodGet, "accounts/"+url.PathEscape(accountID)+"/bank-details", nil, &out); err != nil {

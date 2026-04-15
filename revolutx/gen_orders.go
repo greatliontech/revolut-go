@@ -103,6 +103,9 @@ func (s *Orders) GetFills(ctx context.Context, venueOrderID string, xRevxTimesta
 	if venueOrderID == "" {
 		return nil, errors.New("revolutx: venue_order_id is required")
 	}
+	if !isUUID(venueOrderID) {
+		return nil, errors.New("revolutx: venue_order_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	r.Headers.Set("X-Revx-Timestamp", strconv.Itoa(int(xRevxTimestamp)))
@@ -152,6 +155,9 @@ func (s *Orders) Get(ctx context.Context, venueOrderID string, xRevxTimestamp in
 	if venueOrderID == "" {
 		return nil, errors.New("revolutx: venue_order_id is required")
 	}
+	if !isUUID(venueOrderID) {
+		return nil, errors.New("revolutx: venue_order_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	r.Headers.Set("X-Revx-Timestamp", strconv.Itoa(int(xRevxTimestamp)))
@@ -175,6 +181,9 @@ func (s *Orders) Get(ctx context.Context, venueOrderID string, xRevxTimestamp in
 func (s *Orders) CancelOrder(ctx context.Context, venueOrderID string, xRevxTimestamp int, xRevxSignature string) error {
 	if venueOrderID == "" {
 		return errors.New("revolutx: venue_order_id is required")
+	}
+	if !isUUID(venueOrderID) {
+		return errors.New("revolutx: venue_order_id must be a valid UUID")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

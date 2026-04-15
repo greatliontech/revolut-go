@@ -78,6 +78,9 @@ func (s *Webhooks) Get(ctx context.Context, webhookID string, authorization stri
 	if webhookID == "" {
 		return nil, errors.New("merchant: webhook_id is required")
 	}
+	if !isUUID(webhookID) {
+		return nil, errors.New("merchant: webhook_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -103,6 +106,9 @@ func (s *Webhooks) Get(ctx context.Context, webhookID string, authorization stri
 func (s *Webhooks) Update(ctx context.Context, webhookID string, authorization string, revolutAPIVersion WebhooksRevolutAPIVersion, req WebhookUpdate) (*WebhookV2, error) {
 	if webhookID == "" {
 		return nil, errors.New("merchant: webhook_id is required")
+	}
+	if !isUUID(webhookID) {
+		return nil, errors.New("merchant: webhook_id must be a valid UUID")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -132,6 +138,9 @@ func (s *Webhooks) Delete(ctx context.Context, webhookID string, authorization s
 	if webhookID == "" {
 		return errors.New("merchant: webhook_id is required")
 	}
+	if !isUUID(webhookID) {
+		return errors.New("merchant: webhook_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -154,6 +163,9 @@ func (s *Webhooks) Delete(ctx context.Context, webhookID string, authorization s
 func (s *Webhooks) RotateWebhookSigningSecret(ctx context.Context, webhookID string, authorization string, revolutAPIVersion WebhooksRevolutAPIVersion, req WebhooksBody) (*WebhookV2, error) {
 	if webhookID == "" {
 		return nil, errors.New("merchant: webhook_id is required")
+	}
+	if !isUUID(webhookID) {
+		return nil, errors.New("merchant: webhook_id must be a valid UUID")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,

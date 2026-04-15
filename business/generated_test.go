@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -15,26 +16,21 @@ import (
 	"github.com/greatliontech/revolut-go/internal/core"
 )
 
-// TestPathParamEscaping verifies that IDs containing characters that
-// would break a raw URL are URL-escaped by the generated method. We
-// check RequestURI (the wire form) so the percent-encoded octets are
-// visible — `r.URL.Path` would have been transparently decoded by
-// net/http and hide the difference.
-func TestPathParamEscaping(t *testing.T) {
+// TestPathParamEscaping_GeneratedSource verifies the generator
+// wraps path params with url.PathEscape in the emitted method
+// body. Static check — we can't exercise it via a real request
+// because Revolut's path params are uniformly `format: uuid`,
+// which the pre-flight validator rejects for any string that
+// would actually need escaping. The escape logic still matters
+// for future specs with non-UUID path params.
+func TestPathParamEscaping_GeneratedSource(t *testing.T) {
 	t.Parallel()
-	var gotURI string
-	client := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotURI = r.RequestURI
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = io.WriteString(w, `{"id":"ok","name":"","balance":0,"currency":"GBP","state":"active","public":false,"created_at":"2026-01-01T00:00:00Z","updated_at":"2026-01-01T00:00:00Z"}`)
-	}))
-	weird := "a/b c?d#e"
-	if _, err := client.Accounts.Get(context.Background(), weird); err != nil {
-		t.Fatalf("Get: %v", err)
+	src, err := os.ReadFile("gen_accounts.go")
+	if err != nil {
+		t.Fatal(err)
 	}
-	wantSuffix := "/accounts/" + url.PathEscape(weird)
-	if !strings.HasSuffix(gotURI, wantSuffix) {
-		t.Errorf("wire URI %q; want suffix %q", gotURI, wantSuffix)
+	if !strings.Contains(string(src), `url.PathEscape(accountID)`) {
+		t.Errorf("gen_accounts.go missing url.PathEscape(accountID) call")
 	}
 }
 
@@ -229,7 +225,7 @@ func TestAPIError_Is(t *testing.T) {
 		w.WriteHeader(http.StatusNotFound)
 		_, _ = io.WriteString(w, `{"code":404,"message":"nope"}`)
 	}))
-	_, err := client.Accounts.Get(context.Background(), "missing")
+	_, err := client.Accounts.Get(context.Background(), "99999999-9999-4999-9999-999999999999")
 	var apiErr *core.APIError
 	if !errors.As(err, &apiErr) {
 		t.Fatalf("errors.As did not unwrap APIError: %v", err)

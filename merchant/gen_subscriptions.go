@@ -111,6 +111,9 @@ func (s *Subscriptions) GetPlan(ctx context.Context, subscriptionPlanID string, 
 	if subscriptionPlanID == "" {
 		return nil, errors.New("merchant: subscription_plan_id is required")
 	}
+	if !isUUID(subscriptionPlanID) {
+		return nil, errors.New("merchant: subscription_plan_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -226,6 +229,9 @@ func (s *Subscriptions) Get(ctx context.Context, subscriptionID string, authoriz
 	if subscriptionID == "" {
 		return nil, errors.New("merchant: subscription_id is required")
 	}
+	if !isUUID(subscriptionID) {
+		return nil, errors.New("merchant: subscription_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -251,6 +257,9 @@ func (s *Subscriptions) Get(ctx context.Context, subscriptionID string, authoriz
 func (s *Subscriptions) Update(ctx context.Context, subscriptionID string, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion, req SubscriptionUpdate) (*Subscription, error) {
 	if subscriptionID == "" {
 		return nil, errors.New("merchant: subscription_id is required")
+	}
+	if !isUUID(subscriptionID) {
+		return nil, errors.New("merchant: subscription_id must be a valid UUID")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -280,6 +289,9 @@ func (s *Subscriptions) CancelSubscription(ctx context.Context, subscriptionID s
 	if subscriptionID == "" {
 		return errors.New("merchant: subscription_id is required")
 	}
+	if !isUUID(subscriptionID) {
+		return errors.New("merchant: subscription_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -302,6 +314,9 @@ func (s *Subscriptions) CancelSubscription(ctx context.Context, subscriptionID s
 func (s *Subscriptions) GetCycleList(ctx context.Context, subscriptionID string, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion, opts *RetrieveSubscriptionCycleListParams) (*SubscriptionCycles, error) {
 	if subscriptionID == "" {
 		return nil, errors.New("merchant: subscription_id is required")
+	}
+	if !isUUID(subscriptionID) {
+		return nil, errors.New("merchant: subscription_id must be a valid UUID")
 	}
 	path := "api/subscriptions/" + url.PathEscape(subscriptionID) + "/cycles"
 	if q := opts.encode().Encode(); q != "" {
@@ -366,8 +381,14 @@ func (s *Subscriptions) GetCycle(ctx context.Context, subscriptionID string, cyc
 	if subscriptionID == "" {
 		return nil, errors.New("merchant: subscription_id is required")
 	}
+	if !isUUID(subscriptionID) {
+		return nil, errors.New("merchant: subscription_id must be a valid UUID")
+	}
 	if cycleID == "" {
 		return nil, errors.New("merchant: cycle_id is required")
+	}
+	if !isUUID(cycleID) {
+		return nil, errors.New("merchant: cycle_id must be a valid UUID")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

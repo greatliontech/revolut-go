@@ -69,6 +69,9 @@ func (s *Expenses) GetExpense(ctx context.Context, expenseID string) (*Expense, 
 	if expenseID == "" {
 		return nil, errors.New("business: expense_id is required")
 	}
+	if !isUUID(expenseID) {
+		return nil, errors.New("business: expense_id must be a valid UUID")
+	}
 	var out Expense
 	if err := s.t.Do(ctx, http.MethodGet, "expenses/"+url.PathEscape(expenseID), nil, &out); err != nil {
 		return nil, err
@@ -84,8 +87,14 @@ func (s *Expenses) GetExpenseReceipt(ctx context.Context, expenseID string, rece
 	if expenseID == "" {
 		return nil, errors.New("business: expense_id is required")
 	}
+	if !isUUID(expenseID) {
+		return nil, errors.New("business: expense_id must be a valid UUID")
+	}
 	if receiptID == "" {
 		return nil, errors.New("business: receipt_id is required")
+	}
+	if !isUUID(receiptID) {
+		return nil, errors.New("business: receipt_id must be a valid UUID")
 	}
 	r := transport.RawRequest{
 		Accept: "*/*",

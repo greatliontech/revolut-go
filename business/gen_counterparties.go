@@ -93,6 +93,9 @@ func (s *Counterparties) Get(ctx context.Context, counterpartyID string) (*Count
 	if counterpartyID == "" {
 		return nil, errors.New("business: counterparty_id is required")
 	}
+	if !isUUID(counterpartyID) {
+		return nil, errors.New("business: counterparty_id must be a valid UUID")
+	}
 	var out Counterparty
 	if err := s.t.Do(ctx, http.MethodGet, "counterparty/"+url.PathEscape(counterpartyID), nil, &out); err != nil {
 		return nil, err
@@ -107,6 +110,9 @@ func (s *Counterparties) Get(ctx context.Context, counterpartyID string) (*Count
 func (s *Counterparties) Delete(ctx context.Context, counterpartyID string) error {
 	if counterpartyID == "" {
 		return errors.New("business: counterparty_id is required")
+	}
+	if !isUUID(counterpartyID) {
+		return errors.New("business: counterparty_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodDelete, "counterparty/"+url.PathEscape(counterpartyID), nil, nil)
 }

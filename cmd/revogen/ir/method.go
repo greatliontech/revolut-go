@@ -35,6 +35,13 @@ type Param struct {
 	// where the wire form must round-trip exactly. Empty when the
 	// param has no spec-side counterpart (e.g. ctx).
 	WireName string
+
+	// Format mirrors the OpenAPI `format:` keyword when the param
+	// is a string. Non-empty values the generator recognises today:
+	// "uuid". Other formats stay as pure documentation — the
+	// emitter only attaches pre-flight validators for formats it
+	// knows how to check locally.
+	Format string
 }
 
 // Method is one Go method on a Resource.

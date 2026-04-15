@@ -99,6 +99,9 @@ func (s *PayoutLinks) Get(ctx context.Context, payoutLinkID string) (*PayoutLink
 	if payoutLinkID == "" {
 		return nil, errors.New("business: payout_link_id is required")
 	}
+	if !isUUID(payoutLinkID) {
+		return nil, errors.New("business: payout_link_id must be a valid UUID")
+	}
 	var out PayoutLink
 	if err := s.t.Do(ctx, http.MethodGet, "payout-links/"+url.PathEscape(payoutLinkID), nil, &out); err != nil {
 		return nil, err
@@ -113,6 +116,9 @@ func (s *PayoutLinks) Get(ctx context.Context, payoutLinkID string) (*PayoutLink
 func (s *PayoutLinks) CancelPayoutLink(ctx context.Context, payoutLinkID string) error {
 	if payoutLinkID == "" {
 		return errors.New("business: payout_link_id is required")
+	}
+	if !isUUID(payoutLinkID) {
+		return errors.New("business: payout_link_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodPost, "payout-links/"+url.PathEscape(payoutLinkID)+"/cancel", nil, nil)
 }

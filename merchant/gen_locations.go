@@ -70,6 +70,9 @@ func (s *Locations) Get(ctx context.Context, locationID string, authorization st
 	if locationID == "" {
 		return nil, errors.New("merchant: location_id is required")
 	}
+	if !isUUID(locationID) {
+		return nil, errors.New("merchant: location_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -92,6 +95,9 @@ func (s *Locations) Get(ctx context.Context, locationID string, authorization st
 func (s *Locations) Update(ctx context.Context, locationID string, authorization string, req LocationUpdate) (*Location, error) {
 	if locationID == "" {
 		return nil, errors.New("merchant: location_id is required")
+	}
+	if !isUUID(locationID) {
+		return nil, errors.New("merchant: location_id must be a valid UUID")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -117,6 +123,9 @@ func (s *Locations) Update(ctx context.Context, locationID string, authorization
 func (s *Locations) Delete(ctx context.Context, locationID string, authorization string) error {
 	if locationID == "" {
 		return errors.New("merchant: location_id is required")
+	}
+	if !isUUID(locationID) {
+		return errors.New("merchant: location_id must be a valid UUID")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

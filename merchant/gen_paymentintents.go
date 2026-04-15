@@ -24,6 +24,9 @@ func (s *PaymentIntents) Create(ctx context.Context, orderID string, authorizati
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
+	if !isUUID(orderID) {
+		return nil, errors.New("merchant: order_id must be a valid UUID")
+	}
 	if req.Amount == 0 {
 		return nil, errors.New("merchant: PaymentIntentCreation.amount is required")
 	}
@@ -58,6 +61,9 @@ func (s *PaymentIntents) Get(ctx context.Context, paymentIntentID string, author
 	if paymentIntentID == "" {
 		return nil, errors.New("merchant: payment_intent_id is required")
 	}
+	if !isUUID(paymentIntentID) {
+		return nil, errors.New("merchant: payment_intent_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -83,6 +89,9 @@ func (s *PaymentIntents) Get(ctx context.Context, paymentIntentID string, author
 func (s *PaymentIntents) CancelPaymentIntent(ctx context.Context, paymentIntentID string, authorization string, revolutAPIVersion PaymentIntentsRevolutAPIVersion) (*PaymentIntent, error) {
 	if paymentIntentID == "" {
 		return nil, errors.New("merchant: payment_intent_id is required")
+	}
+	if !isUUID(paymentIntentID) {
+		return nil, errors.New("merchant: payment_intent_id must be a valid UUID")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

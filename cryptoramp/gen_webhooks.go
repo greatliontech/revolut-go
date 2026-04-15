@@ -66,6 +66,9 @@ func (s *Webhooks) Get(ctx context.Context, webhookID string, xAPIKey string) (*
 	if webhookID == "" {
 		return nil, errors.New("cryptoramp: webhook_id is required")
 	}
+	if !isUUID(webhookID) {
+		return nil, errors.New("cryptoramp: webhook_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if xAPIKey != "" {
@@ -86,6 +89,9 @@ func (s *Webhooks) Get(ctx context.Context, webhookID string, xAPIKey string) (*
 func (s *Webhooks) Update(ctx context.Context, webhookID string, xAPIKey string, req WebhookUpdateRequest) (*Webhook, error) {
 	if webhookID == "" {
 		return nil, errors.New("cryptoramp: webhook_id is required")
+	}
+	if !isUUID(webhookID) {
+		return nil, errors.New("cryptoramp: webhook_id must be a valid UUID")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -109,6 +115,9 @@ func (s *Webhooks) Update(ctx context.Context, webhookID string, xAPIKey string,
 func (s *Webhooks) Delete(ctx context.Context, webhookID string, xAPIKey string) error {
 	if webhookID == "" {
 		return errors.New("cryptoramp: webhook_id is required")
+	}
+	if !isUUID(webhookID) {
+		return errors.New("cryptoramp: webhook_id must be a valid UUID")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

@@ -131,5 +131,8 @@ func (s *TeamMembers) Delete(ctx context.Context, teamMemberID string) error {
 	if teamMemberID == "" {
 		return errors.New("business: team_member_id is required")
 	}
+	if !isUUID(teamMemberID) {
+		return errors.New("business: team_member_id must be a valid UUID")
+	}
 	return s.t.Do(ctx, http.MethodDelete, "team-members/"+url.PathEscape(teamMemberID), nil, nil)
 }

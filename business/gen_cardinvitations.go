@@ -58,6 +58,9 @@ func (s *CardInvitations) CancelCardInvitation(ctx context.Context, cardInvitati
 	if cardInvitationID == "" {
 		return errors.New("business: card_invitation_id is required")
 	}
+	if !isUUID(cardInvitationID) {
+		return errors.New("business: card_invitation_id must be a valid UUID")
+	}
 	return s.t.Do(ctx, http.MethodPost, "card-invitations/"+url.PathEscape(cardInvitationID)+"/cancel", nil, nil)
 }
 
@@ -68,6 +71,9 @@ func (s *CardInvitations) CancelCardInvitation(ctx context.Context, cardInvitati
 func (s *CardInvitations) Get(ctx context.Context, cardInvitationID string) (*CardInvitationResponse, error) {
 	if cardInvitationID == "" {
 		return nil, errors.New("business: card_invitation_id is required")
+	}
+	if !isUUID(cardInvitationID) {
+		return nil, errors.New("business: card_invitation_id must be a valid UUID")
 	}
 	var out CardInvitationResponse
 	if err := s.t.Do(ctx, http.MethodGet, "card-invitations/"+url.PathEscape(cardInvitationID), nil, &out); err != nil {
@@ -83,6 +89,9 @@ func (s *CardInvitations) Get(ctx context.Context, cardInvitationID string) (*Ca
 func (s *CardInvitations) Update(ctx context.Context, cardInvitationID string, req CardInvitationsBody) (*CardInvitationUpdatedResponse, error) {
 	if cardInvitationID == "" {
 		return nil, errors.New("business: card_invitation_id is required")
+	}
+	if !isUUID(cardInvitationID) {
+		return nil, errors.New("business: card_invitation_id must be a valid UUID")
 	}
 	if req.HolderID == "" {
 		return nil, errors.New("business: CardInvitationsBody.holder_id is required")

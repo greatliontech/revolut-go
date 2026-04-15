@@ -51,6 +51,9 @@ func (s *PaymentDrafts) Get(ctx context.Context, paymentDraftID string) (*Paymen
 	if paymentDraftID == "" {
 		return nil, errors.New("business: payment_draft_id is required")
 	}
+	if !isUUID(paymentDraftID) {
+		return nil, errors.New("business: payment_draft_id must be a valid UUID")
+	}
 	var out PaymentDraftResponse
 	if err := s.t.Do(ctx, http.MethodGet, "payment-drafts/"+url.PathEscape(paymentDraftID), nil, &out); err != nil {
 		return nil, err
@@ -65,6 +68,9 @@ func (s *PaymentDrafts) Get(ctx context.Context, paymentDraftID string) (*Paymen
 func (s *PaymentDrafts) Delete(ctx context.Context, paymentDraftID string) error {
 	if paymentDraftID == "" {
 		return errors.New("business: payment_draft_id is required")
+	}
+	if !isUUID(paymentDraftID) {
+		return errors.New("business: payment_draft_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodDelete, "payment-drafts/"+url.PathEscape(paymentDraftID), nil, nil)
 }

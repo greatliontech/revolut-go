@@ -141,11 +141,16 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 		p := paramRef.Value
 		switch p.In {
 		case "path":
+			format := ""
+			if p.Schema != nil && p.Schema.Value != nil {
+				format = strings.ToLower(p.Schema.Value.Format)
+			}
 			m.PathParams = append(m.PathParams, ir.Param{
 				Name:     names.ParamName(p.Name),
 				Type:     ir.Prim("string"),
 				Doc:      firstLine(p.Description),
 				WireName: p.Name,
+				Format:   format,
 			})
 		case "query":
 			typ := b.resolveType(p.Schema, Context{Parent: m.Receiver, Field: p.Name})

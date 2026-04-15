@@ -45,6 +45,9 @@ func (s *Simulations) SimulateTransferStateUpdate(ctx context.Context, id string
 	if id == "" {
 		return nil, errors.New("business: id is required")
 	}
+	if !isUUID(id) {
+		return nil, errors.New("business: id must be a valid UUID")
+	}
 	if action == "" {
 		return nil, errors.New("business: action is required")
 	}

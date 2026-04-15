@@ -108,6 +108,9 @@ func (s *Customers) Get(ctx context.Context, customerID string, authorization st
 	if customerID == "" {
 		return nil, errors.New("merchant: customer_id is required")
 	}
+	if !isUUID(customerID) {
+		return nil, errors.New("merchant: customer_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -133,6 +136,9 @@ func (s *Customers) Get(ctx context.Context, customerID string, authorization st
 func (s *Customers) Update(ctx context.Context, customerID string, authorization string, revolutAPIVersion CustomersRevolutAPIVersion, req CustomerUpdateV2) (*CustomerV3, error) {
 	if customerID == "" {
 		return nil, errors.New("merchant: customer_id is required")
+	}
+	if !isUUID(customerID) {
+		return nil, errors.New("merchant: customer_id must be a valid UUID")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -162,6 +168,9 @@ func (s *Customers) Delete(ctx context.Context, customerID string, authorization
 	if customerID == "" {
 		return errors.New("merchant: customer_id is required")
 	}
+	if !isUUID(customerID) {
+		return errors.New("merchant: customer_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -184,6 +193,9 @@ func (s *Customers) Delete(ctx context.Context, customerID string, authorization
 func (s *Customers) GetPaymentMethodList(ctx context.Context, customerID string, authorization string, revolutAPIVersion CustomersRevolutAPIVersion, opts *RetrievePaymentMethodListParams) (*CustomerPaymentMethodsV2, error) {
 	if customerID == "" {
 		return nil, errors.New("merchant: customer_id is required")
+	}
+	if !isUUID(customerID) {
+		return nil, errors.New("merchant: customer_id must be a valid UUID")
 	}
 	path := "api/customers/" + url.PathEscape(customerID) + "/payment-methods"
 	if q := opts.encode().Encode(); q != "" {
@@ -215,8 +227,14 @@ func (s *Customers) GetPaymentMethod(ctx context.Context, customerID string, pay
 	if customerID == "" {
 		return nil, errors.New("merchant: customer_id is required")
 	}
+	if !isUUID(customerID) {
+		return nil, errors.New("merchant: customer_id must be a valid UUID")
+	}
 	if paymentMethodID == "" {
 		return nil, errors.New("merchant: payment_method_id is required")
+	}
+	if !isUUID(paymentMethodID) {
+		return nil, errors.New("merchant: payment_method_id must be a valid UUID")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
@@ -244,8 +262,14 @@ func (s *Customers) UpdatePaymentMethod(ctx context.Context, customerID string, 
 	if customerID == "" {
 		return nil, errors.New("merchant: customer_id is required")
 	}
+	if !isUUID(customerID) {
+		return nil, errors.New("merchant: customer_id must be a valid UUID")
+	}
 	if paymentMethodID == "" {
 		return nil, errors.New("merchant: payment_method_id is required")
+	}
+	if !isUUID(paymentMethodID) {
+		return nil, errors.New("merchant: payment_method_id must be a valid UUID")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -275,8 +299,14 @@ func (s *Customers) DeletePaymentMethod(ctx context.Context, customerID string, 
 	if customerID == "" {
 		return errors.New("merchant: customer_id is required")
 	}
+	if !isUUID(customerID) {
+		return errors.New("merchant: customer_id must be a valid UUID")
+	}
 	if paymentMethodID == "" {
 		return errors.New("merchant: payment_method_id is required")
+	}
+	if !isUUID(paymentMethodID) {
+		return errors.New("merchant: payment_method_id must be a valid UUID")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

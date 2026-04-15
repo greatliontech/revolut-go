@@ -72,6 +72,9 @@ func (s *Other) DeleteSynchronousWebhook(ctx context.Context, synchronousWebhook
 	if synchronousWebhookID == "" {
 		return errors.New("merchant: synchronous_webhook_id is required")
 	}
+	if !isUUID(synchronousWebhookID) {
+		return errors.New("merchant: synchronous_webhook_id must be a valid UUID")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
