@@ -508,11 +508,11 @@ type CardInvitationSpendingLimits struct {
 // They specify the dates when the card will become available or unavailable for spending, and define what happens after the end date.
 type CardInvitationSpendingPeriod struct {
 	// The end date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
-	EndDate string `json:"end_date,omitempty"`
+	EndDate *time.Time `json:"end_date,omitempty"`
 	// The action to take after the end date of the spending period.
 	EndDateAction CardInvitationSpendingPeriodEndDateAction `json:"end_date_action,omitempty"`
 	// The start date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
-	StartDate string `json:"start_date,omitempty"`
+	StartDate *time.Time `json:"start_date,omitempty"`
 }
 
 // CardInvitationSpendingPeriodEndDateAction the action to take after the end date of the spending period.
@@ -898,7 +898,7 @@ type CreatePaymentDraftRequest struct {
 	// The details of the payment(s) to be made.
 	Payments []PaymentRequest `json:"payments"`
 	// The scheduled date of the payment draft in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
-	ScheduleFor string `json:"schedule_for,omitempty"`
+	ScheduleFor *time.Time `json:"schedule_for,omitempty"`
 	// The title of the payment draft.
 	Title string `json:"title,omitempty"`
 }
@@ -1324,7 +1324,7 @@ type PaymentDraftResponse struct {
 	// The list of payments in the bulk.
 	Payments []PaymentInfo `json:"payments"`
 	// The scheduled date of the payment draft in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
-	ScheduledFor string `json:"scheduled_for,omitempty"`
+	ScheduledFor *time.Time `json:"scheduled_for,omitempty"`
 	// The title of the payment draft.
 	Title string `json:"title,omitempty"`
 }
@@ -1362,7 +1362,7 @@ type PaymentOrderInfo struct {
 	// The number of payments in the payment draft.
 	PaymentsCount int `json:"payments_count"`
 	// The scheduled date of the payment draft in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
-	ScheduledFor string `json:"scheduled_for,omitempty"`
+	ScheduledFor *time.Time `json:"scheduled_for,omitempty"`
 	// The title of the payment draft.
 	Title string `json:"title,omitempty"`
 }
@@ -1735,11 +1735,11 @@ type SpendingLimitsSchema struct {
 
 type SpendingPeriodSchema struct {
 	// The end date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
-	EndDate string `json:"end_date,omitempty"`
+	EndDate *time.Time `json:"end_date,omitempty"`
 	// The action to take after the end date of the spending period.
 	EndDateAction SpendingPeriodSchemaEndDateAction `json:"end_date_action,omitempty"`
 	// The start date (inclusive) of the spending period, in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DD`).
-	StartDate string `json:"start_date,omitempty"`
+	StartDate *time.Time `json:"start_date,omitempty"`
 }
 
 // SpendingPeriodSchemaEndDateAction the action to take after the end date of the spending period.
@@ -1826,7 +1826,7 @@ type Transaction struct {
 	// The request ID that you provided previously.
 	RequestID string `json:"request_id,omitempty"`
 	// The scheduled date of the payment, if applicable.
-	ScheduledFor string `json:"scheduled_for,omitempty"`
+	ScheduledFor *time.Time `json:"scheduled_for,omitempty"`
 	// Indicates the transaction state. Possible values:
 	State TransactionState `json:"state"`
 	// Indicates the transaction type.

@@ -197,7 +197,7 @@ func (b *builder) goTypeExpr(ref *openapi3.SchemaRef) string {
 	}
 	switch {
 	case schemaTypeIs(s, "string"):
-		if s.Format == "date-time" {
+		if isDateTimeFormat(s.Format) {
 			return "time.Time"
 		}
 		return "string"
@@ -215,6 +215,76 @@ func (b *builder) goTypeExpr(ref *openapi3.SchemaRef) string {
 		return "[]" + inner
 	}
 	return ""
+}
+
+// detectPagination inspects an operation's response and params to
+// classify its pagination shape. Cursor takes priority over time-window
+// since it's unambiguous when present.
+func (b *builder) detectPagination(o *Operation) *Pagination {
+	if o.ParamsStruct == nil || o.ResponseType == "" {
+		return nil
+	}
+
+	// Cursor: response is a struct with a NextPageToken field and one
+	// array-valued items field; params has a PageToken field.
+	if !strings.HasPrefix(o.ResponseType, "[]") {
+		if rt := b.typesByName[o.ResponseType]; rt != nil && rt.Kind == KindStruct {
+			var nextField, itemsField, itemType string
+			for _, f := range rt.Fields {
+				if f.JSONName == "next_page_token" {
+					nextField = f.GoName
+					continue
+				}
+				if strings.HasPrefix(f.GoType, "[]") && itemsField == "" {
+					itemsField = f.GoName
+					itemType = strings.TrimPrefix(f.GoType, "[]")
+				}
+			}
+			if nextField != "" && itemsField != "" {
+				for _, pf := range o.ParamsStruct.Fields {
+					if pf.JSONName == "page_token" {
+						return &Pagination{
+							Shape:          PaginationCursor,
+							ItemType:       itemType,
+							ItemsField:     itemsField,
+							NextTokenField: nextField,
+							PageTokenParam: pf.GoName,
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Time-window: response is a []ItemType whose items carry a
+	// created_at timestamp, and params has a "to" or "created_before"
+	// cursor field typed as time.Time.
+	if strings.HasPrefix(o.ResponseType, "[]") {
+		itemType := strings.TrimPrefix(o.ResponseType, "[]")
+		if it := b.typesByName[itemType]; it != nil && it.Kind == KindStruct {
+			var fromItemField string
+			for _, f := range it.Fields {
+				if f.JSONName == "created_at" && (f.GoType == "time.Time" || f.GoType == "*time.Time") {
+					fromItemField = f.GoName
+					break
+				}
+			}
+			if fromItemField != "" {
+				for _, pf := range o.ParamsStruct.Fields {
+					if (pf.JSONName == "to" || pf.JSONName == "created_before") && pf.GoType == "time.Time" {
+						return &Pagination{
+							Shape:           PaginationTimeWindow,
+							ItemType:        itemType,
+							AdvanceParam:    pf.GoName,
+							AdvanceFromItem: fromItemField,
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 // buildParamsStruct lifts an operation's query parameters into a
@@ -529,6 +599,8 @@ func (b *builder) buildOperation(httpMethod, path string, op *openapi3.Operation
 		o.ParamsStruct = buildParamsStruct(o.ParamsType, o.QueryParams, op.Summary)
 	}
 
+	o.Pagination = b.detectPagination(o)
+
 	// Validation hints: required string-valued fields on the request
 	// body. Non-string required fields (nested structs, arrays, time,
 	// ...) aren't validatable with a simple zero check, so we skip
@@ -624,6 +696,17 @@ func (b *builder) methodName(o *Operation, op *openapi3.Operation) string {
 		return "Delete" + suffix
 	}
 	return ""
+}
+
+// isDateTimeFormat matches both the OpenAPI-standard "date-time" and
+// Revolut's loose variants ("date-time or date", "date") which all
+// carry ISO-8601 values that we want exposed as time.Time.
+func isDateTimeFormat(format string) bool {
+	f := strings.ToLower(format)
+	if f == "" {
+		return false
+	}
+	return strings.Contains(f, "date-time") || f == "date"
 }
 
 // containsDeprecatedMarker reports whether any tag on an operation

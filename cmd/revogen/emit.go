@@ -172,6 +172,9 @@ func emitResource(spec *Spec, r *Resource) string {
 	if imports.json {
 		buf.WriteString("\t\"encoding/json\"\n")
 	}
+	if imports.iter {
+		buf.WriteString("\t\"iter\"\n")
+	}
 	buf.WriteString("\n\t\"github.com/greatliontech/revolut-go/internal/transport\"\n")
 	buf.WriteString(")\n\n")
 
@@ -186,8 +189,93 @@ func emitResource(spec *Spec, r *Resource) string {
 			writeParamsEncode(&buf, op)
 		}
 		writeMethod(&buf, r, op)
+		if op.Pagination != nil {
+			writePaginationMethod(&buf, r, op)
+		}
 	}
 	return buf.String()
+}
+
+// writePaginationMethod emits a <GoMethod>All iterator that walks every
+// page of a paginated endpoint and yields one item at a time.
+func writePaginationMethod(buf *bytes.Buffer, r *Resource, op *Operation) {
+	p := op.Pagination
+	name := op.GoMethod + "All"
+
+	// godoc.
+	fmt.Fprintf(buf, "// %s iterates every page of %s, yielding one %s per\n",
+		name, op.GoMethod, p.ItemType)
+	buf.WriteString("// step. The iterator terminates when the underlying endpoint signals\n")
+	switch p.Shape {
+	case PaginationCursor:
+		buf.WriteString("// no further cursor. Break out of the loop to stop early.\n")
+	case PaginationTimeWindow:
+		buf.WriteString("// an empty page. Break out of the loop to stop early.\n")
+	}
+	buf.WriteString("//\n")
+	buf.WriteString("// Pass nil for opts to accept the server's defaults on the first page.\n")
+	buf.WriteString("// A non-nil opts is copied internally so the caller's struct is not\n")
+	buf.WriteString("// mutated as pages advance.\n")
+
+	// Signature.
+	params := []string{"ctx context.Context"}
+	for _, pp := range op.PathParams {
+		params = append(params, pp.GoName+" "+pp.GoType)
+	}
+	if op.ParamsType != "" {
+		params = append(params, "opts *"+op.ParamsType)
+	}
+	fmt.Fprintf(buf, "func (s *%s) %s(%s) iter.Seq2[%s, error] {\n",
+		r.GoName, name, strings.Join(params, ", "), p.ItemType)
+
+	fmt.Fprintf(buf, "\treturn func(yield func(%s, error) bool) {\n", p.ItemType)
+
+	// Copy opts so we can mutate the cursor fields in place.
+	fmt.Fprintf(buf, "\t\tvar p %s\n", op.ParamsType)
+	buf.WriteString("\t\tif opts != nil {\n\t\t\tp = *opts\n\t\t}\n")
+
+	// Path-param validation (same checks as the single-page method).
+	for _, pp := range op.PathParams {
+		fmt.Fprintf(buf, "\t\tif %s == \"\" {\n", pp.GoName)
+		fmt.Fprintf(buf, "\t\t\tvar zero %s\n", p.ItemType)
+		fmt.Fprintf(buf, "\t\t\tyield(zero, errors.New(\"business: %s is required\"))\n", pp.Name)
+		buf.WriteString("\t\t\treturn\n")
+		buf.WriteString("\t\t}\n")
+	}
+
+	// Loop.
+	buf.WriteString("\t\tfor {\n")
+	// s.Method(ctx[, pathParams], &p)
+	call := "s." + op.GoMethod + "(ctx"
+	for _, pp := range op.PathParams {
+		call += ", " + pp.GoName
+	}
+	call += ", &p)"
+
+	fmt.Fprintf(buf, "\t\t\tresp, err := %s\n", call)
+	buf.WriteString("\t\t\tif err != nil {\n")
+	fmt.Fprintf(buf, "\t\t\t\tvar zero %s\n", p.ItemType)
+	buf.WriteString("\t\t\t\tyield(zero, err)\n")
+	buf.WriteString("\t\t\t\treturn\n")
+	buf.WriteString("\t\t\t}\n")
+
+	switch p.Shape {
+	case PaginationCursor:
+		fmt.Fprintf(buf, "\t\t\tfor _, item := range resp.%s {\n", p.ItemsField)
+		buf.WriteString("\t\t\t\tif !yield(item, nil) {\n\t\t\t\t\treturn\n\t\t\t\t}\n")
+		buf.WriteString("\t\t\t}\n")
+		fmt.Fprintf(buf, "\t\t\tif resp.%s == \"\" {\n\t\t\t\treturn\n\t\t\t}\n", p.NextTokenField)
+		fmt.Fprintf(buf, "\t\t\tp.%s = resp.%s\n", p.PageTokenParam, p.NextTokenField)
+	case PaginationTimeWindow:
+		buf.WriteString("\t\t\tif len(resp) == 0 {\n\t\t\t\treturn\n\t\t\t}\n")
+		buf.WriteString("\t\t\tfor _, item := range resp {\n")
+		buf.WriteString("\t\t\t\tif !yield(item, nil) {\n\t\t\t\t\treturn\n\t\t\t\t}\n")
+		buf.WriteString("\t\t\t}\n")
+		fmt.Fprintf(buf, "\t\t\tp.%s = resp[len(resp)-1].%s\n", p.AdvanceParam, p.AdvanceFromItem)
+	}
+	buf.WriteString("\t\t}\n")
+	buf.WriteString("\t}\n")
+	buf.WriteString("}\n\n")
 }
 
 type resourceImportSet struct {
@@ -196,6 +284,7 @@ type resourceImportSet struct {
 	strconv bool
 	time    bool
 	json    bool
+	iter    bool
 }
 
 func resourceImports(r *Resource) resourceImportSet {
@@ -222,6 +311,9 @@ func resourceImports(r *Resource) resourceImportSet {
 					// Encoded as repeated values; no extra import.
 				}
 			}
+		}
+		if op.Pagination != nil {
+			s.iter = true
 		}
 	}
 	return s

@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"iter"
 	"net/http"
 	"net/url"
 	"time"
@@ -53,6 +54,39 @@ func (s *Cards) List(ctx context.Context, opts *GetCardsParams) ([]CardResponse,
 		return nil, err
 	}
 	return out, nil
+}
+
+// ListAll iterates every page of List, yielding one CardResponse per
+// step. The iterator terminates when the underlying endpoint signals
+// an empty page. Break out of the loop to stop early.
+//
+// Pass nil for opts to accept the server's defaults on the first page.
+// A non-nil opts is copied internally so the caller's struct is not
+// mutated as pages advance.
+func (s *Cards) ListAll(ctx context.Context, opts *GetCardsParams) iter.Seq2[CardResponse, error] {
+	return func(yield func(CardResponse, error) bool) {
+		var p GetCardsParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.List(ctx, &p)
+			if err != nil {
+				var zero CardResponse
+				yield(zero, err)
+				return
+			}
+			if len(resp) == 0 {
+				return
+			}
+			for _, item := range resp {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			p.CreatedBefore = resp[len(resp)-1].CreatedAt
+		}
+	}
 }
 
 // Create create a card

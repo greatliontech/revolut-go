@@ -36,6 +36,41 @@ type Operation struct {
 	Validate     []FieldCheck  // client-side required-field checks
 	ParamsType   string        // Go type name holding query params (empty if none)
 	ParamsStruct *NamedType    // the synthesised params struct (or nil)
+	Pagination   *Pagination   // how to iterate; nil if the op doesn't paginate
+}
+
+// PaginationShape classifies the paging pattern an operation exposes.
+type PaginationShape int
+
+const (
+	// PaginationCursor: response struct carries a cursor (next_page_token)
+	// that the caller sends back as a query param (page_token) to fetch
+	// the next page.
+	PaginationCursor PaginationShape = iota + 1
+	// PaginationTimeWindow: response is a plain array whose items have
+	// a created_at timestamp; the caller bounds future requests via a
+	// "to" or "created_before" query param set to the last item's time.
+	PaginationTimeWindow
+)
+
+// Pagination captures the codegen inputs needed to emit an iterator.
+// All Go field names are those of the emitted structs, not the spec's
+// JSON names.
+type Pagination struct {
+	Shape PaginationShape
+
+	// ItemType is the element type yielded per iteration, e.g.
+	// "Transaction" or "AccountingCategoryResponse".
+	ItemType string
+
+	// Cursor shape only:
+	ItemsField     string // Go field on response holding the items slice
+	NextTokenField string // Go field on response holding the next cursor
+	PageTokenParam string // Go field on params that carries the cursor back
+
+	// Time-window shape only:
+	AdvanceParam    string // Go field on params to overwrite each page (e.g. "To")
+	AdvanceFromItem string // Go field on item to copy into it (e.g. "CreatedAt")
 }
 
 // QueryParam describes one ?foo=... URL parameter.

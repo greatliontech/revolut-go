@@ -5,9 +5,11 @@ package business
 import (
 	"context"
 	"errors"
+	"iter"
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -85,7 +87,7 @@ type GetFailedWebhookEventsParams struct {
 	// The maximum number of events returned per page.
 	Limit int `json:"limit,omitempty"`
 	// Retrieves events with `created_at` < `created_before`.
-	CreatedBefore string `json:"created_before,omitempty"`
+	CreatedBefore time.Time `json:"created_before,omitempty"`
 }
 
 func (p *GetFailedWebhookEventsParams) encode() url.Values {
@@ -96,8 +98,8 @@ func (p *GetFailedWebhookEventsParams) encode() url.Values {
 	if p.Limit != 0 {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
 	}
-	if p.CreatedBefore != "" {
-		q.Set("created_before", p.CreatedBefore)
+	if !p.CreatedBefore.IsZero() {
+		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339))
 	}
 	return q
 }
@@ -118,6 +120,44 @@ func (s *WebhooksV2) ListFailedEvents(ctx context.Context, webhookID string, opt
 		return nil, err
 	}
 	return out, nil
+}
+
+// ListFailedEventsAll iterates every page of ListFailedEvents, yielding one WebhookEvent per
+// step. The iterator terminates when the underlying endpoint signals
+// an empty page. Break out of the loop to stop early.
+//
+// Pass nil for opts to accept the server's defaults on the first page.
+// A non-nil opts is copied internally so the caller's struct is not
+// mutated as pages advance.
+func (s *WebhooksV2) ListFailedEventsAll(ctx context.Context, webhookID string, opts *GetFailedWebhookEventsParams) iter.Seq2[WebhookEvent, error] {
+	return func(yield func(WebhookEvent, error) bool) {
+		var p GetFailedWebhookEventsParams
+		if opts != nil {
+			p = *opts
+		}
+		if webhookID == "" {
+			var zero WebhookEvent
+			yield(zero, errors.New("business: webhook_id is required"))
+			return
+		}
+		for {
+			resp, err := s.ListFailedEvents(ctx, webhookID, &p)
+			if err != nil {
+				var zero WebhookEvent
+				yield(zero, err)
+				return
+			}
+			if len(resp) == 0 {
+				return
+			}
+			for _, item := range resp {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			p.CreatedBefore = resp[len(resp)-1].CreatedAt
+		}
+	}
 }
 
 // RotateSigningSecret rotate a webhook signing secret

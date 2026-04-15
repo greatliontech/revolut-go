@@ -5,6 +5,7 @@ package business
 import (
 	"context"
 	"errors"
+	"iter"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -51,6 +52,39 @@ func (s *Accounting) GetCategories(ctx context.Context, opts *GetAccountingCateg
 		return nil, err
 	}
 	return &out, nil
+}
+
+// GetCategoriesAll iterates every page of GetCategories, yielding one AccountingCategoryResponse per
+// step. The iterator terminates when the underlying endpoint signals
+// no further cursor. Break out of the loop to stop early.
+//
+// Pass nil for opts to accept the server's defaults on the first page.
+// A non-nil opts is copied internally so the caller's struct is not
+// mutated as pages advance.
+func (s *Accounting) GetCategoriesAll(ctx context.Context, opts *GetAccountingCategoriesParams) iter.Seq2[AccountingCategoryResponse, error] {
+	return func(yield func(AccountingCategoryResponse, error) bool) {
+		var p GetAccountingCategoriesParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.GetCategories(ctx, &p)
+			if err != nil {
+				var zero AccountingCategoryResponse
+				yield(zero, err)
+				return
+			}
+			for _, item := range resp.AccountingCategories {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			if resp.NextPageToken == "" {
+				return
+			}
+			p.PageToken = resp.NextPageToken
+		}
+	}
 }
 
 // CreateCategory create an accounting category
@@ -138,6 +172,39 @@ func (s *Accounting) GetLabelGroups(ctx context.Context, opts *GetLabelGroupsPar
 		return nil, err
 	}
 	return &out, nil
+}
+
+// GetLabelGroupsAll iterates every page of GetLabelGroups, yielding one LabelGroupResponse per
+// step. The iterator terminates when the underlying endpoint signals
+// no further cursor. Break out of the loop to stop early.
+//
+// Pass nil for opts to accept the server's defaults on the first page.
+// A non-nil opts is copied internally so the caller's struct is not
+// mutated as pages advance.
+func (s *Accounting) GetLabelGroupsAll(ctx context.Context, opts *GetLabelGroupsParams) iter.Seq2[LabelGroupResponse, error] {
+	return func(yield func(LabelGroupResponse, error) bool) {
+		var p GetLabelGroupsParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.GetLabelGroups(ctx, &p)
+			if err != nil {
+				var zero LabelGroupResponse
+				yield(zero, err)
+				return
+			}
+			for _, item := range resp.LabelGroups {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			if resp.NextPageToken == "" {
+				return
+			}
+			p.PageToken = resp.NextPageToken
+		}
+	}
 }
 
 // CreateLabelGroup create a new label group
@@ -230,6 +297,44 @@ func (s *Accounting) GetLabels(ctx context.Context, groupID string, opts *GetLab
 	return &out, nil
 }
 
+// GetLabelsAll iterates every page of GetLabels, yielding one LabelResponse per
+// step. The iterator terminates when the underlying endpoint signals
+// no further cursor. Break out of the loop to stop early.
+//
+// Pass nil for opts to accept the server's defaults on the first page.
+// A non-nil opts is copied internally so the caller's struct is not
+// mutated as pages advance.
+func (s *Accounting) GetLabelsAll(ctx context.Context, groupID string, opts *GetLabelsParams) iter.Seq2[LabelResponse, error] {
+	return func(yield func(LabelResponse, error) bool) {
+		var p GetLabelsParams
+		if opts != nil {
+			p = *opts
+		}
+		if groupID == "" {
+			var zero LabelResponse
+			yield(zero, errors.New("business: group_id is required"))
+			return
+		}
+		for {
+			resp, err := s.GetLabels(ctx, groupID, &p)
+			if err != nil {
+				var zero LabelResponse
+				yield(zero, err)
+				return
+			}
+			for _, item := range resp.Labels {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			if resp.NextPageToken == "" {
+				return
+			}
+			p.PageToken = resp.NextPageToken
+		}
+	}
+}
+
 // CreateLabel create a new label
 //
 // Docs: https://developer.revolut.com/docs/business/create-label
@@ -310,6 +415,39 @@ func (s *Accounting) GetTaxRates(ctx context.Context, opts *GetTaxRatesParams) (
 		return nil, err
 	}
 	return &out, nil
+}
+
+// GetTaxRatesAll iterates every page of GetTaxRates, yielding one TaxRateResponse per
+// step. The iterator terminates when the underlying endpoint signals
+// no further cursor. Break out of the loop to stop early.
+//
+// Pass nil for opts to accept the server's defaults on the first page.
+// A non-nil opts is copied internally so the caller's struct is not
+// mutated as pages advance.
+func (s *Accounting) GetTaxRatesAll(ctx context.Context, opts *GetTaxRatesParams) iter.Seq2[TaxRateResponse, error] {
+	return func(yield func(TaxRateResponse, error) bool) {
+		var p GetTaxRatesParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.GetTaxRates(ctx, &p)
+			if err != nil {
+				var zero TaxRateResponse
+				yield(zero, err)
+				return
+			}
+			for _, item := range resp.TaxRates {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			if resp.NextPageToken == "" {
+				return
+			}
+			p.PageToken = resp.NextPageToken
+		}
+	}
 }
 
 // CreateTaxRate create a new tax rate

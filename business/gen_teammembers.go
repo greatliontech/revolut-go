@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"iter"
 	"net/http"
 	"net/url"
 	"time"
@@ -55,6 +56,39 @@ func (s *TeamMembers) ListRoles(ctx context.Context, opts *GetRolesParams) ([]Ro
 	return out, nil
 }
 
+// ListRolesAll iterates every page of ListRoles, yielding one Role per
+// step. The iterator terminates when the underlying endpoint signals
+// an empty page. Break out of the loop to stop early.
+//
+// Pass nil for opts to accept the server's defaults on the first page.
+// A non-nil opts is copied internally so the caller's struct is not
+// mutated as pages advance.
+func (s *TeamMembers) ListRolesAll(ctx context.Context, opts *GetRolesParams) iter.Seq2[Role, error] {
+	return func(yield func(Role, error) bool) {
+		var p GetRolesParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.ListRoles(ctx, &p)
+			if err != nil {
+				var zero Role
+				yield(zero, err)
+				return
+			}
+			if len(resp) == 0 {
+				return
+			}
+			for _, item := range resp {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			p.CreatedBefore = resp[len(resp)-1].CreatedAt
+		}
+	}
+}
+
 // GetTeamMembersParams query parameters for: Retrieve a list of team members
 type GetTeamMembersParams struct {
 	// Retrieves team members with `created_at` < `created_before`.
@@ -90,6 +124,39 @@ func (s *TeamMembers) List(ctx context.Context, opts *GetTeamMembersParams) ([]T
 		return nil, err
 	}
 	return out, nil
+}
+
+// ListAll iterates every page of List, yielding one TeamMember per
+// step. The iterator terminates when the underlying endpoint signals
+// an empty page. Break out of the loop to stop early.
+//
+// Pass nil for opts to accept the server's defaults on the first page.
+// A non-nil opts is copied internally so the caller's struct is not
+// mutated as pages advance.
+func (s *TeamMembers) ListAll(ctx context.Context, opts *GetTeamMembersParams) iter.Seq2[TeamMember, error] {
+	return func(yield func(TeamMember, error) bool) {
+		var p GetTeamMembersParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.List(ctx, &p)
+			if err != nil {
+				var zero TeamMember
+				yield(zero, err)
+				return
+			}
+			if len(resp) == 0 {
+				return
+			}
+			for _, item := range resp {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			p.CreatedBefore = resp[len(resp)-1].CreatedAt
+		}
+	}
 }
 
 // Create invite a new member to your business

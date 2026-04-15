@@ -5,6 +5,7 @@ package business
 import (
 	"context"
 	"errors"
+	"iter"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -58,6 +59,39 @@ func (s *PayoutLinks) List(ctx context.Context, opts *GetPayoutLinksParams) ([]P
 		return nil, err
 	}
 	return out, nil
+}
+
+// ListAll iterates every page of List, yielding one PayoutLink per
+// step. The iterator terminates when the underlying endpoint signals
+// an empty page. Break out of the loop to stop early.
+//
+// Pass nil for opts to accept the server's defaults on the first page.
+// A non-nil opts is copied internally so the caller's struct is not
+// mutated as pages advance.
+func (s *PayoutLinks) ListAll(ctx context.Context, opts *GetPayoutLinksParams) iter.Seq2[PayoutLink, error] {
+	return func(yield func(PayoutLink, error) bool) {
+		var p GetPayoutLinksParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.List(ctx, &p)
+			if err != nil {
+				var zero PayoutLink
+				yield(zero, err)
+				return
+			}
+			if len(resp) == 0 {
+				return
+			}
+			for _, item := range resp {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			p.CreatedBefore = resp[len(resp)-1].CreatedAt
+		}
+	}
 }
 
 // Create create a payout link

@@ -5,9 +5,11 @@ package business
 import (
 	"context"
 	"errors"
+	"iter"
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 )
@@ -55,9 +57,9 @@ func (s *Transactions) Get(ctx context.Context, id string, opts *GetTransactionP
 // GetTransactionsParams query parameters for: Retrieve a list of transactions
 type GetTransactionsParams struct {
 	// The date and time you retrieve the historical transactions from, including this date-time.
-	From string `json:"from,omitempty"`
+	From time.Time `json:"from,omitempty"`
 	// The date and time you retrieve the historical transactions to, excluding this date-time.
-	To string `json:"to,omitempty"`
+	To time.Time `json:"to,omitempty"`
 	// The ID of the account
 	Account string `json:"account,omitempty"`
 	// The maximum number of the historical transactions to retrieve per page.
@@ -71,11 +73,11 @@ func (p *GetTransactionsParams) encode() url.Values {
 		return nil
 	}
 	q := url.Values{}
-	if p.From != "" {
-		q.Set("from", p.From)
+	if !p.From.IsZero() {
+		q.Set("from", p.From.UTC().Format(time.RFC3339))
 	}
-	if p.To != "" {
-		q.Set("to", p.To)
+	if !p.To.IsZero() {
+		q.Set("to", p.To.UTC().Format(time.RFC3339))
 	}
 	if p.Account != "" {
 		q.Set("account", p.Account)
@@ -102,4 +104,37 @@ func (s *Transactions) List(ctx context.Context, opts *GetTransactionsParams) ([
 		return nil, err
 	}
 	return out, nil
+}
+
+// ListAll iterates every page of List, yielding one Transaction per
+// step. The iterator terminates when the underlying endpoint signals
+// an empty page. Break out of the loop to stop early.
+//
+// Pass nil for opts to accept the server's defaults on the first page.
+// A non-nil opts is copied internally so the caller's struct is not
+// mutated as pages advance.
+func (s *Transactions) ListAll(ctx context.Context, opts *GetTransactionsParams) iter.Seq2[Transaction, error] {
+	return func(yield func(Transaction, error) bool) {
+		var p GetTransactionsParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.List(ctx, &p)
+			if err != nil {
+				var zero Transaction
+				yield(zero, err)
+				return
+			}
+			if len(resp) == 0 {
+				return
+			}
+			for _, item := range resp {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			p.To = resp[len(resp)-1].CreatedAt
+		}
+	}
 }

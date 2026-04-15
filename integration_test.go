@@ -224,6 +224,41 @@ func TestSandbox_TransactionsList_WithCount(t *testing.T) {
 	t.Logf("got %d transactions (count=2)", len(transactions))
 }
 
+func TestSandbox_TransactionsListAll(t *testing.T) {
+	client := newSandboxClient(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// With count=2, any sandbox account that has more than 2 transactions
+	// will force the iterator to do multiple round trips, proving the
+	// cursor advance works. We verify:
+	//   * at least one item yielded,
+	//   * no error on any step,
+	//   * ids are all distinct (no page overlap from a bad cursor).
+	const pageSize = 2
+	seen := map[string]bool{}
+	count := 0
+	for tx, err := range client.Transactions.ListAll(ctx, &business.GetTransactionsParams{Count: pageSize}) {
+		if err != nil {
+			t.Fatalf("ListAll yielded err at item %d: %v", count, err)
+		}
+		count++
+		if seen[tx.ID] {
+			t.Fatalf("duplicate transaction id %s at step %d — cursor advance is overlapping pages", tx.ID, count)
+		}
+		seen[tx.ID] = true
+		// Hard stop so a bug in termination doesn't run forever.
+		if count > 500 {
+			t.Fatalf("iterator emitted %d items, which exceeds sanity cap", count)
+		}
+	}
+
+	if count == 0 {
+		t.Skip("sandbox returned 0 transactions — nothing to paginate")
+	}
+	t.Logf("ListAll yielded %d unique transactions with pageSize=%d", count, pageSize)
+}
+
 func TestSandbox_AccountsGet(t *testing.T) {
 	client := newSandboxClient(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)

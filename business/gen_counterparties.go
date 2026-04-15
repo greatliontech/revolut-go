@@ -5,6 +5,7 @@ package business
 import (
 	"context"
 	"errors"
+	"iter"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -89,6 +90,39 @@ func (s *Counterparties) List(ctx context.Context, opts *GetCounterpartiesParams
 		return nil, err
 	}
 	return out, nil
+}
+
+// ListAll iterates every page of List, yielding one Counterparty per
+// step. The iterator terminates when the underlying endpoint signals
+// an empty page. Break out of the loop to stop early.
+//
+// Pass nil for opts to accept the server's defaults on the first page.
+// A non-nil opts is copied internally so the caller's struct is not
+// mutated as pages advance.
+func (s *Counterparties) ListAll(ctx context.Context, opts *GetCounterpartiesParams) iter.Seq2[Counterparty, error] {
+	return func(yield func(Counterparty, error) bool) {
+		var p GetCounterpartiesParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.List(ctx, &p)
+			if err != nil {
+				var zero Counterparty
+				yield(zero, err)
+				return
+			}
+			if len(resp) == 0 {
+				return
+			}
+			for _, item := range resp {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			p.CreatedBefore = resp[len(resp)-1].CreatedAt
+		}
+	}
 }
 
 // Create create a counterparty
