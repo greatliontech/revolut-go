@@ -36,7 +36,7 @@ func (s *CardInvitations) List(ctx context.Context, opts *GetCardInvitationsPara
 //
 // Docs: https://developer.revolut.com/docs/business/create-card-invitation
 // Required scopes: WRITE
-func (s *CardInvitations) Create(ctx context.Context, req *CardInvitationsBody) (*CardInvitationCreatedResponse, error) {
+func (s *CardInvitations) Create(ctx context.Context, req CardInvitationsBody) (*CardInvitationCreatedResponse, error) {
 	if req.HolderID == "" {
 		return nil, errors.New("business: CardInvitationsBody.holder_id is required")
 	}
@@ -80,7 +80,7 @@ func (s *CardInvitations) Get(ctx context.Context, cardInvitationID string) (*Ca
 //
 // Docs: https://developer.revolut.com/docs/business/update-card-invitation
 // Required scopes: WRITE
-func (s *CardInvitations) Update(ctx context.Context, cardInvitationID string, req *CardInvitationsBody) (*CardInvitationUpdatedResponse, error) {
+func (s *CardInvitations) Update(ctx context.Context, cardInvitationID string, req CardInvitationsBody) (*CardInvitationUpdatedResponse, error) {
 	if cardInvitationID == "" {
 		return nil, errors.New("business: card_invitation_id is required")
 	}

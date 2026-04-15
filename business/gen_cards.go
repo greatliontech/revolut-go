@@ -65,7 +65,7 @@ func (s *Cards) ListAll(ctx context.Context, opts *GetCardsParams) iter.Seq2[Car
 //
 // Docs: https://developer.revolut.com/docs/business/create-card
 // Required scopes: WRITE
-func (s *Cards) Create(ctx context.Context, req *CardsBody) (*CardCreatedResponse, error) {
+func (s *Cards) Create(ctx context.Context, req CardsBody) (*CardCreatedResponse, error) {
 	if req.RequestID == "" {
 		return nil, errors.New("business: CardsBody.request_id is required")
 	}
@@ -95,7 +95,7 @@ func (s *Cards) Get(ctx context.Context, cardID string) (*CardResponse, error) {
 //
 // Docs: https://developer.revolut.com/docs/business/update-card
 // Required scopes: WRITE
-func (s *Cards) Update(ctx context.Context, cardID string, req *CardsBody) (*CardResponse, error) {
+func (s *Cards) Update(ctx context.Context, cardID string, req CardsBody) (*CardResponse, error) {
 	if cardID == "" {
 		return nil, errors.New("business: card_id is required")
 	}

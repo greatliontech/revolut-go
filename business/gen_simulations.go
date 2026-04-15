@@ -20,7 +20,7 @@ type Simulations struct {
 //
 // Docs: https://developer.revolut.com/docs/business/simulate-top-up
 // Required scopes: WRITE
-func (s *Simulations) SimulateTopUp(ctx context.Context, req *SimulationsBody) (*SimulateTopUpResponse, error) {
+func (s *Simulations) SimulateTopUp(ctx context.Context, req SimulationsBody) (*SimulateTopUpResponse, error) {
 	if req.AccountID == "" {
 		return nil, errors.New("business: SimulationsBody.account_id is required")
 	}

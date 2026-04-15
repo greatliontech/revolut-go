@@ -99,13 +99,12 @@ func ReadOnly(spec *ir.Spec) {
 			if m.BodyParam == nil {
 				continue
 			}
-			if name, isPointer := topNamed(m.BodyParam.Type); name != "" {
+			if name, _ := topNamed(m.BodyParam.Type); name != "" {
 				if cloneName, ok := clones[name]; ok {
-					if isPointer {
-						m.BodyParam.Type = ir.Pointer(ir.Named(cloneName))
-					} else {
-						m.BodyParam.Type = ir.Named(cloneName)
-					}
+					// Body receivers are always value shape (see
+					// build/operations.go applyRequestBody); the clone
+					// follows suit.
+					m.BodyParam.Type = ir.Named(cloneName)
 				}
 			}
 		}

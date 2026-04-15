@@ -206,6 +206,12 @@ func (b *Builder) synthParamsName(opID, verb, path string) string {
 // content type, and populates the Method's body hints. Precedence:
 // application/json > application/x-www-form-urlencoded >
 // multipart/form-data > application/octet-stream.
+//
+// Request-body types are always normalised to value shape ("req T",
+// never "req *T"): no nil-deref risk in emitted validators, no
+// zero-value ambiguity for callers, and resolveType's inline-object
+// promotion (which returns *T for synthesized names) vs $ref path
+// (which returns T) no longer leaks into the public signature.
 func (b *Builder) applyRequestBody(m *ir.Method, op *openapi3.Operation) {
 	if op.RequestBody == nil || op.RequestBody.Value == nil {
 		return
@@ -220,13 +226,14 @@ func (b *Builder) applyRequestBody(m *ir.Method, op *openapi3.Operation) {
 	case content["application/json"] != nil:
 		typ := b.resolveType(content["application/json"].Schema, Context{Parent: m.Receiver, Field: "body"})
 		if typ != nil {
-			m.BodyParam = &ir.Param{Name: "req", Type: typ}
+			m.BodyParam = &ir.Param{Name: "req", Type: stripOuterPointer(typ)}
 			m.HTTPCall.BodyKind = ir.BodyJSON
 			m.HTTPCall.BodyExpr = "req"
 		}
 	case content["application/x-www-form-urlencoded"] != nil:
 		typ := b.resolveType(content["application/x-www-form-urlencoded"].Schema, Context{Parent: m.Receiver, Field: "body"})
 		if typ != nil {
+			typ = stripOuterPointer(typ)
 			m.BodyParam = &ir.Param{Name: "req", Type: typ}
 			m.HTTPCall.BodyKind = ir.BodyForm
 			m.HTTPCall.BodyExpr = "req.encodeForm()"
@@ -235,6 +242,7 @@ func (b *Builder) applyRequestBody(m *ir.Method, op *openapi3.Operation) {
 	case content["multipart/form-data"] != nil:
 		typ := b.resolveType(content["multipart/form-data"].Schema, Context{Parent: m.Receiver, Field: "body"})
 		if typ != nil {
+			typ = stripOuterPointer(typ)
 			m.BodyParam = &ir.Param{Name: "req", Type: typ}
 			m.HTTPCall.BodyKind = ir.BodyMultipart
 			m.HTTPCall.BodyExpr = "req"
@@ -245,6 +253,16 @@ func (b *Builder) applyRequestBody(m *ir.Method, op *openapi3.Operation) {
 		m.HTTPCall.BodyKind = ir.BodyRawStream
 		m.HTTPCall.BodyExpr = "body"
 	}
+}
+
+// stripOuterPointer peels every leading *T wrapper from a type. Used
+// to normalise request-body receivers to value shape while leaving
+// inner pointers (e.g. slice element or map value) untouched.
+func stripOuterPointer(t *ir.Type) *ir.Type {
+	for t != nil && t.IsPointer() {
+		t = t.Elem
+	}
+	return t
 }
 
 // flagEncoderOnTarget locates the Decl a Named type points at and

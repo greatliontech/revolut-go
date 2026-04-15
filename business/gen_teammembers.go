@@ -109,7 +109,7 @@ func (s *TeamMembers) ListAll(ctx context.Context, opts *GetTeamMembersParams) i
 //
 // Docs: https://developer.revolut.com/docs/business/invite-team-member
 // Required scopes: WRITE
-func (s *TeamMembers) InviteTeamMember(ctx context.Context, req *TeamMembersBody) (*InviteTeamMemberResponse, error) {
+func (s *TeamMembers) InviteTeamMember(ctx context.Context, req TeamMembersBody) (*InviteTeamMemberResponse, error) {
 	if req.Email == "" {
 		return nil, errors.New("business: TeamMembersBody.email is required")
 	}

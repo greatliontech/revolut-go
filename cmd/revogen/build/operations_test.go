@@ -210,6 +210,43 @@ func TestOperations_JSONRequestAndResponse(t *testing.T) {
 	}
 }
 
+// TestOperations_InlineBodyIsValueShape pins the normalisation rule:
+// inline-object request bodies (which resolveType returns as *T via
+// promoteInline) get their outer pointer stripped so every generated
+// method signature takes `req T`, never `req *T`.
+func TestOperations_InlineBodyIsValueShape(t *testing.T) {
+	b := newOperationBuilder()
+	item := pathItem()
+	item.Post = &openapi3.Operation{
+		OperationID: "createFoo",
+		Tags:        []string{"Foos"},
+		RequestBody: &openapi3.RequestBodyRef{Value: &openapi3.RequestBody{
+			Content: openapi3.Content{
+				"application/json": &openapi3.MediaType{Schema: inline(&openapi3.Schema{
+					Type: &openapi3.Types{"object"},
+					Properties: openapi3.Schemas{
+						"x": inline(primSchema("string", "")),
+					},
+				})},
+			},
+		}},
+		Responses: openapi3.NewResponses(),
+	}
+	item.Post.Responses.Set("200", &openapi3.ResponseRef{Value: &openapi3.Response{}})
+	addPath(b, "/foos", item)
+	b.reserveResourceNames()
+	b.buildDecls()
+	b.buildOperations()
+
+	m := b.resourceByName["Foos"].Methods[0]
+	if m.BodyParam == nil {
+		t.Fatal("nil body param")
+	}
+	if got := m.BodyParam.Type.GoExpr(); got[0] == '*' {
+		t.Errorf("body type still a pointer: %q", got)
+	}
+}
+
 func TestOperations_RawBytesResponse(t *testing.T) {
 	b := newOperationBuilder()
 	item := pathItem()
