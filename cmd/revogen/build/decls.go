@@ -341,6 +341,15 @@ func defaultLiteral(s *openapi3.Schema, fieldType *ir.Type) string {
 		if v == "" {
 			return ""
 		}
+		// A string default that contains whitespace is almost
+		// always prose ("the date-time at which the request is
+		// made", "Default label according to card's type") rather
+		// than a wire value. Assigning prose as a default would
+		// send garbage to the server; DefaultDoc still carries the
+		// text for godoc, just not for ApplyDefaults.
+		if strings.ContainsAny(v, " \t\n") {
+			return ""
+		}
 		lit := fmt.Sprintf("%q", v)
 		if fieldType != nil && fieldType.Kind == ir.KindNamed {
 			return fieldType.GoExpr() + "(" + lit + ")"

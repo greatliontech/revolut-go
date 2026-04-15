@@ -202,6 +202,62 @@ func TestEmit_Union_WireTagged(t *testing.T) {
 	}
 }
 
+// TestEmit_BodyReceiverEmittedAsValue pins the body-receiver
+// normalisation end-to-end: the IR-level test (in build/) checks
+// the Type flag, but it doesn't prove the emitter renders the
+// signature as `req X` instead of `req *X`. A regression that
+// re-pointerised the body in methodParamList would slip past the
+// IR-level check but fail here.
+func TestEmit_BodyReceiverEmittedAsValue(t *testing.T) {
+	spec := &ir.Spec{
+		Package:   "sample",
+		ErrPrefix: "sample",
+		Decls: []*ir.Decl{{
+			Name: "Foo",
+			Kind: ir.DeclStruct,
+			Fields: []*ir.Field{
+				{JSONName: "id", GoName: "ID", Type: ir.Prim("string"), Required: true},
+			},
+		}},
+		Resources: []*ir.Resource{{
+			Name: "Foos",
+			Methods: []*ir.Method{{
+				Receiver:  "Foos",
+				Name:      "Create",
+				BodyParam: &ir.Param{Name: "req", Type: ir.Named("Foo")},
+				Returns:   ir.Named("Foo"),
+				HTTPCall: ir.HTTPCall{
+					Method:   "POST",
+					PathExpr: "foos",
+					BodyKind: ir.BodyJSON,
+					BodyExpr: "req",
+					RespKind: ir.RespJSONValue,
+					RespType: ir.Named("Foo"),
+				},
+			}},
+		}},
+	}
+	dir, err := os.MkdirTemp("", "emit-body-*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+	if err := Spec(spec, dir); err != nil {
+		t.Fatalf("Spec: %v", err)
+	}
+	b, err := os.ReadFile(filepath.Join(dir, "gen_foos.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(b)
+	if !strings.Contains(src, "req Foo") {
+		t.Errorf("expected body param to render as value `req Foo`:\n%s", src)
+	}
+	if strings.Contains(src, "req *Foo") {
+		t.Errorf("body param emitted as pointer — normalisation regressed:\n%s", src)
+	}
+}
+
 // TestEmit_HeaderParamTypes covers the four header-param shapes the
 // generator has to handle: plain string, named string-backed enum,
 // numeric, and boolean. Regression test for a vet-caught bug where

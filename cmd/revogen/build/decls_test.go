@@ -246,6 +246,46 @@ func TestBuildDecls_DefaultDoc(t *testing.T) {
 	}
 }
 
+// TestBuildDecls_ProseStringDefaultSkipsLiteral: a string default
+// that contains whitespace is prose, not a wire value. DefaultDoc
+// still carries it for godoc, but DefaultLiteral is empty so
+// ApplyDefaults won't auto-apply it.
+func TestBuildDecls_ProseStringDefaultSkipsLiteral(t *testing.T) {
+	b := newTestBuilder()
+	prop := inline(primSchema("string", ""))
+	prop.Value.Default = "the date-time at which the request is made"
+	seedSchemas(b, "X", inline(&openapi3.Schema{
+		Type:       &openapi3.Types{"object"},
+		Properties: openapi3.Schemas{"when": prop},
+	}))
+	b.buildDecls()
+	f := b.declByName["X"].Fields[0]
+	if f.DefaultLiteral != "" {
+		t.Errorf("prose default leaked into DefaultLiteral: %q", f.DefaultLiteral)
+	}
+	if f.DefaultDoc == "" {
+		t.Errorf("DefaultDoc should still carry the prose for godoc")
+	}
+}
+
+// TestBuildDecls_SingleWordStringDefaultKept: a whitespace-free
+// string default looks like a wire value ("active", "v1") and
+// still flows into DefaultLiteral so ApplyDefaults can assign it.
+func TestBuildDecls_SingleWordStringDefaultKept(t *testing.T) {
+	b := newTestBuilder()
+	prop := inline(primSchema("string", ""))
+	prop.Value.Default = "active"
+	seedSchemas(b, "Y", inline(&openapi3.Schema{
+		Type:       &openapi3.Types{"object"},
+		Properties: openapi3.Schemas{"state": prop},
+	}))
+	b.buildDecls()
+	f := b.declByName["Y"].Fields[0]
+	if f.DefaultLiteral != `"active"` {
+		t.Errorf("wire-value default should emit literal; got %q", f.DefaultLiteral)
+	}
+}
+
 func TestBuildDecls_ProseDefaultIgnored(t *testing.T) {
 	// A prose default (string) still renders; an array default does not.
 	b := newTestBuilder()
