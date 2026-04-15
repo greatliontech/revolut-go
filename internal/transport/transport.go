@@ -82,9 +82,6 @@ func New(cfg Config) (*Transport, error) {
 //   - dst, when non-nil, receives the JSON-decoded response.
 //   - On a 2xx response with a nil dst, the body is drained and discarded.
 //   - On a non-2xx response, the returned error is *[core.APIError].
-//
-// If the ctx carries a header sink (see [WithHeaderSink]), the 2xx
-// response's http.Header is copied into it before Do returns.
 func (t *Transport) Do(ctx context.Context, method, path string, body, dst any) error {
 	req, err := t.newJSONRequest(ctx, method, path, body)
 	if err != nil {
@@ -97,7 +94,6 @@ func (t *Transport) Do(ctx context.Context, method, path string, body, dst any) 
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		captureResponseHeaders(ctx, resp.Header)
 		if dst == nil {
 			_, _ = io.Copy(io.Discard, resp.Body)
 			return nil
@@ -187,7 +183,6 @@ func (t *Transport) DoRaw(ctx context.Context, method, path string, r RawRequest
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, nil, decodeError(resp)
 	}
-	captureResponseHeaders(ctx, resp.Header)
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, nil, fmt.Errorf("revolut: read %s %s: %w", method, path, err)

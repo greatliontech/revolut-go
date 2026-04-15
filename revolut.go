@@ -8,11 +8,9 @@
 package revolut
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/greatliontech/revolut-go/internal/core"
-	"github.com/greatliontech/revolut-go/internal/transport"
 )
 
 // Environment selects between Revolut's sandbox and production hosts.
@@ -51,28 +49,6 @@ func AsAPIError(err error) (*APIError, bool) { return core.AsAPIError(err) }
 // *bool or *int64 fields on generated request-body structs, where the
 // pointer shape is used to distinguish "unset" from the zero value.
 func Ptr[T any](v T) *T { return &v }
-
-// WithResponseHeaders returns ctx carrying sink as the destination
-// for the next response's http.Header. Generated methods read sink
-// out of ctx on success (2xx) and copy the response header set into
-// *sink before returning, which lets callers grab correlation IDs
-// (x-fapi-interaction-id), rate-limit hints (Retry-After), and
-// other response metadata without a breaking method-signature
-// change.
-//
-// Usage:
-//
-//	var hdr http.Header
-//	ctx := revolut.WithResponseHeaders(ctx, &hdr)
-//	account, err := client.Accounts.Get(ctx, id)
-//	// hdr now holds the 2xx response's headers.
-//
-// Each method call overwrites sink, so sequential calls on the
-// same context see only the latest. For concurrent calls, pass
-// each one its own sink.
-func WithResponseHeaders(ctx context.Context, sink *http.Header) context.Context {
-	return transport.WithHeaderSink(ctx, sink)
-}
 
 // Option configures a client constructor. Options are applied in order;
 // later options override earlier ones.
