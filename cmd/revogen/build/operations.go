@@ -281,8 +281,24 @@ func (b *Builder) applyResponse(m *ir.Method, op *openapi3.Operation) {
 			return
 		}
 		if mt, ok := rr.Value.Content["application/json"]; ok && mt != nil {
-			t := b.resolveType(mt.Schema, Context{Parent: m.Receiver, Field: "response"})
+			// Use operationId as the parent hint so two operations
+			// on the same resource don't collide on the same inline
+			// response type. Falls back to the receiver name when
+			// the spec omits operationId.
+			parent := op.OperationID
+			if parent == "" {
+				parent = m.Receiver
+			}
+			t := b.resolveType(mt.Schema, Context{Parent: parent, Field: "response"})
 			if t != nil {
+				// Inline-object promotion returns *<Name>, correct for a
+				// struct field but wrong as a top-level return — it
+				// would produce **<Name> once emit adds its own pointer.
+				// Strip the outer pointer when the underlying type is
+				// a local Named.
+				if t.IsPointer() && t.Elem != nil && t.Elem.IsNamed() {
+					t = t.Elem
+				}
 				m.Returns = t
 				m.HTTPCall.RespType = t
 				if t.IsSlice() {

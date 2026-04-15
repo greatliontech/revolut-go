@@ -5,6 +5,7 @@ package business
 import (
 	"context"
 	"errors"
+	"iter"
 	"net/http"
 	"net/url"
 
@@ -20,16 +21,44 @@ type Accounting struct {
 //
 // Docs: https://developer.revolut.com/docs/business/get-accounting-categories
 // Required scopes: READ
-func (s *Accounting) GetCategories(ctx context.Context, opts *GetAccountingCategoriesParams) (**AccountingResponse, error) {
+func (s *Accounting) GetCategories(ctx context.Context, opts *GetAccountingCategoriesParams) (*GetAccountingCategoriesResponse, error) {
 	path := "accounting-categories"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
 	}
-	var out *AccountingResponse
+	var out GetAccountingCategoriesResponse
 	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
+}
+
+// GetCategoriesAll iterates every page of GetCategories, yielding one AccountingCategoryResponse per
+// step. Break out of the loop to stop early.
+func (s *Accounting) GetCategoriesAll(ctx context.Context, opts *GetAccountingCategoriesParams) iter.Seq2[AccountingCategoryResponse, error] {
+	return func(yield func(AccountingCategoryResponse, error) bool) {
+		var p GetAccountingCategoriesParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.GetCategories(ctx, &p)
+			if err != nil {
+				var zero AccountingCategoryResponse
+				yield(zero, err)
+				return
+			}
+			for _, item := range resp.AccountingCategories {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			if resp.NextPageToken == "" {
+				return
+			}
+			p.PageToken = resp.NextPageToken
+		}
+	}
 }
 
 // CreateCategory create an accounting category
@@ -91,16 +120,44 @@ func (s *Accounting) DeleteCategory(ctx context.Context, accountingCategoryID st
 //
 // Docs: https://developer.revolut.com/docs/business/get-label-groups
 // Required scopes: READ
-func (s *Accounting) GetLabelGroups(ctx context.Context, opts *GetLabelGroupsParams) (**AccountingResponse, error) {
+func (s *Accounting) GetLabelGroups(ctx context.Context, opts *GetLabelGroupsParams) (*GetLabelGroupsResponse, error) {
 	path := "label-groups"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
 	}
-	var out *AccountingResponse
+	var out GetLabelGroupsResponse
 	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
+}
+
+// GetLabelGroupsAll iterates every page of GetLabelGroups, yielding one LabelGroupResponse per
+// step. Break out of the loop to stop early.
+func (s *Accounting) GetLabelGroupsAll(ctx context.Context, opts *GetLabelGroupsParams) iter.Seq2[LabelGroupResponse, error] {
+	return func(yield func(LabelGroupResponse, error) bool) {
+		var p GetLabelGroupsParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.GetLabelGroups(ctx, &p)
+			if err != nil {
+				var zero LabelGroupResponse
+				yield(zero, err)
+				return
+			}
+			for _, item := range resp.LabelGroups {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			if resp.NextPageToken == "" {
+				return
+			}
+			p.PageToken = resp.NextPageToken
+		}
+	}
 }
 
 // CreateLabelGroup create a new label group
@@ -165,7 +222,7 @@ func (s *Accounting) DeleteLabelGroup(ctx context.Context, groupID string) error
 //
 // Docs: https://developer.revolut.com/docs/business/get-labels
 // Required scopes: READ
-func (s *Accounting) GetLabels(ctx context.Context, groupID string, opts *GetLabelsParams) (**AccountingResponse, error) {
+func (s *Accounting) GetLabels(ctx context.Context, groupID string, opts *GetLabelsParams) (*GetLabelsResponse, error) {
 	if groupID == "" {
 		return nil, errors.New("business: group_id is required")
 	}
@@ -173,11 +230,44 @@ func (s *Accounting) GetLabels(ctx context.Context, groupID string, opts *GetLab
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
 	}
-	var out *AccountingResponse
+	var out GetLabelsResponse
 	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
+}
+
+// GetLabelsAll iterates every page of GetLabels, yielding one LabelResponse per
+// step. Break out of the loop to stop early.
+func (s *Accounting) GetLabelsAll(ctx context.Context, groupID string, opts *GetLabelsParams) iter.Seq2[LabelResponse, error] {
+	return func(yield func(LabelResponse, error) bool) {
+		var p GetLabelsParams
+		if opts != nil {
+			p = *opts
+		}
+		if groupID == "" {
+			var zero LabelResponse
+			yield(zero, errors.New("business: groupID is required"))
+			return
+		}
+		for {
+			resp, err := s.GetLabels(ctx, groupID, &p)
+			if err != nil {
+				var zero LabelResponse
+				yield(zero, err)
+				return
+			}
+			for _, item := range resp.Labels {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			if resp.NextPageToken == "" {
+				return
+			}
+			p.PageToken = resp.NextPageToken
+		}
+	}
 }
 
 // CreateLabel create a new label
@@ -233,16 +323,44 @@ func (s *Accounting) DeleteLabel(ctx context.Context, groupID string, labelID st
 //
 // Docs: https://developer.revolut.com/docs/business/get-tax-rates
 // Required scopes: READ
-func (s *Accounting) GetTaxRates(ctx context.Context, opts *GetTaxRatesParams) (**AccountingResponse, error) {
+func (s *Accounting) GetTaxRates(ctx context.Context, opts *GetTaxRatesParams) (*GetTaxRatesResponse, error) {
 	path := "tax-rates"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
 	}
-	var out *AccountingResponse
+	var out GetTaxRatesResponse
 	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
+}
+
+// GetTaxRatesAll iterates every page of GetTaxRates, yielding one TaxRateResponse per
+// step. Break out of the loop to stop early.
+func (s *Accounting) GetTaxRatesAll(ctx context.Context, opts *GetTaxRatesParams) iter.Seq2[TaxRateResponse, error] {
+	return func(yield func(TaxRateResponse, error) bool) {
+		var p GetTaxRatesParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.GetTaxRates(ctx, &p)
+			if err != nil {
+				var zero TaxRateResponse
+				yield(zero, err)
+				return
+			}
+			for _, item := range resp.TaxRates {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			if resp.NextPageToken == "" {
+				return
+			}
+			p.PageToken = resp.NextPageToken
+		}
+	}
 }
 
 // CreateTaxRate create a new tax rate

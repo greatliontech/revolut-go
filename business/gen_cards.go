@@ -176,11 +176,11 @@ func (s *Cards) UpdateReferences(ctx context.Context, cardID string, req []CardR
 //
 // Docs: https://developer.revolut.com/docs/business/get-sensitive-card-details
 // Required scopes: READ_SENSITIVE_CARD_DATA
-func (s *Cards) GetSensitiveCardDetails(ctx context.Context, cardID string) (**CardsResponse, error) {
+func (s *Cards) GetSensitiveCardDetails(ctx context.Context, cardID string) (*GetSensitiveCardDetailsResponse, error) {
 	if cardID == "" {
 		return nil, errors.New("business: card_id is required")
 	}
-	var out *CardsResponse
+	var out GetSensitiveCardDetailsResponse
 	if err := s.t.Do(ctx, http.MethodGet, "cards/"+url.PathEscape(cardID)+"/sensitive-details", nil, &out); err != nil {
 		return nil, err
 	}

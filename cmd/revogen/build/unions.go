@@ -201,10 +201,23 @@ type mappedVariant struct {
 // surfaces the conflict in godoc so the discrepancy is visible.
 // Ordering matches the mapping slice.
 func (b *Builder) flattenMappedVariants(goName string, s *openapi3.Schema, mapping []mappedVariant) *ir.Decl {
+	// Build a migration-aware doc block: call out the variants the
+	// spec groups under this schema so users coming from prior
+	// SDK versions know where their per-variant types went.
+	doc := s.Description
+	if doc != "" {
+		doc += "\n\n"
+	}
+	doc += "The spec groups these shapes under a documentation-only discriminator "
+	doc += "(no wire-level propertyName); fill in the fields that apply to your "
+	doc += "scenario. Groupings:"
+	for _, m := range mapping {
+		doc += "\n  - " + m.Tag + ": " + m.SpecName
+	}
 	decl := &ir.Decl{
 		Name: goName,
 		Kind: ir.DeclStruct,
-		Doc:  s.Description,
+		Doc:  doc,
 	}
 	seen := map[string]bool{}
 	for _, m := range mapping {

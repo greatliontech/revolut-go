@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	"github.com/greatliontech/revolut-go/cmd/revogen/ir"
+	"github.com/greatliontech/revolut-go/cmd/revogen/names"
 )
 
 // FileImports computes per-file import sets for the emit phase.
@@ -191,17 +192,10 @@ func collectMethodImports(m *ir.Method, set map[string]struct{}) {
 	}
 }
 
-func lowerASCII(s string) string {
-	out := make([]byte, 0, len(s))
-	for i := 0; i < len(s); i++ {
-		c := s[i]
-		if c >= 'A' && c <= 'Z' {
-			c += 'a' - 'A'
-		}
-		out = append(out, c)
-	}
-	return string(out)
-}
+// lowerASCII forwards to names.LowerASCII; kept as a thin wrapper
+// here to avoid touching every call site while package
+// dependencies settle.
+func lowerASCII(s string) string { return names.LowerASCII(s) }
 
 // Group splits a sorted import list into stdlib and third-party
 // buckets so the emitter can render them with a blank line between.

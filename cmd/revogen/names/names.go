@@ -73,6 +73,22 @@ func CanonicalParamKey(s string) string {
 	return b.String()
 }
 
+// LowerASCII lowercases ASCII letters without touching non-ASCII
+// runes. Used for generated-file naming (gen_<lower>.go) where Go
+// identifiers are already ASCII and Unicode-aware lowercasing
+// would be overkill.
+func LowerASCII(s string) string {
+	out := make([]byte, 0, len(s))
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if c >= 'A' && c <= 'Z' {
+			c += 'a' - 'A'
+		}
+		out = append(out, c)
+	}
+	return string(out)
+}
+
 // CamelToKebab turns "getAccount" into "get-account". Used for
 // operationId → URL slug conversion for doc links.
 func CamelToKebab(s string) string {

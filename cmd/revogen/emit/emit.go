@@ -7,6 +7,7 @@ import (
 
 	"github.com/greatliontech/revolut-go/cmd/revogen/ir"
 	"github.com/greatliontech/revolut-go/cmd/revogen/lower"
+	"github.com/greatliontech/revolut-go/cmd/revogen/names"
 )
 
 // Spec writes every Go file the generator produces for one IR
@@ -30,7 +31,7 @@ func Spec(spec *ir.Spec, outDir string) error {
 		return fmt.Errorf("emit types: %w", err)
 	}
 	for _, r := range spec.Resources {
-		fname := "gen_" + lowerASCII(r.Name) + ".go"
+		fname := "gen_" + names.LowerASCII(r.Name) + ".go"
 		src := writeResourceFile(spec, r, imports[fname])
 		if err := writeFile(filepath.Join(outDir, fname), src); err != nil {
 			return fmt.Errorf("emit %s: %w", r.Name, err)
@@ -63,17 +64,3 @@ func writeFile(path, src string) error {
 	return w.flush(path)
 }
 
-// lowerASCII is duplicated from lower/imports.go to keep emit
-// dependency-free on internal lowercasing helpers; both are
-// trivial.
-func lowerASCII(s string) string {
-	out := make([]byte, 0, len(s))
-	for i := 0; i < len(s); i++ {
-		c := s[i]
-		if c >= 'A' && c <= 'Z' {
-			c += 'a' - 'A'
-		}
-		out = append(out, c)
-	}
-	return string(out)
-}

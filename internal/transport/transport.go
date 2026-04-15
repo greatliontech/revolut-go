@@ -88,7 +88,15 @@ func (t *Transport) Do(ctx context.Context, method, path string, body, dst any) 
 			_, _ = io.Copy(io.Discard, resp.Body)
 			return nil
 		}
-		if err := json.NewDecoder(resp.Body).Decode(dst); err != nil && !errors.Is(err, io.EOF) {
+		// 204 No Content legitimately has an empty body — EOF is
+		// expected there. For every other 2xx, EOF on decode means
+		// the server closed the connection mid-body and we'd
+		// otherwise silently succeed with a zero-valued dst.
+		if resp.StatusCode == http.StatusNoContent || resp.ContentLength == 0 {
+			_, _ = io.Copy(io.Discard, resp.Body)
+			return nil
+		}
+		if err := json.NewDecoder(resp.Body).Decode(dst); err != nil {
 			return fmt.Errorf("revolut: decode %s %s: %w", method, path, err)
 		}
 		return nil
@@ -146,10 +154,13 @@ func (t *Transport) DoRaw(ctx context.Context, method, path string, r RawRequest
 		return nil, nil, err
 	}
 	for k, vs := range r.Headers {
-		// Don't let the caller override Content-Type / Accept via
-		// Headers; those are authoritative on this method.
+		// Don't let the caller override transport-owned headers via
+		// the generic Headers field — Authorization comes from
+		// auth.Apply, User-Agent from the transport config,
+		// Content-Type / Accept are picked by this call's
+		// body/response shape.
 		switch http.CanonicalHeaderKey(k) {
-		case "Content-Type", "Accept":
+		case "Content-Type", "Accept", "Authorization", "User-Agent":
 			continue
 		}
 		req.Header[http.CanonicalHeaderKey(k)] = append([]string(nil), vs...)

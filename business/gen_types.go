@@ -2507,6 +2507,11 @@ type ValidateAccountNameRequestIndividualName struct {
 	LastName string `json:"last_name"`
 }
 
+// ValidateAccountNameRequest the spec groups these shapes under a documentation-only discriminator (no wire-level propertyName); fill in the fields that apply to your scenario. Groupings:
+//   - AU: ValidateAccountNameRequestAU
+//   - EUR: ValidateAccountNameRequestEUR
+//   - RO: ValidateAccountNameRequestRO
+//   - UK: ValidateAccountNameRequestUK
 type ValidateAccountNameRequest struct {
 	// The account number of the counterparty.
 	AccountNo string `json:"account_no,omitempty"`
@@ -2692,6 +2697,11 @@ const (
 	ValidateAccountNameResponseResultCodeTemporarilyUnavailable ValidateAccountNameResponseResultCode = "temporarily_unavailable"
 )
 
+// ValidateAccountNameResponse the spec groups these shapes under a documentation-only discriminator (no wire-level propertyName); fill in the fields that apply to your scenario. Groupings:
+//   - AU: ValidateAccountNameResponseAU
+//   - EUR: ValidateAccountNameResponseEUR
+//   - RO: ValidateAccountNameResponseRO
+//   - UK: ValidateAccountNameResponseUK
 type ValidateAccountNameResponse struct {
 	// The name of the recipient when the account type is business.
 	CompanyName string `json:"company_name,omitempty"`
@@ -3025,7 +3035,7 @@ func (p *GetAccountingCategoriesParams) encode() url.Values {
 	return q
 }
 
-type AccountingResponse struct {
+type GetAccountingCategoriesResponse struct {
 	// The list of accounting categories.
 	AccountingCategories []AccountingCategoryResponse `json:"accounting_categories"`
 
@@ -3237,7 +3247,7 @@ type CardsBody struct {
 	Virtual bool `json:"virtual"`
 }
 
-type CardsResponse struct {
+type GetSensitiveCardDetailsResponse struct {
 	// The CVV (Card Verification Value) of the card.
 	Cvv string `json:"cvv"`
 
@@ -3391,6 +3401,14 @@ func (p *GetLabelGroupsParams) encode() url.Values {
 	return q
 }
 
+type GetLabelGroupsResponse struct {
+	// List of label groups.
+	LabelGroups []LabelGroupResponse `json:"label_groups"`
+
+	// Cursor for the next page.
+	NextPageToken PageToken `json:"next_page_token,omitempty"`
+}
+
 // GetLabelsParams query parameters for: Retrieve a list of labels from a label group
 type GetLabelsParams struct {
 	// The page size, that is, the maximum number of labels to return per page.
@@ -3412,6 +3430,14 @@ func (p *GetLabelsParams) encode() url.Values {
 		q.Set("page_token", string(p.PageToken))
 	}
 	return q
+}
+
+type GetLabelsResponse struct {
+	// List of labels in the specified group
+	Labels []LabelResponse `json:"labels"`
+
+	// Cursor for the next page.
+	NextPageToken PageToken `json:"next_page_token,omitempty"`
 }
 
 // GetPayoutLinksParams query parameters for: Retrieve a list of payout links
@@ -3529,17 +3555,17 @@ type SimulationsBody struct {
 	State SimulationsBodyState `json:"state,omitempty"`
 }
 
-// SimulationsResponseState the state of the top-up transaction.
-type SimulationsResponseState string
+// SimulateTopUpResponseState the state of the top-up transaction.
+type SimulateTopUpResponseState string
 
 const (
-	SimulationsResponseStatePending   SimulationsResponseState = "pending"
-	SimulationsResponseStateCompleted SimulationsResponseState = "completed"
-	SimulationsResponseStateReverted  SimulationsResponseState = "reverted"
-	SimulationsResponseStateFailed    SimulationsResponseState = "failed"
+	SimulateTopUpResponseStatePending   SimulateTopUpResponseState = "pending"
+	SimulateTopUpResponseStateCompleted SimulateTopUpResponseState = "completed"
+	SimulateTopUpResponseStateReverted  SimulateTopUpResponseState = "reverted"
+	SimulateTopUpResponseStateFailed    SimulateTopUpResponseState = "failed"
 )
 
-type SimulationsResponse struct {
+type SimulateTopUpResponse struct {
 	// The date and time the transaction was completed in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
 	CompletedAt *time.Time `json:"completed_at,omitempty"`
 
@@ -3550,7 +3576,35 @@ type SimulationsResponse struct {
 	ID string `json:"id"`
 
 	// The state of the top-up transaction.
-	State SimulationsResponseState `json:"state"`
+	State SimulateTopUpResponseState `json:"state"`
+}
+
+// SimulateTransferStateUpdateResponseState indicates the simulated transaction state. Possible values:
+// - `completed` - Transaction was successfully processed.
+// - `reverted` - Transaction was reverted by the system or company, but not the user. This can happen for a variety of reasons, for example, the receiver being inaccessible.
+// - `declined` - Transaction was declined to the user for a good reason, such as insufficient account balance, wrong receiver information, etc.
+// - `failed` - Transaction failed during initiation or completion. This can happen for a variety of reasons, for example, invalid API calls, blocked payments, etc.
+type SimulateTransferStateUpdateResponseState string
+
+const (
+	SimulateTransferStateUpdateResponseStateCompleted SimulateTransferStateUpdateResponseState = "completed"
+	SimulateTransferStateUpdateResponseStateReverted  SimulateTransferStateUpdateResponseState = "reverted"
+	SimulateTransferStateUpdateResponseStateDeclined  SimulateTransferStateUpdateResponseState = "declined"
+	SimulateTransferStateUpdateResponseStateFailed    SimulateTransferStateUpdateResponseState = "failed"
+)
+
+type SimulateTransferStateUpdateResponse struct {
+	// The date and time the transfer was completed in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
+
+	// The date and time the transfer was created in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
+	CreatedAt time.Time `json:"created_at"`
+
+	// The ID of the transfer whose state was updated.
+	ID string `json:"id"`
+
+	// Indicates the simulated transaction state. Possible values:
+	State SimulateTransferStateUpdateResponseState `json:"state"`
 }
 
 // GetTaxRatesParams query parameters for: Retrieve a list of tax rates
@@ -3574,6 +3628,13 @@ func (p *GetTaxRatesParams) encode() url.Values {
 		q.Set("page_token", string(p.PageToken))
 	}
 	return q
+}
+
+type GetTaxRatesResponse struct {
+	// Cursor for the next page.
+	NextPageToken PageToken `json:"next_page_token,omitempty"`
+
+	TaxRates []TaxRateResponse `json:"tax_rates"`
 }
 
 // GetTeamMembersParams query parameters for: Retrieve a list of team members
@@ -3608,7 +3669,7 @@ type TeamMembersBody struct {
 	RoleID string `json:"role_id"`
 }
 
-type TeamMembersResponse struct {
+type InviteTeamMemberResponse struct {
 	// The date and time when the member was created.
 	CreatedAt time.Time `json:"created_at"`
 
