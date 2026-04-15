@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/greatliontech/revolut-go/internal/core"
 )
@@ -233,6 +234,61 @@ func TestNew_ValidatesBaseURL(t *testing.T) {
 	}
 	if _, err := New(Config{BaseURL: "://bad"}); err == nil {
 		t.Error("want error for malformed BaseURL")
+	}
+}
+
+// TestAPIError_RetryAfterDeltaSeconds: a numeric Retry-After on
+// a 429 response is parsed into APIError.RetryAfter so callers
+// implementing backoff can honor the server's own hint.
+func TestAPIError_RetryAfterDeltaSeconds(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Retry-After", "30")
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	defer srv.Close()
+	tr := newTransport(t, srv, nil)
+	err := tr.Do(context.Background(), http.MethodGet, "ping", nil, nil)
+	apiErr, ok := core.AsAPIError(err)
+	if !ok {
+		t.Fatalf("want APIError, got %v", err)
+	}
+	if apiErr.RetryAfter != 30*time.Second {
+		t.Errorf("RetryAfter=%v; want 30s", apiErr.RetryAfter)
+	}
+}
+
+// TestAPIError_RetryAfterHTTPDate: RFC 7231 also allows an
+// HTTP-date; the transport converts it into a relative duration
+// by subtracting now.
+func TestAPIError_RetryAfterHTTPDate(t *testing.T) {
+	future := time.Now().UTC().Add(45 * time.Second).Format(http.TimeFormat)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Retry-After", future)
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}))
+	defer srv.Close()
+	tr := newTransport(t, srv, nil)
+	err := tr.Do(context.Background(), http.MethodGet, "ping", nil, nil)
+	apiErr, _ := core.AsAPIError(err)
+	// 1-second tolerance for the round-trip delay.
+	if apiErr.RetryAfter < 43*time.Second || apiErr.RetryAfter > 46*time.Second {
+		t.Errorf("RetryAfter=%v; want ~45s", apiErr.RetryAfter)
+	}
+}
+
+// TestAPIError_RetryAfterAbsent: no header → zero duration, so
+// callers can distinguish "no hint" from "0s". Both are the zero
+// value here, which is fine — callers shouldn't be sleeping 0s.
+func TestAPIError_RetryAfterAbsent(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+	}))
+	defer srv.Close()
+	tr := newTransport(t, srv, nil)
+	err := tr.Do(context.Background(), http.MethodGet, "ping", nil, nil)
+	apiErr, _ := core.AsAPIError(err)
+	if apiErr.RetryAfter != 0 {
+		t.Errorf("RetryAfter=%v; want zero", apiErr.RetryAfter)
 	}
 }
 

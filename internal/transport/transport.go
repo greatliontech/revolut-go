@@ -13,7 +13,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/greatliontech/revolut-go/internal/core"
 )
@@ -248,7 +250,11 @@ func (t *Transport) resolve(path string) (*url.URL, error) {
 
 func decodeError(resp *http.Response) error {
 	body, _ := io.ReadAll(resp.Body)
-	apiErr := &core.APIError{StatusCode: resp.StatusCode, Body: body}
+	apiErr := &core.APIError{
+		StatusCode: resp.StatusCode,
+		Body:       body,
+		RetryAfter: parseRetryAfter(resp.Header.Get("Retry-After")),
+	}
 	if len(body) > 0 {
 		var aux struct {
 			Code    int    `json:"code"`
@@ -260,4 +266,25 @@ func decodeError(resp *http.Response) error {
 		}
 	}
 	return apiErr
+}
+
+// parseRetryAfter interprets RFC 7231's Retry-After header. The
+// header may be either a delta-seconds integer or an HTTP-date;
+// both forms are supported. Returns zero on empty / malformed
+// input so callers can treat "no hint" and "unparseable hint" the
+// same way.
+func parseRetryAfter(raw string) time.Duration {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return 0
+	}
+	if secs, err := strconv.Atoi(raw); err == nil && secs >= 0 {
+		return time.Duration(secs) * time.Second
+	}
+	if when, err := http.ParseTime(raw); err == nil {
+		if d := time.Until(when); d > 0 {
+			return d
+		}
+	}
+	return 0
 }
