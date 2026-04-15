@@ -54,6 +54,8 @@ tasks:
       - task: gen:business
       - task: gen:merchant
       - task: gen:openbanking
+      - task: gen:cryptoramp
+      - task: gen:revolutx
       - task: build
 
   gen:business:
@@ -70,6 +72,16 @@ tasks:
     desc: Regenerate the Open Banking API client.
     cmds:
       - go run ./cmd/revogen -spec specs/open-banking.yaml -package openbanking -out openbanking
+
+  gen:cryptoramp:
+    desc: Regenerate the Crypto Ramp API client.
+    cmds:
+      - go run ./cmd/revogen -spec specs/crypto-ramp.yaml -package cryptoramp -out cryptoramp
+
+  gen:revolutx:
+    desc: Regenerate the Revolut X API client.
+    cmds:
+      - go run ./cmd/revogen -spec specs/revolut-x.yaml -package revolutx -out revolutx
 
   test:gen-all:
     desc: Regenerate every vendored spec into a scratch dir and run go vet on each output. Catches cross-spec regressions before they reach committed code.

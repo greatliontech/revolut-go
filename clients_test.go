@@ -19,6 +19,8 @@ func TestClientConstructors_RejectNilAuth(t *testing.T) {
 		{"business", func() (any, error) { return revolut.NewBusinessClient(nil) }},
 		{"merchant", func() (any, error) { return revolut.NewMerchantClient(nil) }},
 		{"open-banking", func() (any, error) { return revolut.NewOpenBankingClient(nil) }},
+		{"crypto-ramp", func() (any, error) { return revolut.NewCryptoRampClient(nil) }},
+		{"revolut-x", func() (any, error) { return revolut.NewRevolutXClient(nil) }},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -40,5 +42,11 @@ func TestClientConstructors_AcceptOptions(t *testing.T) {
 	}
 	if _, err := revolut.NewOpenBankingClient(auth, revolut.WithBaseURL("https://example.com/")); err != nil {
 		t.Fatalf("openbanking custom baseURL: %v", err)
+	}
+	if _, err := revolut.NewCryptoRampClient(auth, revolut.WithEnvironment(revolut.EnvironmentSandbox)); err != nil {
+		t.Fatalf("cryptoramp: %v", err)
+	}
+	if _, err := revolut.NewRevolutXClient(auth, revolut.WithEnvironment(revolut.EnvironmentProduction)); err != nil {
+		t.Fatalf("revolutx prod: %v", err)
 	}
 }
