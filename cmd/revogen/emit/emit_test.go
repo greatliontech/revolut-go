@@ -201,3 +201,78 @@ func TestEmit_Union_WireTagged(t *testing.T) {
 		}
 	}
 }
+
+// TestEmit_HeaderParamTypes covers the four header-param shapes the
+// generator has to handle: plain string, named string-backed enum,
+// numeric, and boolean. Regression test for a vet-caught bug where
+// named enums were emitted without a string() conversion and ints
+// were compared to "".
+func TestEmit_HeaderParamTypes(t *testing.T) {
+	spec := &ir.Spec{
+		Package:   "sample",
+		ErrPrefix: "sample",
+		Decls: []*ir.Decl{{
+			Name:     "APIVersion",
+			Kind:     ir.DeclEnum,
+			EnumBase: ir.Prim("string"),
+			EnumValues: []ir.EnumValue{
+				{GoName: "APIVersionV1", Value: "2024-01-01"},
+			},
+		}},
+		Resources: []*ir.Resource{{
+			Name: "Widgets",
+			Methods: []*ir.Method{{
+				Receiver: "Widgets",
+				Name:     "Ping",
+				HeaderParams: []ir.Param{
+					{Name: "authorization", Type: ir.Prim("string"), WireName: "Authorization"},
+					{Name: "apiVersion", Type: ir.Named("APIVersion"), WireName: "X-Api-Version"},
+					{Name: "timestamp", Type: ir.Prim("int"), WireName: "X-Timestamp"},
+					{Name: "dryRun", Type: ir.Prim("bool"), WireName: "X-Dry-Run"},
+				},
+				HTTPCall: ir.HTTPCall{Method: "GET", PathExpr: "ping", RespKind: ir.RespNone},
+			}},
+		}},
+	}
+	dir, err := os.MkdirTemp("", "emit-headers-*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+	if err := Spec(spec, dir); err != nil {
+		if bad, rerr := os.ReadFile(filepath.Join(dir, "gen_widgets.go.bad")); rerr == nil {
+			t.Fatalf("Spec: %v\n---bad source---\n%s", err, bad)
+		}
+		t.Fatalf("Spec: %v", err)
+	}
+	b, err := os.ReadFile(filepath.Join(dir, "gen_widgets.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(b)
+	assertGofmt(t, "gen_widgets", src)
+	for _, want := range []string{
+		`if authorization != "" {`,
+		`r.Headers.Set("Authorization", authorization)`,
+		`if apiVersion != "" {`,
+		`r.Headers.Set("X-Api-Version", string(apiVersion))`,
+		`r.Headers.Set("X-Timestamp", strconv.Itoa(int(timestamp)))`,
+		`r.Headers.Set("X-Dry-Run", strconv.FormatBool(dryRun))`,
+		`"strconv"`,
+	} {
+		if !strings.Contains(src, want) {
+			t.Errorf("missing %q\n---source---\n%s", want, src)
+		}
+	}
+	// Int/bool params must NOT have an empty-string guard — the bug
+	// we're regression-testing emitted `if timestamp != ""` which
+	// doesn't compile.
+	for _, unwanted := range []string{
+		`if timestamp != ""`,
+		`if dryRun != ""`,
+	} {
+		if strings.Contains(src, unwanted) {
+			t.Errorf("unexpected %q\n---source---\n%s", unwanted, src)
+		}
+	}
+}

@@ -225,21 +225,7 @@ func writeRawHTTPCall(w *fileWriter, m *ir.Method, pathExpr string) {
 	if len(m.HeaderParams) > 0 {
 		w.write("\tr.Headers = http.Header{}\n")
 		for _, hp := range m.HeaderParams {
-			// WireName preserves the original header name; Name is
-			// the camelCase Go identifier the user passes in.
-			wire := hp.Name
-			for _, p := range m.HeaderParams {
-				if p.Name == hp.Name && p.Doc != "" {
-					_ = p
-				}
-			}
-			// Prefer the wire name on the outgoing request; since
-			// HeaderParam doesn't currently track WireName, the Go
-			// identifier works if callers match it to the spec.
-			_ = wire
-			w.printf("\tif %s != \"\" {\n", hp.Name)
-			w.printf("\t\tr.Headers.Set(%q, %s)\n", headerWireName(hp), hp.Name)
-			w.write("\t}\n")
+			writeHeaderSet(w, hp)
 		}
 	}
 
@@ -340,6 +326,36 @@ func headerWireName(p ir.Param) string {
 	}
 	return p.Name
 }
+
+// writeHeaderSet emits the r.Headers.Set call for one header param.
+// String-typed headers get an empty-string guard (matching the
+// Revolut spec convention that omitted headers mean "default").
+// Numeric and boolean headers are always set — there's no zero
+// sentinel. Named string-backed types (spec enums) get the guard
+// plus a string(...) conversion.
+func writeHeaderSet(w *fileWriter, hp ir.Param) {
+	wire := headerWireName(hp)
+	t := hp.Type
+	switch {
+	case t.Kind == ir.KindPrim && t.Name == "string":
+		w.printf("\tif %s != \"\" {\n", hp.Name)
+		w.printf("\t\tr.Headers.Set(%q, %s)\n", wire, hp.Name)
+		w.write("\t}\n")
+	case t.Kind == ir.KindNamed:
+		w.printf("\tif %s != \"\" {\n", hp.Name)
+		w.printf("\t\tr.Headers.Set(%q, string(%s))\n", wire, hp.Name)
+		w.write("\t}\n")
+	case t.Kind == ir.KindPrim && (t.Name == "int" || t.Name == "int32"):
+		w.printf("\tr.Headers.Set(%q, strconv.Itoa(int(%s)))\n", wire, hp.Name)
+	case t.Kind == ir.KindPrim && t.Name == "int64":
+		w.printf("\tr.Headers.Set(%q, strconv.FormatInt(%s, 10))\n", wire, hp.Name)
+	case t.Kind == ir.KindPrim && t.Name == "bool":
+		w.printf("\tr.Headers.Set(%q, strconv.FormatBool(%s))\n", wire, hp.Name)
+	default:
+		w.printf("\tr.Headers.Set(%q, fmt.Sprint(%s))\n", wire, hp.Name)
+	}
+}
+
 
 func httpVerbWord(verb string) string {
 	if verb == "" {

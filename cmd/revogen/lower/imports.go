@@ -103,6 +103,11 @@ func FileImports(spec *ir.Spec) map[string][]string {
 				// byte slice.
 				needsJSON = true
 			}
+			for _, hp := range m.HeaderParams {
+				if pkg := headerSetImport(hp.Type); pkg != "" {
+					set[pkg] = struct{}{}
+				}
+			}
 			if m.HTTPCall.RespKind == ir.RespUnionTagged || m.HTTPCall.RespKind == ir.RespUnionProbe {
 				needsJSON = true
 			}
@@ -126,6 +131,28 @@ func FileImports(spec *ir.Spec) map[string][]string {
 	out["gen_client.go"] = []string{transportPkg}
 
 	return out
+}
+
+// headerSetImport reports the stdlib package emit's writeHeaderSet
+// needs for a header param of the given type, or "". Mirrors the
+// switch in emit/methods.go so the computed import list matches
+// what the emitter actually renders. Keep the two in sync.
+func headerSetImport(t *ir.Type) string {
+	if t == nil {
+		return ""
+	}
+	if t.Kind == ir.KindPrim {
+		switch t.Name {
+		case "string":
+			return ""
+		case "int", "int32", "int64", "bool":
+			return "strconv"
+		}
+	}
+	if t.Kind == ir.KindNamed {
+		return ""
+	}
+	return "fmt"
 }
 
 // addQueryFieldImports examines a query-param field's Go type and
