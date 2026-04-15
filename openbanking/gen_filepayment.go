@@ -21,7 +21,56 @@ type FilePayment struct {
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-file-payment-consents
 // Required scopes: payments
-func (s *FilePayment) CreateConsents(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteFileConsent2) (*ObwriteFileConsentResponse2, error) {
+func (s *FilePayment) CreateConsents(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteFileConsent2) (*ObwriteFileConsentResponse2, ResponseMetadata, error) {
+	if req.Data.Initiation.FileHash == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.FileHash is required")
+	}
+	if req.Data.Initiation.FileType == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.FileType is required")
+	}
+	r := transport.RawRequest{
+		JSONBody: req,
+	}
+	r.Headers = http.Header{}
+	if xFAPIFinancialID != "" {
+		r.Headers.Set("x-fapi-financial-id", xFAPIFinancialID)
+	}
+	if xFAPICustomerLastLoggedTime != "" {
+		r.Headers.Set("x-fapi-customer-last-logged-time", xFAPICustomerLastLoggedTime)
+	}
+	if xFAPICustomerIPAddress != "" {
+		r.Headers.Set("x-fapi-customer-ip-address", xFAPICustomerIPAddress)
+	}
+	if xFAPIInteractionID != "" {
+		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
+	}
+	if authorization != "" {
+		r.Headers.Set("Authorization", authorization)
+	}
+	if xIdempotencyKey != "" {
+		r.Headers.Set("x-idempotency-key", xIdempotencyKey)
+	}
+	if xJWSSignature != "" {
+		r.Headers.Set("x-jws-signature", xJWSSignature)
+	}
+	if xCustomerUserAgent != "" {
+		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
+	}
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodPost, "file-payment-consents", r)
+	if err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	var out ObwriteFileConsentResponse2
+	if err := json.Unmarshal(body, &out); err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	return &out, extractResponseMetadata(hdr), nil
+}
+
+// CreateConsentsSigned is CreateConsents with the raw response body and ResponseMetadata
+// preserved alongside the typed payload. Use it when you need to verify
+// the detached x-jws-signature header against the untouched bytes.
+func (s *FilePayment) CreateConsentsSigned(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteFileConsent2) (*Signed[ObwriteFileConsentResponse2], error) {
 	if req.Data.Initiation.FileHash == "" {
 		return nil, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.FileHash is required")
 	}
@@ -56,7 +105,7 @@ func (s *FilePayment) CreateConsents(ctx context.Context, xFAPIFinancialID strin
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodPost, "file-payment-consents", r)
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodPost, "file-payment-consents", r)
 	if err != nil {
 		return nil, err
 	}
@@ -64,14 +113,52 @@ func (s *FilePayment) CreateConsents(ctx context.Context, xFAPIFinancialID strin
 	if err := json.Unmarshal(body, &out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return &Signed[ObwriteFileConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
 
 // GetConsentsConsentID retrieve a file payment consent
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-file-payment-consents-consent-id
 // Required scopes: payments
-func (s *FilePayment) GetConsentsConsentID(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObwriteFileConsentResponse2, error) {
+func (s *FilePayment) GetConsentsConsentID(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObwriteFileConsentResponse2, ResponseMetadata, error) {
+	if consentID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ConsentId is required")
+	}
+	r := transport.RawRequest{}
+	r.Headers = http.Header{}
+	if xFAPIFinancialID != "" {
+		r.Headers.Set("x-fapi-financial-id", xFAPIFinancialID)
+	}
+	if xFAPICustomerLastLoggedTime != "" {
+		r.Headers.Set("x-fapi-customer-last-logged-time", xFAPICustomerLastLoggedTime)
+	}
+	if xFAPICustomerIPAddress != "" {
+		r.Headers.Set("x-fapi-customer-ip-address", xFAPICustomerIPAddress)
+	}
+	if xFAPIInteractionID != "" {
+		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
+	}
+	if authorization != "" {
+		r.Headers.Set("Authorization", authorization)
+	}
+	if xCustomerUserAgent != "" {
+		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
+	}
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "file-payment-consents/"+url.PathEscape(consentID), r)
+	if err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	var out ObwriteFileConsentResponse2
+	if err := json.Unmarshal(body, &out); err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	return &out, extractResponseMetadata(hdr), nil
+}
+
+// GetConsentsConsentIDSigned is GetConsentsConsentID with the raw response body and ResponseMetadata
+// preserved alongside the typed payload. Use it when you need to verify
+// the detached x-jws-signature header against the untouched bytes.
+func (s *FilePayment) GetConsentsConsentIDSigned(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*Signed[ObwriteFileConsentResponse2], error) {
 	if consentID == "" {
 		return nil, errors.New("openbanking: ConsentId is required")
 	}
@@ -95,7 +182,7 @@ func (s *FilePayment) GetConsentsConsentID(ctx context.Context, consentID string
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "file-payment-consents/"+url.PathEscape(consentID), r)
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "file-payment-consents/"+url.PathEscape(consentID), r)
 	if err != nil {
 		return nil, err
 	}
@@ -103,16 +190,16 @@ func (s *FilePayment) GetConsentsConsentID(ctx context.Context, consentID string
 	if err := json.Unmarshal(body, &out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return &Signed[ObwriteFileConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
 
 // GetConsentsConsentIDFile retrieve an uploaded payment file
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-file-payment-consents-consent-id-file
 // Required scopes: payments
-func (s *FilePayment) GetConsentsConsentIDFile(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) ([]byte, error) {
+func (s *FilePayment) GetConsentsConsentIDFile(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) ([]byte, ResponseMetadata, error) {
 	if consentID == "" {
-		return nil, errors.New("openbanking: ConsentId is required")
+		return nil, ResponseMetadata{}, errors.New("openbanking: ConsentId is required")
 	}
 	r := transport.RawRequest{
 		Accept: "text/csv",
@@ -136,20 +223,20 @@ func (s *FilePayment) GetConsentsConsentIDFile(ctx context.Context, consentID st
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "file-payment-consents/"+url.PathEscape(consentID)+"/file", r)
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "file-payment-consents/"+url.PathEscape(consentID)+"/file", r)
 	if err != nil {
-		return nil, err
+		return nil, ResponseMetadata{}, err
 	}
-	return body, nil
+	return body, extractResponseMetadata(hdr), nil
 }
 
 // CreateConsentsConsentIDFile upload a payment file
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-file-payment-consents-consent-id-file
 // Required scopes: payments
-func (s *FilePayment) CreateConsentsConsentIDFile(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string) (*EmptyBody, error) {
+func (s *FilePayment) CreateConsentsConsentIDFile(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string) (*EmptyBody, ResponseMetadata, error) {
 	if consentID == "" {
-		return nil, errors.New("openbanking: ConsentId is required")
+		return nil, ResponseMetadata{}, errors.New("openbanking: ConsentId is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
@@ -177,22 +264,74 @@ func (s *FilePayment) CreateConsentsConsentIDFile(ctx context.Context, consentID
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodPost, "file-payment-consents/"+url.PathEscape(consentID)+"/file", r)
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodPost, "file-payment-consents/"+url.PathEscape(consentID)+"/file", r)
 	if err != nil {
-		return nil, err
+		return nil, ResponseMetadata{}, err
 	}
 	var out EmptyBody
 	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+		return nil, ResponseMetadata{}, err
 	}
-	return &out, nil
+	return &out, extractResponseMetadata(hdr), nil
 }
 
 // Create create a file payment
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-file-payments
 // Required scopes: payments
-func (s *FilePayment) Create(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteFile2) (*ObwriteFileResponse2, error) {
+func (s *FilePayment) Create(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteFile2) (*ObwriteFileResponse2, ResponseMetadata, error) {
+	if req.Data.ConsentID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFile2.Data.ConsentId is required")
+	}
+	if req.Data.Initiation.FileHash == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFile2.Data.Initiation.FileHash is required")
+	}
+	if req.Data.Initiation.FileType == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFile2.Data.Initiation.FileType is required")
+	}
+	r := transport.RawRequest{
+		JSONBody: req,
+	}
+	r.Headers = http.Header{}
+	if xFAPIFinancialID != "" {
+		r.Headers.Set("x-fapi-financial-id", xFAPIFinancialID)
+	}
+	if xFAPICustomerLastLoggedTime != "" {
+		r.Headers.Set("x-fapi-customer-last-logged-time", xFAPICustomerLastLoggedTime)
+	}
+	if xFAPICustomerIPAddress != "" {
+		r.Headers.Set("x-fapi-customer-ip-address", xFAPICustomerIPAddress)
+	}
+	if xFAPIInteractionID != "" {
+		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
+	}
+	if authorization != "" {
+		r.Headers.Set("Authorization", authorization)
+	}
+	if xIdempotencyKey != "" {
+		r.Headers.Set("x-idempotency-key", xIdempotencyKey)
+	}
+	if xJWSSignature != "" {
+		r.Headers.Set("x-jws-signature", xJWSSignature)
+	}
+	if xCustomerUserAgent != "" {
+		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
+	}
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodPost, "file-payments", r)
+	if err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	var out ObwriteFileResponse2
+	if err := json.Unmarshal(body, &out); err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	return &out, extractResponseMetadata(hdr), nil
+}
+
+// CreateSigned is Create with the raw response body and ResponseMetadata
+// preserved alongside the typed payload. Use it when you need to verify
+// the detached x-jws-signature header against the untouched bytes.
+func (s *FilePayment) CreateSigned(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteFile2) (*Signed[ObwriteFileResponse2], error) {
 	if req.Data.ConsentID == "" {
 		return nil, errors.New("openbanking: ObwriteFile2.Data.ConsentId is required")
 	}
@@ -230,7 +369,7 @@ func (s *FilePayment) Create(ctx context.Context, xFAPIFinancialID string, xFAPI
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodPost, "file-payments", r)
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodPost, "file-payments", r)
 	if err != nil {
 		return nil, err
 	}
@@ -238,14 +377,52 @@ func (s *FilePayment) Create(ctx context.Context, xFAPIFinancialID string, xFAPI
 	if err := json.Unmarshal(body, &out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return &Signed[ObwriteFileResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
 
 // GetFilePaymentID retrieve a file payment
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-file-payments-file-payment-id
 // Required scopes: payments
-func (s *FilePayment) GetFilePaymentID(ctx context.Context, filePaymentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObwriteFileResponse2, error) {
+func (s *FilePayment) GetFilePaymentID(ctx context.Context, filePaymentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObwriteFileResponse2, ResponseMetadata, error) {
+	if filePaymentID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: FilePaymentId is required")
+	}
+	r := transport.RawRequest{}
+	r.Headers = http.Header{}
+	if xFAPIFinancialID != "" {
+		r.Headers.Set("x-fapi-financial-id", xFAPIFinancialID)
+	}
+	if xFAPICustomerLastLoggedTime != "" {
+		r.Headers.Set("x-fapi-customer-last-logged-time", xFAPICustomerLastLoggedTime)
+	}
+	if xFAPICustomerIPAddress != "" {
+		r.Headers.Set("x-fapi-customer-ip-address", xFAPICustomerIPAddress)
+	}
+	if xFAPIInteractionID != "" {
+		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
+	}
+	if authorization != "" {
+		r.Headers.Set("Authorization", authorization)
+	}
+	if xCustomerUserAgent != "" {
+		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
+	}
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "file-payments/"+url.PathEscape(filePaymentID), r)
+	if err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	var out ObwriteFileResponse2
+	if err := json.Unmarshal(body, &out); err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	return &out, extractResponseMetadata(hdr), nil
+}
+
+// GetFilePaymentIDSigned is GetFilePaymentID with the raw response body and ResponseMetadata
+// preserved alongside the typed payload. Use it when you need to verify
+// the detached x-jws-signature header against the untouched bytes.
+func (s *FilePayment) GetFilePaymentIDSigned(ctx context.Context, filePaymentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*Signed[ObwriteFileResponse2], error) {
 	if filePaymentID == "" {
 		return nil, errors.New("openbanking: FilePaymentId is required")
 	}
@@ -269,7 +446,7 @@ func (s *FilePayment) GetFilePaymentID(ctx context.Context, filePaymentID string
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "file-payments/"+url.PathEscape(filePaymentID), r)
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "file-payments/"+url.PathEscape(filePaymentID), r)
 	if err != nil {
 		return nil, err
 	}
@@ -277,14 +454,52 @@ func (s *FilePayment) GetFilePaymentID(ctx context.Context, filePaymentID string
 	if err := json.Unmarshal(body, &out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return &Signed[ObwriteFileResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
 
 // GetFilePaymentIDReportFile retrieve all payments of a file payment
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-file-payments-file-payment-id-report-file
 // Required scopes: payments
-func (s *FilePayment) GetFilePaymentIDReportFile(ctx context.Context, filePaymentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObreportFileResponse, error) {
+func (s *FilePayment) GetFilePaymentIDReportFile(ctx context.Context, filePaymentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObreportFileResponse, ResponseMetadata, error) {
+	if filePaymentID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: FilePaymentId is required")
+	}
+	r := transport.RawRequest{}
+	r.Headers = http.Header{}
+	if xFAPIFinancialID != "" {
+		r.Headers.Set("x-fapi-financial-id", xFAPIFinancialID)
+	}
+	if xFAPICustomerLastLoggedTime != "" {
+		r.Headers.Set("x-fapi-customer-last-logged-time", xFAPICustomerLastLoggedTime)
+	}
+	if xFAPICustomerIPAddress != "" {
+		r.Headers.Set("x-fapi-customer-ip-address", xFAPICustomerIPAddress)
+	}
+	if xFAPIInteractionID != "" {
+		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
+	}
+	if authorization != "" {
+		r.Headers.Set("Authorization", authorization)
+	}
+	if xCustomerUserAgent != "" {
+		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
+	}
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "file-payments/"+url.PathEscape(filePaymentID)+"/report-file", r)
+	if err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	var out ObreportFileResponse
+	if err := json.Unmarshal(body, &out); err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	return &out, extractResponseMetadata(hdr), nil
+}
+
+// GetFilePaymentIDReportFileSigned is GetFilePaymentIDReportFile with the raw response body and ResponseMetadata
+// preserved alongside the typed payload. Use it when you need to verify
+// the detached x-jws-signature header against the untouched bytes.
+func (s *FilePayment) GetFilePaymentIDReportFileSigned(ctx context.Context, filePaymentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*Signed[ObreportFileResponse], error) {
 	if filePaymentID == "" {
 		return nil, errors.New("openbanking: FilePaymentId is required")
 	}
@@ -308,7 +523,7 @@ func (s *FilePayment) GetFilePaymentIDReportFile(ctx context.Context, filePaymen
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "file-payments/"+url.PathEscape(filePaymentID)+"/report-file", r)
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "file-payments/"+url.PathEscape(filePaymentID)+"/report-file", r)
 	if err != nil {
 		return nil, err
 	}
@@ -316,5 +531,5 @@ func (s *FilePayment) GetFilePaymentIDReportFile(ctx context.Context, filePaymen
 	if err := json.Unmarshal(body, &out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return &Signed[ObreportFileResponse]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }

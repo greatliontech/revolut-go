@@ -21,7 +21,80 @@ type InternationalScheduledPayment struct {
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-international-scheduled-payment-consents
 // Required scopes: payments
-func (s *InternationalScheduledPayment) CreateConsents(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteInternationalScheduledConsent2) (*ObwriteInternationalScheduledConsentResponse2, error) {
+func (s *InternationalScheduledPayment) CreateConsents(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteInternationalScheduledConsent2) (*ObwriteInternationalScheduledConsentResponse2, ResponseMetadata, error) {
+	if req.Data.Initiation.CreditorAccount.Identification == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduledConsent2.Data.Initiation.CreditorAccount.Identification is required")
+	}
+	if req.Data.Initiation.CreditorAccount.Name == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduledConsent2.Data.Initiation.CreditorAccount.Name is required")
+	}
+	if req.Data.Initiation.CreditorAccount.SchemeName == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduledConsent2.Data.Initiation.CreditorAccount.SchemeName is required")
+	}
+	if req.Data.Initiation.CurrencyOfTransfer == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduledConsent2.Data.Initiation.CurrencyOfTransfer is required")
+	}
+	if req.Data.Initiation.InstructedAmount == nil {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduledConsent2.Data.Initiation.InstructedAmount is required")
+	}
+	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Amount == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduledConsent2.Data.Initiation.InstructedAmount.Amount is required")
+	}
+	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Currency == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduledConsent2.Data.Initiation.InstructedAmount.Currency is required")
+	}
+	if req.Data.Initiation.InstructionIdentification == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduledConsent2.Data.Initiation.InstructionIdentification is required")
+	}
+	if req.Data.Initiation.RequestedExecutionDateTime.IsZero() {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduledConsent2.Data.Initiation.RequestedExecutionDateTime is required")
+	}
+	if req.Data.Permission == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduledConsent2.Data.Permission is required")
+	}
+	r := transport.RawRequest{
+		JSONBody: req,
+	}
+	r.Headers = http.Header{}
+	if xFAPIFinancialID != "" {
+		r.Headers.Set("x-fapi-financial-id", xFAPIFinancialID)
+	}
+	if xFAPICustomerLastLoggedTime != "" {
+		r.Headers.Set("x-fapi-customer-last-logged-time", xFAPICustomerLastLoggedTime)
+	}
+	if xFAPICustomerIPAddress != "" {
+		r.Headers.Set("x-fapi-customer-ip-address", xFAPICustomerIPAddress)
+	}
+	if xFAPIInteractionID != "" {
+		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
+	}
+	if authorization != "" {
+		r.Headers.Set("Authorization", authorization)
+	}
+	if xIdempotencyKey != "" {
+		r.Headers.Set("x-idempotency-key", xIdempotencyKey)
+	}
+	if xJWSSignature != "" {
+		r.Headers.Set("x-jws-signature", xJWSSignature)
+	}
+	if xCustomerUserAgent != "" {
+		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
+	}
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodPost, "international-scheduled-payment-consents", r)
+	if err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	var out ObwriteInternationalScheduledConsentResponse2
+	if err := json.Unmarshal(body, &out); err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	return &out, extractResponseMetadata(hdr), nil
+}
+
+// CreateConsentsSigned is CreateConsents with the raw response body and ResponseMetadata
+// preserved alongside the typed payload. Use it when you need to verify
+// the detached x-jws-signature header against the untouched bytes.
+func (s *InternationalScheduledPayment) CreateConsentsSigned(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteInternationalScheduledConsent2) (*Signed[ObwriteInternationalScheduledConsentResponse2], error) {
 	if req.Data.Initiation.CreditorAccount.Identification == "" {
 		return nil, errors.New("openbanking: ObwriteInternationalScheduledConsent2.Data.Initiation.CreditorAccount.Identification is required")
 	}
@@ -80,7 +153,7 @@ func (s *InternationalScheduledPayment) CreateConsents(ctx context.Context, xFAP
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodPost, "international-scheduled-payment-consents", r)
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodPost, "international-scheduled-payment-consents", r)
 	if err != nil {
 		return nil, err
 	}
@@ -88,14 +161,52 @@ func (s *InternationalScheduledPayment) CreateConsents(ctx context.Context, xFAP
 	if err := json.Unmarshal(body, &out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return &Signed[ObwriteInternationalScheduledConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
 
 // GetConsentsConsentID retrieve an international scheduled payment consent
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-international-scheduled-payment-consents-consent-id
 // Required scopes: payments
-func (s *InternationalScheduledPayment) GetConsentsConsentID(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObwriteInternationalScheduledConsentResponse2, error) {
+func (s *InternationalScheduledPayment) GetConsentsConsentID(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObwriteInternationalScheduledConsentResponse2, ResponseMetadata, error) {
+	if consentID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ConsentId is required")
+	}
+	r := transport.RawRequest{}
+	r.Headers = http.Header{}
+	if xFAPIFinancialID != "" {
+		r.Headers.Set("x-fapi-financial-id", xFAPIFinancialID)
+	}
+	if xFAPICustomerLastLoggedTime != "" {
+		r.Headers.Set("x-fapi-customer-last-logged-time", xFAPICustomerLastLoggedTime)
+	}
+	if xFAPICustomerIPAddress != "" {
+		r.Headers.Set("x-fapi-customer-ip-address", xFAPICustomerIPAddress)
+	}
+	if xFAPIInteractionID != "" {
+		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
+	}
+	if authorization != "" {
+		r.Headers.Set("Authorization", authorization)
+	}
+	if xCustomerUserAgent != "" {
+		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
+	}
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "international-scheduled-payment-consents/"+url.PathEscape(consentID), r)
+	if err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	var out ObwriteInternationalScheduledConsentResponse2
+	if err := json.Unmarshal(body, &out); err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	return &out, extractResponseMetadata(hdr), nil
+}
+
+// GetConsentsConsentIDSigned is GetConsentsConsentID with the raw response body and ResponseMetadata
+// preserved alongside the typed payload. Use it when you need to verify
+// the detached x-jws-signature header against the untouched bytes.
+func (s *InternationalScheduledPayment) GetConsentsConsentIDSigned(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*Signed[ObwriteInternationalScheduledConsentResponse2], error) {
 	if consentID == "" {
 		return nil, errors.New("openbanking: ConsentId is required")
 	}
@@ -119,7 +230,7 @@ func (s *InternationalScheduledPayment) GetConsentsConsentID(ctx context.Context
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "international-scheduled-payment-consents/"+url.PathEscape(consentID), r)
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "international-scheduled-payment-consents/"+url.PathEscape(consentID), r)
 	if err != nil {
 		return nil, err
 	}
@@ -127,14 +238,52 @@ func (s *InternationalScheduledPayment) GetConsentsConsentID(ctx context.Context
 	if err := json.Unmarshal(body, &out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return &Signed[ObwriteInternationalScheduledConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
 
 // GetConsentsConsentIDFundsConfirmation get funds confirmation for an international scheduled payment
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-international-scheduled-payment-consents-consent-id-funds-confirmation
 // Required scopes: payments
-func (s *InternationalScheduledPayment) GetConsentsConsentIDFundsConfirmation(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObwriteFundsConfirmationResponse1, error) {
+func (s *InternationalScheduledPayment) GetConsentsConsentIDFundsConfirmation(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObwriteFundsConfirmationResponse1, ResponseMetadata, error) {
+	if consentID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ConsentId is required")
+	}
+	r := transport.RawRequest{}
+	r.Headers = http.Header{}
+	if xFAPIFinancialID != "" {
+		r.Headers.Set("x-fapi-financial-id", xFAPIFinancialID)
+	}
+	if xFAPICustomerLastLoggedTime != "" {
+		r.Headers.Set("x-fapi-customer-last-logged-time", xFAPICustomerLastLoggedTime)
+	}
+	if xFAPICustomerIPAddress != "" {
+		r.Headers.Set("x-fapi-customer-ip-address", xFAPICustomerIPAddress)
+	}
+	if xFAPIInteractionID != "" {
+		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
+	}
+	if authorization != "" {
+		r.Headers.Set("Authorization", authorization)
+	}
+	if xCustomerUserAgent != "" {
+		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
+	}
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "international-scheduled-payment-consents/"+url.PathEscape(consentID)+"/funds-confirmation", r)
+	if err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	var out ObwriteFundsConfirmationResponse1
+	if err := json.Unmarshal(body, &out); err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	return &out, extractResponseMetadata(hdr), nil
+}
+
+// GetConsentsConsentIDFundsConfirmationSigned is GetConsentsConsentIDFundsConfirmation with the raw response body and ResponseMetadata
+// preserved alongside the typed payload. Use it when you need to verify
+// the detached x-jws-signature header against the untouched bytes.
+func (s *InternationalScheduledPayment) GetConsentsConsentIDFundsConfirmationSigned(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*Signed[ObwriteFundsConfirmationResponse1], error) {
 	if consentID == "" {
 		return nil, errors.New("openbanking: ConsentId is required")
 	}
@@ -158,7 +307,7 @@ func (s *InternationalScheduledPayment) GetConsentsConsentIDFundsConfirmation(ct
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "international-scheduled-payment-consents/"+url.PathEscape(consentID)+"/funds-confirmation", r)
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "international-scheduled-payment-consents/"+url.PathEscape(consentID)+"/funds-confirmation", r)
 	if err != nil {
 		return nil, err
 	}
@@ -166,14 +315,87 @@ func (s *InternationalScheduledPayment) GetConsentsConsentIDFundsConfirmation(ct
 	if err := json.Unmarshal(body, &out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return &Signed[ObwriteFundsConfirmationResponse1]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
 
 // Create create an international scheduled payment
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-international-scheduled-payments
 // Required scopes: payments
-func (s *InternationalScheduledPayment) Create(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteInternationalScheduled2) (*ObwriteInternationalScheduledResponse2, error) {
+func (s *InternationalScheduledPayment) Create(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteInternationalScheduled2) (*ObwriteInternationalScheduledResponse2, ResponseMetadata, error) {
+	if req.Data.ConsentID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduled2.Data.ConsentId is required")
+	}
+	if req.Data.Initiation.CreditorAccount.Identification == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduled2.Data.Initiation.CreditorAccount.Identification is required")
+	}
+	if req.Data.Initiation.CreditorAccount.Name == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduled2.Data.Initiation.CreditorAccount.Name is required")
+	}
+	if req.Data.Initiation.CreditorAccount.SchemeName == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduled2.Data.Initiation.CreditorAccount.SchemeName is required")
+	}
+	if req.Data.Initiation.CurrencyOfTransfer == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduled2.Data.Initiation.CurrencyOfTransfer is required")
+	}
+	if req.Data.Initiation.InstructedAmount == nil {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduled2.Data.Initiation.InstructedAmount is required")
+	}
+	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Amount == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduled2.Data.Initiation.InstructedAmount.Amount is required")
+	}
+	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Currency == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduled2.Data.Initiation.InstructedAmount.Currency is required")
+	}
+	if req.Data.Initiation.InstructionIdentification == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduled2.Data.Initiation.InstructionIdentification is required")
+	}
+	if req.Data.Initiation.RequestedExecutionDateTime.IsZero() {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalScheduled2.Data.Initiation.RequestedExecutionDateTime is required")
+	}
+	r := transport.RawRequest{
+		JSONBody: req,
+	}
+	r.Headers = http.Header{}
+	if xFAPIFinancialID != "" {
+		r.Headers.Set("x-fapi-financial-id", xFAPIFinancialID)
+	}
+	if xFAPICustomerLastLoggedTime != "" {
+		r.Headers.Set("x-fapi-customer-last-logged-time", xFAPICustomerLastLoggedTime)
+	}
+	if xFAPICustomerIPAddress != "" {
+		r.Headers.Set("x-fapi-customer-ip-address", xFAPICustomerIPAddress)
+	}
+	if xFAPIInteractionID != "" {
+		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
+	}
+	if authorization != "" {
+		r.Headers.Set("Authorization", authorization)
+	}
+	if xIdempotencyKey != "" {
+		r.Headers.Set("x-idempotency-key", xIdempotencyKey)
+	}
+	if xJWSSignature != "" {
+		r.Headers.Set("x-jws-signature", xJWSSignature)
+	}
+	if xCustomerUserAgent != "" {
+		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
+	}
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodPost, "international-scheduled-payments", r)
+	if err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	var out ObwriteInternationalScheduledResponse2
+	if err := json.Unmarshal(body, &out); err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	return &out, extractResponseMetadata(hdr), nil
+}
+
+// CreateSigned is Create with the raw response body and ResponseMetadata
+// preserved alongside the typed payload. Use it when you need to verify
+// the detached x-jws-signature header against the untouched bytes.
+func (s *InternationalScheduledPayment) CreateSigned(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteInternationalScheduled2) (*Signed[ObwriteInternationalScheduledResponse2], error) {
 	if req.Data.ConsentID == "" {
 		return nil, errors.New("openbanking: ObwriteInternationalScheduled2.Data.ConsentId is required")
 	}
@@ -232,7 +454,7 @@ func (s *InternationalScheduledPayment) Create(ctx context.Context, xFAPIFinanci
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodPost, "international-scheduled-payments", r)
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodPost, "international-scheduled-payments", r)
 	if err != nil {
 		return nil, err
 	}
@@ -240,14 +462,52 @@ func (s *InternationalScheduledPayment) Create(ctx context.Context, xFAPIFinanci
 	if err := json.Unmarshal(body, &out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return &Signed[ObwriteInternationalScheduledResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
 
 // GetInternationalScheduledPaymentID retrieve an international scheduled payment
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-international-scheduled-payments-international-scheduled-payment-id
 // Required scopes: payments
-func (s *InternationalScheduledPayment) GetInternationalScheduledPaymentID(ctx context.Context, internationalScheduledPaymentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObwriteInternationalScheduledResponse2, error) {
+func (s *InternationalScheduledPayment) GetInternationalScheduledPaymentID(ctx context.Context, internationalScheduledPaymentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObwriteInternationalScheduledResponse2, ResponseMetadata, error) {
+	if internationalScheduledPaymentID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: InternationalScheduledPaymentId is required")
+	}
+	r := transport.RawRequest{}
+	r.Headers = http.Header{}
+	if xFAPIFinancialID != "" {
+		r.Headers.Set("x-fapi-financial-id", xFAPIFinancialID)
+	}
+	if xFAPICustomerLastLoggedTime != "" {
+		r.Headers.Set("x-fapi-customer-last-logged-time", xFAPICustomerLastLoggedTime)
+	}
+	if xFAPICustomerIPAddress != "" {
+		r.Headers.Set("x-fapi-customer-ip-address", xFAPICustomerIPAddress)
+	}
+	if xFAPIInteractionID != "" {
+		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
+	}
+	if authorization != "" {
+		r.Headers.Set("Authorization", authorization)
+	}
+	if xCustomerUserAgent != "" {
+		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
+	}
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "international-scheduled-payments/"+url.PathEscape(internationalScheduledPaymentID), r)
+	if err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	var out ObwriteInternationalScheduledResponse2
+	if err := json.Unmarshal(body, &out); err != nil {
+		return nil, ResponseMetadata{}, err
+	}
+	return &out, extractResponseMetadata(hdr), nil
+}
+
+// GetInternationalScheduledPaymentIDSigned is GetInternationalScheduledPaymentID with the raw response body and ResponseMetadata
+// preserved alongside the typed payload. Use it when you need to verify
+// the detached x-jws-signature header against the untouched bytes.
+func (s *InternationalScheduledPayment) GetInternationalScheduledPaymentIDSigned(ctx context.Context, internationalScheduledPaymentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*Signed[ObwriteInternationalScheduledResponse2], error) {
 	if internationalScheduledPaymentID == "" {
 		return nil, errors.New("openbanking: InternationalScheduledPaymentId is required")
 	}
@@ -271,7 +531,7 @@ func (s *InternationalScheduledPayment) GetInternationalScheduledPaymentID(ctx c
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "international-scheduled-payments/"+url.PathEscape(internationalScheduledPaymentID), r)
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "international-scheduled-payments/"+url.PathEscape(internationalScheduledPaymentID), r)
 	if err != nil {
 		return nil, err
 	}
@@ -279,5 +539,5 @@ func (s *InternationalScheduledPayment) GetInternationalScheduledPaymentID(ctx c
 	if err := json.Unmarshal(body, &out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return &Signed[ObwriteInternationalScheduledResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }

@@ -21,9 +21,9 @@ type Transactions struct {
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-accounts-account-id-direct-debits
 // Required scopes: accounts
-func (s *Transactions) GetAccountsAccountIDDirectDebits(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObreadDirectDebit1, error) {
+func (s *Transactions) GetAccountsAccountIDDirectDebits(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObreadDirectDebit1, ResponseMetadata, error) {
 	if accountID == "" {
-		return nil, errors.New("openbanking: AccountId is required")
+		return nil, ResponseMetadata{}, errors.New("openbanking: AccountId is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
@@ -45,24 +45,24 @@ func (s *Transactions) GetAccountsAccountIDDirectDebits(ctx context.Context, acc
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "accounts/"+url.PathEscape(accountID)+"/direct-debits", r)
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "accounts/"+url.PathEscape(accountID)+"/direct-debits", r)
 	if err != nil {
-		return nil, err
+		return nil, ResponseMetadata{}, err
 	}
 	var out ObreadDirectDebit1
 	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+		return nil, ResponseMetadata{}, err
 	}
-	return &out, nil
+	return &out, extractResponseMetadata(hdr), nil
 }
 
 // GetAccountsAccountIDStandingOrders retrieve all account's standing orders
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-accounts-account-id-standing-orders
 // Required scopes: accounts
-func (s *Transactions) GetAccountsAccountIDStandingOrders(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObreadStandingOrder4, error) {
+func (s *Transactions) GetAccountsAccountIDStandingOrders(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObreadStandingOrder4, ResponseMetadata, error) {
 	if accountID == "" {
-		return nil, errors.New("openbanking: AccountId is required")
+		return nil, ResponseMetadata{}, errors.New("openbanking: AccountId is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
@@ -84,24 +84,24 @@ func (s *Transactions) GetAccountsAccountIDStandingOrders(ctx context.Context, a
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "accounts/"+url.PathEscape(accountID)+"/standing-orders", r)
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "accounts/"+url.PathEscape(accountID)+"/standing-orders", r)
 	if err != nil {
-		return nil, err
+		return nil, ResponseMetadata{}, err
 	}
 	var out ObreadStandingOrder4
 	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+		return nil, ResponseMetadata{}, err
 	}
-	return &out, nil
+	return &out, extractResponseMetadata(hdr), nil
 }
 
 // GetAccountsAccountIDTransactions retrieve all transactions
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-accounts-account-id-transactions
 // Required scopes: accounts
-func (s *Transactions) GetAccountsAccountIDTransactions(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string, opts *GetAccountsAccountIDTransactionsParams) (*ObreadTransaction4, error) {
+func (s *Transactions) GetAccountsAccountIDTransactions(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string, opts *GetAccountsAccountIDTransactionsParams) (*ObreadTransaction4, ResponseMetadata, error) {
 	if accountID == "" {
-		return nil, errors.New("openbanking: AccountId is required")
+		return nil, ResponseMetadata{}, errors.New("openbanking: AccountId is required")
 	}
 	path := "accounts/" + url.PathEscape(accountID) + "/transactions"
 	if q := opts.encode().Encode(); q != "" {
@@ -127,13 +127,13 @@ func (s *Transactions) GetAccountsAccountIDTransactions(ctx context.Context, acc
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, path, r)
+	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, path, r)
 	if err != nil {
-		return nil, err
+		return nil, ResponseMetadata{}, err
 	}
 	var out ObreadTransaction4
 	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+		return nil, ResponseMetadata{}, err
 	}
-	return &out, nil
+	return &out, extractResponseMetadata(hdr), nil
 }

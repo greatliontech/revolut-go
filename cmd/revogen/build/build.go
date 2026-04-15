@@ -35,6 +35,9 @@ func FromOpenAPI(doc *openapi3.T, cfg Config) (*ir.Spec, error) {
 	b.reserveResourceNames()
 	b.buildDecls()
 	b.buildOperations()
+	if b.buildErr != nil {
+		return nil, b.buildErr
+	}
 	b.finalizePagination()
 	b.buildCallbacks()
 	b.buildErrorType()
@@ -67,6 +70,12 @@ type Builder struct {
 	callbacks []*ir.Callback
 	errorType string
 	apiVer    string
+
+	// buildErr, when non-nil, aborts FromOpenAPI. Populated by passes
+	// that want to fail-fast on unrecognised spec shapes (e.g. an
+	// unknown response header the allowlist doesn't cover) without
+	// panicking mid-walk.
+	buildErr error
 }
 
 // resolvedName returns the Go identifier a spec schema name resolves

@@ -93,7 +93,26 @@ func (b *Builder) methodFromOperation(verb, path string, item *openapi3.PathItem
 	b.applyRequestBody(m, op)
 	b.applyResponse(m, op)
 	b.applySecurityScopes(m, op)
+	b.applyResponseMetadata(m, op)
 	return m
+}
+
+// applyResponseMetadata classifies the operation's declared
+// response headers via the allowlist in responses.go, attaches
+// the metadata fields to the method, and flags whether the method
+// needs a Signed raw-bytes variant. Exits the whole build on an
+// unknown header — silent drift would change the public API shape
+// under callers without them noticing.
+func (b *Builder) applyResponseMetadata(m *ir.Method, op *openapi3.Operation) {
+	fields, err := classifyResponseHeaders(op, op.OperationID)
+	if err != nil {
+		if b.buildErr == nil {
+			b.buildErr = err
+		}
+		return
+	}
+	m.ResponseMetadata = fields
+	m.EmitSignedVariant = operationEmitsSignedVariant(op)
 }
 
 // applyParameters lifts path, query, and header parameters off the

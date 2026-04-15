@@ -4,6 +4,7 @@ package openbanking
 
 import (
 	"encoding/json"
+	"net/http"
 	"net/url"
 	"strconv"
 	"time"
@@ -2986,4 +2987,35 @@ func (p *CreateDraftPaymentParams) encode() url.Values {
 		q.Set("title", p.Title)
 	}
 	return q
+}
+
+// ResponseMetadata carries the response headers the spec
+// declares on 2xx responses for any method in this package.
+// Populated automatically by methods that return it as a
+// second value; callers read whichever field the relevant
+// endpoint actually fills.
+type ResponseMetadata struct {
+	// FAPI correlation ID, echoed by the server on every 2xx response.
+	InteractionID string
+	// Detached JWS over the response body. Populated when the spec declares x-jws-signature on this endpoint.
+	JWSSignature string
+}
+
+func extractResponseMetadata(h http.Header) ResponseMetadata {
+	return ResponseMetadata{
+		InteractionID: h.Get("x-fapi-interaction-id"),
+		JWSSignature:  h.Get("x-jws-signature"),
+	}
+}
+
+// Signed wraps a typed response body with the raw bytes
+// and per-response metadata the caller needs to verify the
+// detached x-jws-signature header against the untouched
+// JSON payload. JSON decoding a typed struct and
+// re-marshalling is not byte-identical, so the raw field
+// is the only signature-verifiable form.
+type Signed[T any] struct {
+	Typed    *T
+	Raw      []byte
+	Metadata ResponseMetadata
 }

@@ -54,6 +54,21 @@ type Method struct {
 	HTTPCall   HTTPCall
 	Pagination *Pagination // nil when the operation doesn't paginate
 
+	// ResponseMetadata lists the fields the generator surfaces on a
+	// per-method ResponseMetadata return when the spec declares
+	// allowlisted response headers on 2xx responses. Empty for
+	// methods whose spec declares no such headers, which keeps the
+	// common `(T, error)` shape for four of the five current
+	// packages. Populated in sorted-by-GoName order so emit is
+	// deterministic.
+	ResponseMetadata []MetadataField
+
+	// EmitSignedVariant is true when the operation's 2xx response
+	// carries x-jws-signature. Triggers the emit of a `<Name>Signed`
+	// companion method that returns raw bytes + metadata, so callers
+	// can run detached-JWS verification against the untouched body.
+	EmitSignedVariant bool
+
 	// Godoc-only metadata.
 	Scopes     []string // security scopes, e.g. ["READ", "WRITE"]
 	DocURL     string
@@ -63,6 +78,14 @@ type Method struct {
 	// method uses instead of the client's base URL. Sourced from an
 	// operation-level `servers:` entry.
 	ServerOverride string
+}
+
+// MetadataField names one column of the per-package
+// ResponseMetadata struct.
+type MetadataField struct {
+	GoName   string // Go field name, e.g. "InteractionID"
+	WireName string // HTTP header name, e.g. "x-fapi-interaction-id"
+	Doc      string // single-line godoc for the field
 }
 
 // Validator is a pre-flight required-field check emitted before the

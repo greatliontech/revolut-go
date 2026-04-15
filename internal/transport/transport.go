@@ -85,20 +85,34 @@ func New(cfg Config) (*Transport, error) {
 //   - On a 2xx response with a nil dst, the body is drained and discarded.
 //   - On a non-2xx response, the returned error is *[core.APIError].
 func (t *Transport) Do(ctx context.Context, method, path string, body, dst any) error {
+	_, err := t.doJSON(ctx, method, path, body, dst)
+	return err
+}
+
+// DoWithHeaders is Do with the 2xx response's http.Header returned
+// alongside the typed payload. Used by generated methods whose spec
+// declares response-metadata headers (x-fapi-interaction-id, etc.)
+// so the method can populate a per-package ResponseMetadata struct
+// without touching global state.
+func (t *Transport) DoWithHeaders(ctx context.Context, method, path string, body, dst any) (http.Header, error) {
+	return t.doJSON(ctx, method, path, body, dst)
+}
+
+func (t *Transport) doJSON(ctx context.Context, method, path string, body, dst any) (http.Header, error) {
 	req, err := t.newJSONRequest(ctx, method, path, body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	resp, err := t.httpc.Do(req)
 	if err != nil {
-		return fmt.Errorf("revolut: %s %s: %w", method, path, err)
+		return nil, fmt.Errorf("revolut: %s %s: %w", method, path, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		if dst == nil {
 			_, _ = io.Copy(io.Discard, resp.Body)
-			return nil
+			return resp.Header, nil
 		}
 		// 204 No Content legitimately has an empty body — EOF is
 		// expected there. For every other 2xx, EOF on decode means
@@ -106,14 +120,14 @@ func (t *Transport) Do(ctx context.Context, method, path string, body, dst any) 
 		// otherwise silently succeed with a zero-valued dst.
 		if resp.StatusCode == http.StatusNoContent || resp.ContentLength == 0 {
 			_, _ = io.Copy(io.Discard, resp.Body)
-			return nil
+			return resp.Header, nil
 		}
 		if err := json.NewDecoder(resp.Body).Decode(dst); err != nil {
-			return fmt.Errorf("revolut: decode %s %s: %w", method, path, err)
+			return nil, fmt.Errorf("revolut: decode %s %s: %w", method, path, err)
 		}
-		return nil
+		return resp.Header, nil
 	}
-	return decodeError(resp)
+	return nil, decodeError(resp)
 }
 
 // RawRequest describes a non-JSON HTTP request. Exactly one of

@@ -25,11 +25,98 @@ func writeResourceFile(spec *ir.Spec, r *ir.Resource, imports []string) string {
 		// gen_types.go as well) — not duplicated here. Methods
 		// reference it by Named type via OptsParam.
 		writeMethod(w, spec, m)
+		if m.EmitSignedVariant {
+			writeSignedMethod(w, spec, m)
+		}
 		if m.Pagination != nil {
 			writePaginationMethod(w, spec, m)
 		}
 	}
 	return w.buf.String()
+}
+
+// writeSignedMethod emits the `<Name>Signed` companion that routes
+// through DoRaw to preserve the untouched response bytes, decodes
+// JSON into the typed payload, and returns a Signed[T] bundling
+// typed, raw, and metadata. Callers run detached-JWS verification
+// against the raw bytes.
+func writeSignedMethod(w *fileWriter, spec *ir.Spec, m *ir.Method) {
+	if m.Returns == nil || m.HTTPCall.RespKind != ir.RespJSONValue {
+		// Signed only makes sense for typed JSON payloads. Raw-bytes
+		// responses already hand the caller bytes; union-returning
+		// methods are dispatcher output, not a single verifiable
+		// shape. Skip silently — the allowlist classifier has
+		// already flagged which methods declare x-jws-signature.
+		return
+	}
+	w.printf("// %sSigned is %s with the raw response body and ResponseMetadata\n", m.Name, m.Name)
+	w.write("// preserved alongside the typed payload. Use it when you need to verify\n")
+	w.write("// the detached x-jws-signature header against the untouched bytes.\n")
+	w.printf("func (s *%s) %sSigned(%s) (*Signed[%s], error) {\n",
+		m.Receiver, m.Name, signedMethodParamList(m), m.Returns.GoExpr())
+	writePathParamValidatorsSigned(w, spec, m)
+	writeFieldValidatorsSigned(w, m)
+	writeSignedHTTPCall(w, m)
+	w.write("}\n\n")
+}
+
+// signedMethodParamList mirrors methodParamList but returns the
+// parameter list without the trailing newline handling of the
+// main emitter.
+func signedMethodParamList(m *ir.Method) string {
+	return methodParamList(m)
+}
+
+func writePathParamValidatorsSigned(w *fileWriter, spec *ir.Spec, m *ir.Method) {
+	for _, p := range m.PathParams {
+		w.printf("\tif %s == \"\" {\n", p.Name)
+		wire := p.WireName
+		if wire == "" {
+			wire = p.Name
+		}
+		w.printf("\t\treturn nil, errors.New(%q)\n", spec.ErrPrefix+": "+wire+" is required")
+		w.write("\t}\n")
+	}
+}
+
+func writeFieldValidatorsSigned(w *fileWriter, m *ir.Method) {
+	for _, v := range m.Validators {
+		w.printf("\tif %s {\n", v.Cond)
+		w.printf("\t\treturn nil, errors.New(%q)\n", v.Message)
+		w.write("\t}\n")
+	}
+}
+
+// writeSignedHTTPCall issues the raw request and assembles Signed.
+// Headers always come back from DoRaw; JSON unmarshal happens
+// after the raw slice is captured so both halves are available.
+func writeSignedHTTPCall(w *fileWriter, m *ir.Method) {
+	pathExpr := renderPathExpr(m)
+	if m.OptsParam != nil {
+		w.printf("\tpath := %s\n", pathExpr)
+		w.write("\tif q := opts.encode().Encode(); q != \"\" {\n")
+		w.write("\t\tpath += \"?\" + q\n")
+		w.write("\t}\n")
+		pathExpr = "path"
+	}
+	w.write("\tr := transport.RawRequest{\n")
+	if m.BodyParam != nil && m.HTTPCall.BodyKind == ir.BodyJSON {
+		w.printf("\t\tJSONBody: %s,\n", m.BodyParam.Name)
+	}
+	w.write("\t}\n")
+	if len(m.HeaderParams) > 0 {
+		w.write("\tr.Headers = http.Header{}\n")
+		for _, hp := range m.HeaderParams {
+			writeHeaderSet(w, hp)
+		}
+	}
+	httpVerb := "http.Method" + httpVerbWord(m.HTTPCall.Method)
+	w.printf("\tbody, hdr, err := s.t.DoRaw(ctx, %s, %s, r)\n", httpVerb, pathExpr)
+	w.write("\tif err != nil { return nil, err }\n")
+	w.printf("\tvar out %s\n", m.HTTPCall.RespType.GoExpr())
+	w.write("\tif err := json.Unmarshal(body, &out); err != nil { return nil, err }\n")
+	w.printf("\treturn &Signed[%s]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil\n",
+		m.Returns.GoExpr())
 }
 
 func writeMethod(w *fileWriter, spec *ir.Spec, m *ir.Method) {
@@ -82,14 +169,29 @@ func methodParamList(m *ir.Method) string {
 }
 
 func methodReturnList(m *ir.Method) string {
+	meta := emitsResponseMetadata(m)
 	if m.Returns == nil {
+		if meta {
+			return "(ResponseMetadata, error)"
+		}
 		return "error"
 	}
 	expr := m.Returns.GoExpr()
 	if !m.Returns.IsSlice() && !isInterfaceReturn(m) && !isRawBytesReturn(m) {
 		expr = "*" + expr
 	}
+	if meta {
+		return "(" + expr + ", ResponseMetadata, error)"
+	}
 	return "(" + expr + ", error)"
+}
+
+// emitsResponseMetadata reports whether m needs to surface
+// ResponseMetadata alongside its return. Separate predicate so
+// every other place that has to reason about the return shape
+// (zero-value for error returns, method body, etc.) agrees.
+func emitsResponseMetadata(m *ir.Method) bool {
+	return len(m.ResponseMetadata) > 0
 }
 
 func isInterfaceReturn(m *ir.Method) bool {
@@ -126,10 +228,14 @@ func writeFieldValidators(w *fileWriter, m *ir.Method) {
 // the method's success return type, used in `return X, err` lines
 // when the method has a value return alongside the error.
 func zeroForReturn(m *ir.Method) string {
-	if m.Returns == nil {
-		return ""
+	var b strings.Builder
+	if m.Returns != nil {
+		b.WriteString("nil, ")
 	}
-	return "nil, "
+	if emitsResponseMetadata(m) {
+		b.WriteString("ResponseMetadata{}, ")
+	}
+	return b.String()
 }
 
 func writeHTTPCall(w *fileWriter, spec *ir.Spec, m *ir.Method) {
@@ -169,6 +275,10 @@ func writeHTTPCall(w *fileWriter, spec *ir.Spec, m *ir.Method) {
 
 func writeJSONHTTPCall(w *fileWriter, m *ir.Method, pathExpr, bodyArg string) {
 	httpVerb := "http.Method" + httpVerbWord(m.HTTPCall.Method)
+	if emitsResponseMetadata(m) {
+		writeJSONHTTPCallWithHeaders(w, m, pathExpr, bodyArg, httpVerb)
+		return
+	}
 	switch m.HTTPCall.RespKind {
 	case ir.RespNone:
 		w.printf("\treturn s.t.Do(ctx, %s, %s, %s, nil)\n", httpVerb, pathExpr, bodyArg)
@@ -193,6 +303,38 @@ func writeJSONHTTPCall(w *fileWriter, m *ir.Method, pathExpr, bodyArg string) {
 	case ir.RespRawBytes:
 		// Reachable only if BodyKind was JSON but resp is raw bytes;
 		// we still go through DoRaw because Do can't surface bytes.
+		writeRawHTTPCall(w, m, pathExpr)
+	}
+}
+
+// writeJSONHTTPCallWithHeaders is the metadata-bearing twin of
+// writeJSONHTTPCall — routes through DoWithHeaders so the 2xx
+// response's http.Header is available to populate ResponseMetadata
+// before the method returns.
+func writeJSONHTTPCallWithHeaders(w *fileWriter, m *ir.Method, pathExpr, bodyArg, httpVerb string) {
+	switch m.HTTPCall.RespKind {
+	case ir.RespNone:
+		w.printf("\thdr, err := s.t.DoWithHeaders(ctx, %s, %s, %s, nil)\n", httpVerb, pathExpr, bodyArg)
+		w.write("\tif err != nil {\n\t\treturn ResponseMetadata{}, err\n\t}\n")
+		w.write("\treturn extractResponseMetadata(hdr), nil\n")
+	case ir.RespJSONValue:
+		w.printf("\tvar out %s\n", m.HTTPCall.RespType.GoExpr())
+		w.printf("\thdr, err := s.t.DoWithHeaders(ctx, %s, %s, %s, &out)\n", httpVerb, pathExpr, bodyArg)
+		w.write("\tif err != nil {\n\t\treturn nil, ResponseMetadata{}, err\n\t}\n")
+		w.write("\treturn &out, extractResponseMetadata(hdr), nil\n")
+	case ir.RespJSONList:
+		w.printf("\tvar out %s\n", m.HTTPCall.RespType.GoExpr())
+		w.printf("\thdr, err := s.t.DoWithHeaders(ctx, %s, %s, %s, &out)\n", httpVerb, pathExpr, bodyArg)
+		w.write("\tif err != nil {\n\t\treturn nil, ResponseMetadata{}, err\n\t}\n")
+		w.write("\treturn out, extractResponseMetadata(hdr), nil\n")
+	case ir.RespUnionTagged, ir.RespUnionProbe:
+		w.write("\tvar raw json.RawMessage\n")
+		w.printf("\thdr, err := s.t.DoWithHeaders(ctx, %s, %s, %s, &raw)\n", httpVerb, pathExpr, bodyArg)
+		w.write("\tif err != nil {\n\t\treturn nil, ResponseMetadata{}, err\n\t}\n")
+		w.printf("\tout, err := decode%s(raw)\n", m.HTTPCall.RespType.GoExpr())
+		w.write("\tif err != nil {\n\t\treturn nil, ResponseMetadata{}, err\n\t}\n")
+		w.write("\treturn out, extractResponseMetadata(hdr), nil\n")
+	case ir.RespRawBytes:
 		writeRawHTTPCall(w, m, pathExpr)
 	}
 }
@@ -239,26 +381,39 @@ func writeRawHTTPCall(w *fileWriter, m *ir.Method, pathExpr string) {
 	}
 
 	httpVerb := "http.Method" + httpVerbWord(m.HTTPCall.Method)
-	w.printf("\tbody, _, err := s.t.DoRaw(ctx, %s, %s, r)\n", httpVerb, pathExpr)
+	hdrBind := "_"
+	if emitsResponseMetadata(m) {
+		hdrBind = "hdr"
+	}
+	w.printf("\tbody, %s, err := s.t.DoRaw(ctx, %s, %s, r)\n", hdrBind, httpVerb, pathExpr)
 	w.write("\tif err != nil {\n")
 	w.printf("\t\treturn %serr\n", zeroForReturn(m))
 	w.write("\t}\n")
 
+	metaSuffix := ""
+	if emitsResponseMetadata(m) {
+		metaSuffix = "extractResponseMetadata(hdr), "
+	}
 	switch m.HTTPCall.RespKind {
 	case ir.RespNone:
-		w.write("\t_ = body\n\treturn nil\n")
+		w.write("\t_ = body\n")
+		if emitsResponseMetadata(m) {
+			w.write("\treturn extractResponseMetadata(hdr), nil\n")
+		} else {
+			w.write("\treturn nil\n")
+		}
 	case ir.RespRawBytes:
-		w.write("\treturn body, nil\n")
+		w.printf("\treturn body, %snil\n", metaSuffix)
 	case ir.RespJSONList:
 		w.printf("\tvar out %s\n", m.HTTPCall.RespType.GoExpr())
 		w.write("\tif err := json.Unmarshal(body, &out); err != nil {\n")
 		w.printf("\t\treturn %serr\n", zeroForReturn(m))
-		w.write("\t}\n\treturn out, nil\n")
+		w.printf("\t}\n\treturn out, %snil\n", metaSuffix)
 	default:
 		w.printf("\tvar out %s\n", m.HTTPCall.RespType.GoExpr())
 		w.write("\tif err := json.Unmarshal(body, &out); err != nil {\n")
 		w.printf("\t\treturn %serr\n", zeroForReturn(m))
-		w.write("\t}\n\treturn &out, nil\n")
+		w.printf("\t}\n\treturn &out, %snil\n", metaSuffix)
 	}
 }
 

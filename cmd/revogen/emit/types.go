@@ -32,7 +32,90 @@ func writeTypesFile(spec *ir.Spec, imports []string) string {
 	for _, d := range spec.Decls {
 		writeDecl(w, d)
 	}
+	writeResponseMetadata(w, spec)
 	return w.buf.String()
+}
+
+// writeResponseMetadata emits the per-package ResponseMetadata
+// struct plus the extractResponseMetadata helper that pulls the
+// declared response-header fields off an http.Header. Emitted only
+// when at least one method in the spec surfaces metadata, so
+// packages without any 2xx-header declarations stay flat.
+//
+// A Signed[T any] generic wrapper is emitted alongside when any
+// method needs a raw-bytes variant for detached-JWS verification.
+func writeResponseMetadata(w *fileWriter, spec *ir.Spec) {
+	fields := collectMetadataFields(spec)
+	if len(fields) == 0 {
+		return
+	}
+	w.write("\n// ResponseMetadata carries the response headers the spec\n")
+	w.write("// declares on 2xx responses for any method in this package.\n")
+	w.write("// Populated automatically by methods that return it as a\n")
+	w.write("// second value; callers read whichever field the relevant\n")
+	w.write("// endpoint actually fills.\n")
+	w.write("type ResponseMetadata struct {\n")
+	for _, f := range fields {
+		if f.Doc != "" {
+			w.printf("\t// %s\n", f.Doc)
+		}
+		w.printf("\t%s string\n", f.GoName)
+	}
+	w.write("}\n\n")
+
+	w.write("func extractResponseMetadata(h http.Header) ResponseMetadata {\n")
+	w.write("\treturn ResponseMetadata{\n")
+	for _, f := range fields {
+		w.printf("\t\t%s: h.Get(%q),\n", f.GoName, f.WireName)
+	}
+	w.write("\t}\n}\n")
+
+	if specNeedsSigned(spec) {
+		w.write("\n// Signed wraps a typed response body with the raw bytes\n")
+		w.write("// and per-response metadata the caller needs to verify the\n")
+		w.write("// detached x-jws-signature header against the untouched\n")
+		w.write("// JSON payload. JSON decoding a typed struct and\n")
+		w.write("// re-marshalling is not byte-identical, so the raw field\n")
+		w.write("// is the only signature-verifiable form.\n")
+		w.write("type Signed[T any] struct {\n")
+		w.write("\tTyped    *T\n")
+		w.write("\tRaw      []byte\n")
+		w.write("\tMetadata ResponseMetadata\n")
+		w.write("}\n")
+	}
+}
+
+// collectMetadataFields flattens every method's ResponseMetadata
+// slice into a sorted-unique list, keyed by GoName.
+func collectMetadataFields(spec *ir.Spec) []ir.MetadataField {
+	seen := map[string]ir.MetadataField{}
+	for _, r := range spec.Resources {
+		for _, m := range r.Methods {
+			for _, f := range m.ResponseMetadata {
+				seen[f.GoName] = f
+			}
+		}
+	}
+	if len(seen) == 0 {
+		return nil
+	}
+	out := make([]ir.MetadataField, 0, len(seen))
+	for _, f := range seen {
+		out = append(out, f)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].GoName < out[j].GoName })
+	return out
+}
+
+func specNeedsSigned(spec *ir.Spec) bool {
+	for _, r := range spec.Resources {
+		for _, m := range r.Methods {
+			if m.EmitSignedVariant {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // writeUnionHelpers emits the package-level helpers used by

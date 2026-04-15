@@ -67,6 +67,12 @@ func FileImports(spec *ir.Spec) map[string][]string {
 			}
 		}
 	}
+	// ResponseMetadata + extractResponseMetadata live in gen_types.go
+	// and need net/http. Emitted once per package when any method
+	// surfaces metadata; gate the import on the same condition.
+	if specUsesResponseMetadata(spec) {
+		typesSet["net/http"] = struct{}{}
+	}
 	out["gen_types.go"] = ir.SortedImports(typesSet)
 
 	// gen_<resource>.go: per-resource set.
@@ -153,6 +159,21 @@ func headerSetImport(t *ir.Type) string {
 		return ""
 	}
 	return "fmt"
+}
+
+// specUsesResponseMetadata reports whether any method in spec
+// surfaces the generated ResponseMetadata struct. Mirrors
+// emit.collectMetadataFields' non-empty check so the import list
+// never lies about what gen_types.go references.
+func specUsesResponseMetadata(spec *ir.Spec) bool {
+	for _, r := range spec.Resources {
+		for _, m := range r.Methods {
+			if len(m.ResponseMetadata) > 0 {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // addQueryFieldImports examines a query-param field's Go type and
