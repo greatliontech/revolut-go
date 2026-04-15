@@ -37,9 +37,9 @@ tasks:
       - go test -race ./...
 
   test:integration:
-    desc: Run live sandbox integration tests (requires ~/.config/revolut-go/sandbox/tokens.json).
+    desc: Run live sandbox integration tests (requires ~/.config/revolut-go/sandbox/tokens.json). Gated by the `sandbox` build tag so `task test` never hits the live API.
     cmds:
-      - go test -race -v -run Sandbox ./...
+      - go test -race -v -tags sandbox -run Sandbox ./...
 
   check:
     desc: Build, vet, and test.

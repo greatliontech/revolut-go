@@ -1,3 +1,5 @@
+//go:build sandbox
+
 package revolut_test
 
 import (
@@ -261,6 +263,70 @@ func TestSandbox_TransactionsListAll(t *testing.T) {
 		t.Fatalf("ListAll saw %d items, full list has %d — pagination dropped items", len(seen), len(full))
 	}
 	t.Logf("ListAll yielded %d unique transactions (full list: %d, pageSize=2)", len(seen), len(full))
+}
+
+func TestSandbox_APIErrorOnMissingAccount(t *testing.T) {
+	client := newSandboxClient(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	_, err := client.Accounts.Get(ctx, "00000000-0000-0000-0000-000000000000")
+	if err == nil {
+		t.Fatal("want error for bogus account id")
+	}
+	apiErr, ok := revolut.AsAPIError(err)
+	if !ok {
+		t.Fatalf("want APIError, got %T: %v", err, err)
+	}
+	if apiErr.StatusCode < 400 || apiErr.StatusCode >= 500 {
+		t.Errorf("status = %d; want 4xx", apiErr.StatusCode)
+	}
+	t.Logf("APIError ok: status=%d code=%d message=%q", apiErr.StatusCode, apiErr.Code, apiErr.Message)
+}
+
+func TestSandbox_CounterpartiesGet(t *testing.T) {
+	client := newSandboxClient(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	list, err := client.Counterparties.List(ctx, nil)
+	if err != nil {
+		t.Fatalf("Counterparties.List: %v", err)
+	}
+	if len(list) == 0 {
+		t.Skip("no counterparties to exercise Get against")
+	}
+	want := list[0]
+	got, err := client.Counterparties.Get(ctx, want.ID)
+	if err != nil {
+		t.Fatalf("Counterparties.Get(%q): %v", want.ID, err)
+	}
+	if got.ID != want.ID {
+		t.Errorf("id mismatch: got %s want %s", got.ID, want.ID)
+	}
+}
+
+func TestSandbox_TransactionsDateWindow(t *testing.T) {
+	client := newSandboxClient(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	now := time.Now().UTC()
+	from := now.Add(-30 * 24 * time.Hour)
+	to := now
+	txs, err := client.Transactions.List(ctx, &business.GetTransactionsParams{
+		From: from,
+		To:   to,
+	})
+	if err != nil {
+		t.Fatalf("Transactions.List(from,to): %v", err)
+	}
+	for _, tx := range txs {
+		if !tx.CreatedAt.IsZero() && tx.CreatedAt.After(to) {
+			t.Errorf("tx %s created_at=%s after to=%s", tx.ID, tx.CreatedAt, to)
+		}
+	}
+	t.Logf("last 30 days: %d transactions", len(txs))
 }
 
 func TestSandbox_AccountNameValidation(t *testing.T) {
