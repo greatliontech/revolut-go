@@ -17,6 +17,8 @@ type Client struct {
 
 	// Accounts groups the /accounts endpoints.
 	Accounts *Accounts
+	// Transfers groups the money-movement endpoints (/transfer, /pay).
+	Transfers *Transfers
 }
 
 // New wraps an HTTP transport in a Business client. Callers configure the
@@ -25,5 +27,6 @@ type Client struct {
 func New(t *transport.Transport) *Client {
 	c := &Client{transport: t}
 	c.Accounts = &Accounts{t: t}
+	c.Transfers = &Transfers{t: t}
 	return c
 }

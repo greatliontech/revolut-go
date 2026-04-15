@@ -2,6 +2,8 @@ package revolut_test
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"os"
@@ -115,6 +117,70 @@ func TestSandbox_AccountsList(t *testing.T) {
 		}
 	}
 	t.Logf("got %d accounts", len(accounts))
+}
+
+func TestSandbox_TransferBetweenOwnAccounts(t *testing.T) {
+	client := newSandboxClient(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	accounts, err := client.Accounts.List(ctx)
+	if err != nil {
+		t.Fatalf("Accounts.List: %v", err)
+	}
+	src, dst, ok := pickSameCurrencyPair(accounts)
+	if !ok {
+		t.Skip("sandbox has no two active accounts of the same currency")
+	}
+
+	req := business.TransferRequest{
+		RequestID:       "revolut-go-test-" + randomHex(8),
+		SourceAccountID: src.ID,
+		TargetAccountID: dst.ID,
+		Amount:          "1",
+		Currency:        src.Currency,
+		Reference:       "revolut-go integration test",
+	}
+	got, err := client.Transfers.Create(ctx, req)
+	if err != nil {
+		t.Fatalf("Transfers.Create (%s -> %s, 1 %s): %v", src.ID, dst.ID, src.Currency, err)
+	}
+	if got.ID == "" {
+		t.Fatal("empty transfer id")
+	}
+	switch got.State {
+	case business.TransactionStateCreated,
+		business.TransactionStatePending,
+		business.TransactionStateCompleted:
+		// All acceptable for same-currency same-business transfer.
+	default:
+		t.Fatalf("unexpected state %q", got.State)
+	}
+	t.Logf("transfer id=%s state=%s (%s -> %s, 1 %s)", got.ID, got.State, src.ID, dst.ID, src.Currency)
+}
+
+func pickSameCurrencyPair(accounts []business.Account) (src, dst business.Account, ok bool) {
+	byCur := map[revolut.Currency][]business.Account{}
+	for _, a := range accounts {
+		if a.State != business.AccountStateActive {
+			continue
+		}
+		byCur[a.Currency] = append(byCur[a.Currency], a)
+	}
+	for _, as := range byCur {
+		if len(as) >= 2 {
+			return as[0], as[1], true
+		}
+	}
+	return business.Account{}, business.Account{}, false
+}
+
+func randomHex(n int) string {
+	b := make([]byte, n)
+	if _, err := rand.Read(b); err != nil {
+		panic(err)
+	}
+	return hex.EncodeToString(b)
 }
 
 func TestSandbox_AccountsGet(t *testing.T) {
