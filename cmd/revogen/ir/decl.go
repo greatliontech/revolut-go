@@ -29,13 +29,13 @@ type Decl struct {
 
 	// DeclStruct ----------------------------------------------------
 	Fields              []*Field
-	AnyOfRequiredGroups [][]string   // JSON-name groups, conditional-required validation
-	ImplementsUnions    []string     // union interface names this struct is a variant of
-	UnionDispatch       *UnionLink   // non-nil when the struct is a wire-tagged variant
-	FormEncoder         bool         // emit encodeForm() helper
-	MultipartEncoder    bool         // emit encodeMultipart() helper
-	QueryParamsEncoder  bool         // emit encode() url.Values for an *<Op>Params struct
-	ExtraMap            *Type        // map[string]T catch-all when properties + additionalProperties coexist
+	AnyOfRequiredGroups [][]string // JSON-name groups, conditional-required validation
+	ImplementsUnions    []string   // union interface names this struct is a variant of
+	UnionDispatch       *UnionLink // non-nil when the struct is a wire-tagged variant
+	FormEncoder         bool       // emit encodeForm() helper
+	MultipartEncoder    bool       // emit encodeMultipart() helper
+	QueryParamsEncoder  bool       // emit encode() url.Values for an *<Op>Params struct
+	ExtraMap            *Type      // map[string]T catch-all when properties + additionalProperties coexist
 
 	// DeclEnum ------------------------------------------------------
 	EnumBase   *Type // Prim("string") or Prim("int64")

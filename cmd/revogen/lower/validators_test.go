@@ -18,8 +18,8 @@ func TestValidators_PlainRequiredFields(t *testing.T) {
 		},
 	}
 	method := &ir.Method{
-		Receiver: "X",
-		Name:     "Do",
+		Receiver:  "X",
+		Name:      "Do",
 		BodyParam: &ir.Param{Name: "req", Type: ir.Named("CreateReq")},
 	}
 	spec := &ir.Spec{

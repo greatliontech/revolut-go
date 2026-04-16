@@ -29,8 +29,10 @@ type Accounting struct {
 //
 // The accounting categories are sorted by the `created_at` date in reverse chronological order, and they're **paginated**.
 // The page size, that is, the maximum number of accounting categories returned per page is specified by the `limit` parameter.
+//
 //   - If the number of results exceeds the page size, the response also returns a cursor for the next page under `next_page_token`.
 //     To get the next page of results, make a new request using that `next_page_token` value in `page_token`.
+//
 //   - If the number of results is smaller than the page size, `next_page_token` is not returned.
 //
 // For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage accounting categories](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-categories).
@@ -191,8 +193,11 @@ func (s *Accounting) UpdateCategory(ctx context.Context, accountingCategoryID st
 // :::
 //
 // Once the accounting category is deleted, it will not be returned by the API or in the Revolut Business app, and:
+//
 // - You will not be able to assign it to new financial records (e.g. expenses).
+//
 // - Existing records assigned to this category that have not been completed will be marked as invalid, and you'll need to reassign them to another category.
+//
 // - Completed records will not be affected by the change.
 //
 // A successful response does not get any content in return.
@@ -275,7 +280,9 @@ func (s *Accounting) GetLabelGroupsAll(ctx context.Context, opts *GetLabelGroups
 // Add a new group of labels that can be applied to your financial records, such as expenses.
 //
 // :::note
+//
 // - This operation is not supported for [externally managed label groups](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups#externally-managed-settings).
+//
 // - You can have up to 5 label groups at a time per business.
 // :::
 //
@@ -376,8 +383,11 @@ func (s *Accounting) UpdateLabelGroup(ctx context.Context, groupID string, req U
 // :::
 //
 // Once the label group is deleted, it will not be returned by the API or in the Revolut Business app, and:
+//
 // - You will not be able to apply labels from the group to new financial records (e.g. expenses).
+//
 // - Existing records that have not been completed and that contain labels from this group will be marked as invalid, and you'll need to update them to use different labels.
+//
 // - Completed records will not be affected by the change.
 //
 // A successful response does not get any content in return.
@@ -407,8 +417,10 @@ func (s *Accounting) DeleteLabelGroup(ctx context.Context, groupID string) error
 //
 // The labels are sorted by the `created_at` date in reverse chronological order, and they're **paginated**.
 // The page size, that is, the maximum number of labels returned per page is specified by the `limit` parameter.
+//
 //   - If the number of results exceeds the page size, the response also returns a cursor for the next page under `next_page_token`.
 //     To get the next page of results, make a new request using that `next_page_token` value in `page_token`.
+//
 //   - If the number of results is smaller than the page size, `next_page_token` is not returned.
 //
 // For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage labels and label groups](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups).
@@ -558,8 +570,11 @@ func (s *Accounting) UpdateLabel(ctx context.Context, groupID string, labelID st
 // :::
 //
 // Once the label is deleted, it will not be returned by the API or in the Revolut Business app, and:
+//
 // - You will not be able to apply it to new financial records (e.g. expenses).
+//
 // - Existing records with this label that have not been completed will be marked as invalid, and you'll need to update them to use a different label.
+//
 // - Completed records will not be affected by the change.
 //
 // A successful response does not get any content in return.
@@ -595,8 +610,10 @@ func (s *Accounting) DeleteLabel(ctx context.Context, groupID string, labelID st
 //
 // The tax rates are sorted by the `created_at` date in reverse chronological order, and they're **paginated**.
 // The page size, that is, the maximum number of tax rates returned per page is specified by the `limit` parameter.
+//
 //   - If the number of results exceeds the page size, the response also returns a cursor for the next page under `next_page_token`.
 //     To get the next page of results, make a new request using that `next_page_token` value in `page_token`.
+//
 //   - If the number of results is smaller than the page size, `next_page_token` is not returned.
 //
 // For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage tax rates](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-tax-rates).
@@ -751,8 +768,11 @@ func (s *Accounting) UpdateTaxRate(ctx context.Context, taxRateID string, req Up
 // :::
 //
 // Once the tax rate is deleted, it will not be returned by the API or in the Revolut Business app, and:
+//
 // - You will not be able to apply it to new financial records (e.g. expenses).
+//
 // - Existing records with this tax rate that have not been completed will be marked as invalid, and you'll need to update them to use a different tax rate.
+//
 // - Completed records will not be affected by the change.
 //
 // A successful response does not get any content in return.

@@ -316,8 +316,11 @@ type Obbeneficiary3 struct {
 }
 
 // ObbranchAndFinancialInstitutionIdentification6 the party that manages the account on behalf of the account owner by:
+//
 // - Managing the registration and booking of entries on the account.
+//
 // - Calculating balances on the account.
+//
 // - Providing information about the account.
 //
 // This is the servicer of the beneficiary account.

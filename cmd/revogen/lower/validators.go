@@ -460,15 +460,15 @@ func bodyDeclName(t *ir.Type) string {
 // unsetCond returns a Go boolean expression that is true when expr
 // of type t is unset. Mirrors the table from the design plan:
 //
-//   string / json.Number / core.Currency / string-enum / string-alias
-//                                                        → expr == ""
-//   time.Time                                            → expr.IsZero()
-//   int / int32 / int64                                  → expr == 0
-//   bool                                                 → "" (skip)
-//   pointer / interface / union (named interface)        → expr == nil
-//   slice                                                → len(expr) == 0
-//   map                                                  → len(expr) == 0
-//   nested struct (value)                                → "" (recurse)
+//	string / json.Number / core.Currency / string-enum / string-alias
+//	                                                     → expr == ""
+//	time.Time                                            → expr.IsZero()
+//	int / int32 / int64                                  → expr == 0
+//	bool                                                 → "" (skip)
+//	pointer / interface / union (named interface)        → expr == nil
+//	slice                                                → len(expr) == 0
+//	map                                                  → len(expr) == 0
+//	nested struct (value)                                → "" (recurse)
 //
 // Returns "" when no meaningful unset check applies; the walker
 // skips emitting a validator in that case.

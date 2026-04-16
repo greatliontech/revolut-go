@@ -15,10 +15,10 @@ func TestIsUUID(t *testing.T) {
 		{"A1B2C3D4-E5F6-7890-ABCD-EF0123456789", true},
 		{"", false},
 		{"not-a-uuid", false},
-		{"11111111-1111-1111-1111-11111111111", false},  // 35 chars
+		{"11111111-1111-1111-1111-11111111111", false},   // 35 chars
 		{"11111111-1111-1111-1111-1111111111111", false}, // 37 chars
 		{"11111111_1111-1111-1111-111111111111", false},  // wrong separator
-		{"gggggggg-1111-1111-1111-111111111111", false}, // non-hex
+		{"gggggggg-1111-1111-1111-111111111111", false},  // non-hex
 		{"{11111111-1111-1111-1111-111111111111}", false},
 	}
 	for _, tc := range cases {

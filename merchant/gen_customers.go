@@ -115,6 +115,7 @@ func (s *Customers) GetListAll(ctx context.Context, revolutAPIVersion RevolutAPI
 // If you wish to save a customer's payment details using any of the available payment methods on the Revolut Checkout Widget ([Revolut Pay](https://developer.revolut.com/docs/guides/accept-payments/online-payments/revolut-pay/introduction), [Card payments](https://developer.revolut.com/docs/guides/accept-payments/online-payments/card-payments/introduction)), you need to meet one of the following requirements:
 //
 //   - [ ] Have a customer object with `email` and assign it to the order by providing `customer.id`
+//
 //   - [ ] Create a new customer with, at least, `customer.email` during [order creation](https://developer.revolut.com/docs/merchant/create-order)
 //
 // For more information, see: [Charge a customer's saved payment method](https://developer.revolut.com/docs/guides/accept-payments/tutorials/save-and-charge-payment-methods/charge-saved-payment-method).
@@ -251,6 +252,7 @@ func (s *Customers) Delete(ctx context.Context, customerID string, revolutAPIVer
 // This can be useful in the following example cases:
 //
 // - To show what payment information is stored for the customer.
+//
 // - To try a different payment method if the first payment method fails when a recurring transaction occurs.
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payment-method-list
@@ -335,7 +337,9 @@ func (s *Customers) GetPaymentMethod(ctx context.Context, customerID string, pay
 // Once updated, this payment method can no longer be used for merchant-initiated transactions (MIT), for example, to charge recurring payments. It can only be used when the customer is on the checkout page.
 //
 // For more information, see:
+//
 // - [Pay for an order](https://developer.revolut.com/docs/merchant/pay-order)
+//
 // - [Charge a customer's saved payment method](https://developer.revolut.com/docs/guides/accept-payments/tutorials/save-and-charge-payment-methods/charge-saved-payment-method)
 // :::
 //

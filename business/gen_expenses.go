@@ -30,7 +30,9 @@ type Expenses struct {
 // The data enriched by the user, for example, VAT and cost centre, is returned under `splits[].tax_rate` and `labels`, respectively.
 //
 // :::note
+//
 // - The API returns a maximum of 500 expenses per request.
+//
 // - This feature is not available in Sandbox.
 // :::
 //

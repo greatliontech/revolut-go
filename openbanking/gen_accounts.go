@@ -143,6 +143,7 @@ func (s *Accounts) GetAccessConsentsConsentID(ctx context.Context, consentID str
 // Use this endpoint to:
 //
 // - Reject a consent if it is in the `AwaitingAuthorisation` state or any error occurs while the consent is being authorised.
+//
 // - Revoke a consent if it is in the `Authorised` state.
 //
 // See also [Tutorials: Get account and transaction information](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/get-account-and-transaction-information).

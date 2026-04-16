@@ -45,10 +45,10 @@ func (tr TokenResponse) GoString() string { return tr.String() }
 // TokenError carries a failing /auth/token response. Revolut emits
 // OAuth 2.0-style error JSON on 4xx.
 type TokenError struct {
-	StatusCode       int
-	Code             string `json:"error"`
-	Description      string `json:"error_description"`
-	Body             []byte `json:"-"`
+	StatusCode  int
+	Code        string `json:"error"`
+	Description string `json:"error_description"`
+	Body        []byte `json:"-"`
 }
 
 func (e *TokenError) Error() string {

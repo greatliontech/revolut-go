@@ -335,11 +335,17 @@ const (
 // OrderStatus status of the order:
 //
 // - `pending_new`: Accepted by a matching engine but not yet working.
+//
 // - `new`: Working order.
+//
 // - `partially_filled`: Partially filled order.
+//
 // - `filled`: Fully filled order.
+//
 // - `cancelled`: Cancelled order.
+//
 // - `rejected`: Rejected order.
+//
 // - `replaced`: Replaced order.
 type OrderStatus string
 
@@ -359,8 +365,10 @@ const (
 //
 //   - `gtc`: Good till cancelled.
 //     Means that the order stays active until it’s either completely filled or it's manually cancelled by the user who created the order.
+//
 //   - `ioc`: Immediate or cancel.
 //     Means that any portion of the order that cannot be filled immediately will be cancelled.
+//
 //   - `fok`: Fill or kill.
 //     Means that the order must be filled immediately and in its entirety, or it will be cancelled (no partial fills allowed).
 type OrderTimeInForce string
@@ -644,6 +652,7 @@ type OrderPlacementResponse struct {
 //
 //   - `gtc`: Good till cancelled.
 //     Means that the order stays active until it's either completely filled or it's manually cancelled by the user who created the order.
+//
 //   - `ioc`: Immediate or cancel.
 //     Means that any portion of the order that cannot be filled immediately will be cancelled.
 type OrderTriggerTimeInForce string
@@ -654,7 +663,9 @@ const (
 )
 
 // OrderTriggerTriggerDirection the price comparison operator used to trigger the order.
+//
 // * `ge`: Greater than or equal to the trigger price.
+//
 // * `le`: Less than or equal to the trigger price.
 type OrderTriggerTriggerDirection string
 

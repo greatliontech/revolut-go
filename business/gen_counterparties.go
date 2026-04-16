@@ -30,8 +30,10 @@ type Counterparties struct {
 // :::
 //
 // :::note[Availability & Sandbox behaviour]
+//
 //   - This feature is only available to businesses in the [supported regions](https://developer.revolut.com/docs/guides/manage-accounts/counterparties/confirmation-of-payee#supported-regions-and-services).
 //     Additionally, to get access to CoP in the UK, eligible businesses must contact [Revolut API Support](mailto:api-requests@revolut.com).
+//
 //   - In Sandbox, this feature is only available for **testing**.
 //     While **incomplete or invalid requests** will return production-like error responses, **complete and valid requests** in Sandbox do **not** undergo real validation and will always return `cannot_be_checked`.
 //
@@ -39,7 +41,9 @@ type Counterparties struct {
 //
 // The validation relies on different underlying services, depending on the recipient's payment scheme (region and currency).
 // These factors determine which fields you must provide and what response you get.
+//
 // - For examples, refer to the request body samples.
+//
 // - For more information, see the guides: [Validate an account name (CoP/VoP)](https://developer.revolut.com/docs/guides/manage-accounts/counterparties/confirmation-of-payee).
 //
 // Docs: https://developer.revolut.com/docs/business/validate-account-name
@@ -131,9 +135,13 @@ func (s *Counterparties) ListAll(ctx context.Context, opts *GetCounterpartiesPar
 //	</summary>
 //
 //	To add a counterparty via Revtag, use one of these pairs for the `name` and `revtag` fields respectively:
+//
 //	- `Test User 1` & `john1pvki`
+//
 //	- `Test User 2` & `john2pvki`
+//
 //	-    ...
+//
 //	- `Test User 9` & `john9pvki`
 //
 // </details>
@@ -150,8 +158,10 @@ func (s *Counterparties) ListAll(ctx context.Context, opts *GetCounterpartiesPar
 // You cannot create multiple counterparties with the same Revtag.
 // This restriction does not apply to other details.
 // For example:
+//
 //   - **Revtag**: If you've already added `johnsmith` as a Revolut counterparty, you can't add another counterparty with the `johnsmith` Revtag.
 //     If you try to do so, you'll get an error.
+//
 //   - **Other details**: If you've added John Smith as an individual UK counterparty using GBP with `sort_code=54-01-05` and `account_no=12345678`, you can still use the same details to create another counterparty.
 //
 // ### Counterparty name

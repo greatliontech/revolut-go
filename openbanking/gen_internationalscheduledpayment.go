@@ -34,7 +34,9 @@ type InternationalScheduledPayment struct {
 // If the user doesn't have enough funds on the selected account, the consent authorization is rejected.
 //
 // When you make the API call, ensure that you pass the corresponding JSON Web Signature (JWS) in the `x-jws-signature` request header. Note:
+//
 // - The JWS is generated from the request body with the [TPP](https://developer.revolut.com/docs/guides/build-banking-apps/glossary) signing key that is specified in the JWS header.
+//
 // - The JWS consists of a header and a signature in the `<jws_header>..<jws_signature>` format.
 //
 // To see how to create a JWS, see the guide: [Work with JSON Web Signatures](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/work-with-json-web-signatures).

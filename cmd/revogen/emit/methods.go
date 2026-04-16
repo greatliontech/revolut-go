@@ -599,7 +599,6 @@ func writeHeaderSet(w *fileWriter, hp ir.Param) {
 	}
 }
 
-
 func httpVerbWord(verb string) string {
 	if verb == "" {
 		return ""

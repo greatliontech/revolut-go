@@ -230,8 +230,11 @@ func (s *Disputes) ChallengeDispute(ctx context.Context, disputeID string, revol
 //
 // :::caution
 // **Limitations:**
+//
 //   - Maximum `100` uploaded files are allowed per dispute.
+//
 //   - Maximum file size: `10MB`.
+//
 //   - Allowed file types: `PDF`, `PNG`, `JPEG`.
 //
 // :::

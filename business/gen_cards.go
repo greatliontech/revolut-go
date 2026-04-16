@@ -25,7 +25,9 @@ type Cards struct {
 // The results are paginated and sorted by the `created_at` date in reverse chronological order.
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //
@@ -90,7 +92,9 @@ func (s *Cards) ListAll(ctx context.Context, opts *GetCardsParams) iter.Seq2[Car
 // To create a physical card, use the [Revolut Business app](https://business.revolut.com).
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //
@@ -132,7 +136,9 @@ func (s *Cards) Create(ctx context.Context, req CardsBody) (*CardCreatedResponse
 // Get the details of a specific card, based on its ID.
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //
@@ -159,7 +165,9 @@ func (s *Cards) Get(ctx context.Context, cardID string) (*CardResponse, error) {
 // Update settings for a specific card, based on its ID.
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //
@@ -216,7 +224,9 @@ func (s *Cards) Update(ctx context.Context, cardID string, req CardsBody) (*Card
 // A successful response does not get any content in return.
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //
@@ -239,7 +249,9 @@ func (s *Cards) Delete(ctx context.Context, cardID string) error {
 // Update the list of card contacts (`contact_ids`) for a [company card](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards).
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //
@@ -281,7 +293,9 @@ func (s *Cards) UpdateContacts(ctx context.Context, cardID string, req []CardCon
 // A successful freeze changes the card's state to `frozen`, and no content is returned in the response.
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //
@@ -306,7 +320,9 @@ func (s *Cards) FreezeCard(ctx context.Context, cardID string) error {
 // A successful lock changes the card's state to `locked`, and no content is returned in the response.
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //
@@ -329,7 +345,9 @@ func (s *Cards) LockCard(ctx context.Context, cardID string) error {
 // Update the list of [references (`references`)](https://developer.revolut.com/docs/business/get-card#response) for a [company](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards) or [auto-issued card](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards).
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //
@@ -379,7 +397,9 @@ func (s *Cards) UpdateReferences(ctx context.Context, cardID string, req []CardR
 // Requires the `READ_SENSITIVE_CARD_DATA` token scope. For more information, see the **Authorization** section.
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //
@@ -409,7 +429,9 @@ func (s *Cards) GetSensitiveCardDetails(ctx context.Context, cardID string) (*Ge
 // A successful unfreeze changes the card's state back to `active`, and no content is returned in the response.
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //
@@ -432,7 +454,9 @@ func (s *Cards) UnfreezeCard(ctx context.Context, cardID string) error {
 // Unlock a card locked with an admin lock or spending period settings to make it available for spending again.
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //

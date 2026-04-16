@@ -97,8 +97,8 @@ func FileImports(spec *ir.Spec) map[string][]string {
 	// gen_<resource>.go: per-resource set.
 	for _, r := range spec.Resources {
 		set := map[string]struct{}{
-			"context":  {},
-			"net/http": {},
+			"context":    {},
+			"net/http":   {},
 			transportPkg: {},
 		}
 		needsErrors := false

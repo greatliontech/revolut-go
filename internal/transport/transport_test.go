@@ -23,8 +23,8 @@ func newTransport(t *testing.T, srv *httptest.Server, auth core.Authenticator) *
 	t.Helper()
 	base := srv.URL + "/api/"
 	tr, err := New(Config{
-		BaseURL: base,
-		Auth:    auth,
+		BaseURL:   base,
+		Auth:      auth,
 		UserAgent: "revolut-go-test",
 	})
 	if err != nil {

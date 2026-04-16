@@ -25,7 +25,9 @@ type CardInvitations struct {
 // The results are paginated and sorted by the `created_at` date in reverse chronological order.
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Card invitations API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //
@@ -88,7 +90,9 @@ func (s *CardInvitations) ListAll(ctx context.Context, opts *GetCardInvitationsP
 // When the team member completes onboarding before the invitation's expiry date, the invitation will automatically be claimed, and the card will then be issued for the team member immediately.
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Card invitations API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //
@@ -127,7 +131,9 @@ func (s *CardInvitations) Create(ctx context.Context, req CardInvitationsBody) (
 // Cancel a specific card invitation, based on its ID.
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Card invitations API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //
@@ -156,7 +162,9 @@ func (s *CardInvitations) CancelCardInvitation(ctx context.Context, cardInvitati
 // Get the details of a specific card invitation, based on its ID.
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Card invitations API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //
@@ -184,7 +192,9 @@ func (s *CardInvitations) Get(ctx context.Context, cardInvitationID string) (*Ca
 // You can update successfully created invitations that have not been claimed yet (`state=created`).
 //
 // :::note
+//
 // - This feature is not available in Sandbox.
+//
 // - To use the Card invitations API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
 // :::
 //

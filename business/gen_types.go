@@ -92,12 +92,17 @@ type AccountBankDetailsItem struct {
 type AccountCurrency = core.Currency
 
 // AccountNameValidationReasonAUCode the reason code. Possible values for AU:
+//
 //   - **`close_match`** (business accounts): The provided name is similar to the account name.
 //     The actual name is returned. Mismatched account type is corrected.
+//
 //   - **`not_matched`**: The account details don't match the provided values.
+//
 //   - **`account_does_not_exist`**: The account does not exist.
+//
 //   - **`account_switched`**: The account has been switched using the Current Account Switching Service.
 //     Please contact the recipient for updated account details.
+//
 //   - **`cannot_be_checked`**: The account cannot be checked.
 type AccountNameValidationReasonAUCode string
 
@@ -136,12 +141,17 @@ type AccountNameValidationReasonAU struct {
 }
 
 // AccountNameValidationReasonEURCode the reason code. Possible values for EUR:
+//
 //   - **`close_match`**: The provided name is similar to the account name.
 //     The actual name is returned.
+//
 //   - **`not_matched`**: The account details don't match the provided values.
+//
 //   - **`account_does_not_exist`**: The account does not exist.
+//
 //   - **`account_switched`**: The account has been switched using the Current Account Switching Service.
 //     Please contact the recipient for updated account details.
+//
 //   - **`cannot_be_checked`**: The account cannot be checked.
 type AccountNameValidationReasonEURCode string
 
@@ -180,6 +190,7 @@ type AccountNameValidationReasonEUR struct {
 }
 
 // AccountNameValidationReasonROCode the reason code. Possible values for RO:
+//
 // - **`cannot_be_checked`**: The account cannot be checked.
 type AccountNameValidationReasonROCode string
 
@@ -217,18 +228,27 @@ type AccountNameValidationReasonRO struct {
 }
 
 // AccountNameValidationReasonUKCode the reason code. Possible values for UK:
+//
 //   - **`close_match`**: The provided name is similar to the account name, the account type is correct.
 //     The actual name is returned.
+//
 //   - **`individual_account_name_matched`**: The names match but the counterparty is an individual, not a business.
+//
 //   - **`company_account_name_matched`**: The names match but the counterparty is a business, not an individual.
+//
 //   - **`individual_account_close_match`**: The provided name is similar to the account name, and the account type is incorrect – the counterparty is an individual, not a business.
 //     The actual name is returned.
+//
 //   - **`company_account_close_match`**: The provided name is similar to the account name, and the account type is incorrect - the counterparty is a business, not an individual.
 //     The actual name is returned.
+//
 //   - **`not_matched`**: The account details don't match the provided values.
+//
 //   - **`account_does_not_exist`**: The account does not exist.
+//
 //   - **`account_switched`**: The account has been switched using the Current Account Switching Service.
 //     Please contact the recipient for updated account details.
+//
 //   - **`cannot_be_checked`**: The account cannot be checked.
 type AccountNameValidationReasonUKCode string
 
@@ -646,9 +666,13 @@ type CardInvitationSpendingPeriod struct {
 }
 
 // CardInvitationState the current state of the card invitation:
+//
 // - **`created`**: Invitation has been created but not yet claimed.
+//
 // - **`expired`**: Invitation has expired due to expiry date being reached or manual cancellation.
+//
 // - **`failed`**: Invitation claim attempt failed.
+//
 // - **`redeemed`**: Invitation has been successfully claimed.
 //
 // To learn more about card invitation lifecycle, see the guide: [Manage card invitations → Card invitation state](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-card-invitations#card-invitation-state).
@@ -838,17 +862,22 @@ type CardResponse struct {
 // CardState the state that the card is in.
 //
 // Possible values:
+//
 //   - `active`: The card is available for spending.
 //     Newly created cards typically go into `active` unless subject to certain conditions, for example, spending period starting in the future.
+//
 //   - `frozen`: The card has been frozen and is temporarily unavailable for spending.
+//
 //   - `locked`: The card is locked, typically due to an [admin lock](https://developer.revolut.com/docs/business/lock-card) or spending period settings, i.e. when its `spending_period.start_date` is in the future or `spending_period.end_date` is in the past.
 //     A locked card is unavailable for spending until it's [unlocked](https://developer.revolut.com/docs/business/unlock-card) and active.
 //     :::tip
 //     To see if the card can be unlocked, check the `can_be_unlocked` parameter.
 //     Note that you'll still need the [necessary scope or permission](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#lock-or-unlock-cards) to unlock it.
 //     :::
+//
 //   - `created`: The card has been created but is not yet active.
 //     Used only for a specific type of cards.
+//
 //   - `pending`: This status is currently not in use.
 type CardState string
 
@@ -1699,12 +1728,16 @@ type PaymentReceiver struct {
 
 // PaymentRequestChargeBearer the party that should bear the transaction fees related to the selected transaction route if applied.
 // Possible options are:
+//
 //   - `shared`: Also known as **SHA**. The transaction route fees are split between the sender and the recipient.
 //     The sender pays the fees charged by their bank, while the recipient pays the fees charged by the receiving and any intermediary banks.
+//
 //   - `debtor`: Also known as **OUR**. The sender pays all explicit transaction fees.
 //
 // :::note
+//
 //   - This field is not supported for [bulk payments](https://developer.revolut.com/docs/guides/manage-accounts/transfers/payment-drafts#use-cases).
+//
 //   - Some transactions with fees might not support charge bearer selection.
 //     If this is the case, the request will return error `3287`.
 //     To proceed with the default fee handling, remove this field from your request and try again.
@@ -1940,13 +1973,21 @@ type PayoutLinkReference = string
 type PayoutLinkRequestID = string
 
 // PayoutLinkState the state that the payout link is in. Possible states are:
+//
 // - `created`: The payout link has been created, but the amount has not yet been [blocked](https://developer.revolut.com/docs/guides/manage-accounts/transfers/payout-links#sender-link-generation).
+//
 // - `failed`: The payout link couldn't be generated due to a failure during transaction booking.
+//
 // - `awaiting`: The payout link is awaiting approval.
+//
 // - `active`: The payout link can be redeemed.
+//
 // - `expired`: The payout link cannot be redeemed because it wasn't claimed before its expiry date.
+//
 // - `cancelled`: The payout link cannot be redeemed because it was cancelled.
+//
 // - `processing`: The payout link has been redeemed and is being processed.
+//
 // - `processed`: The payout link has been redeemed and the money has been transferred to the recipient.
 type PayoutLinkState string
 
@@ -2265,7 +2306,9 @@ const (
 )
 
 // TransactionLeg the legs of the transaction:
+//
 // - For transactions between your Revolut accounts, there can be 2 legs, for example, an internal transfer made out of the BGP account and into the EUR account.
+//
 // - For transactions in other cases, there is only 1 leg.
 type TransactionLeg struct {
 	// The ID of the account that the transaction is associated with.
@@ -2349,11 +2392,17 @@ type TransactionPaymentRequest struct {
 }
 
 // TransactionState indicates the transaction state. Possible values:
+//
 //   - `created`: The transaction has been created and is either processed asynchronously or scheduled for a later time.
+//
 //   - `pending`: The transaction is pending until it's being processed. If the transfer is made between Revolut accounts, this state is skipped and the transaction is executed instantly.
+//
 //   - `completed`: The transaction was successful.
+//
 //   - `declined`: The transaction was unsuccessful. This can happen for a variety of reasons, for example, insufficient account balance, wrong receiver information, etc.
+//
 //   - `failed`: The transaction was unsuccessful. This can happen for a variety of reasons, for example, invalid API calls, blocked payments, etc.
+//
 //   - `reverted`: The transaction was reverted. This can happen for a variety of reasons, for example, the receiver being inaccessible.
 type TransactionState string
 
@@ -2525,9 +2574,13 @@ type ValidateAccountNameRequestIndividualName struct {
 }
 
 // ValidateAccountNameRequest the spec groups these shapes under a documentation-only discriminator (no wire-level propertyName); fill in the fields that apply to your scenario. Groupings:
+//
 //   - AU: ValidateAccountNameRequestAU
+//
 //   - EUR: ValidateAccountNameRequestEUR
+//
 //   - RO: ValidateAccountNameRequestRO
+//
 //   - UK: ValidateAccountNameRequestUK
 type ValidateAccountNameRequest struct {
 	// The account number of the counterparty.
@@ -2695,12 +2748,17 @@ type ValidateAccountNameResponseIndividualName struct {
 // ValidateAccountNameResponseResultCode the result of the check.
 //
 // Possible values for AU:
+//
 //   - **`matched`:** The name matches the provided details.
 //     For personal accounts, this also covers **close matches**, in which case the **actual name** is returned.
+//
 //   - **`close_match` (business account):** The name is similar to the provided value.
+//
 //   - **`not_matched`:** The name doesn't match the provided values.
+//
 //   - **`cannot_be_checked`:** The check cannot be performed and retries won't help.
 //     For example, the recipient's bank doesn't support CoP.
+//
 //   - **`temporarily_unavailable`:** The check cannot be performed right now.
 //     For example, the recipient's bank didn't respond to our request.
 //     You should retry the request later.
@@ -2715,9 +2773,13 @@ const (
 )
 
 // ValidateAccountNameResponse the spec groups these shapes under a documentation-only discriminator (no wire-level propertyName); fill in the fields that apply to your scenario. Groupings:
+//
 //   - AU: ValidateAccountNameResponseAU
+//
 //   - EUR: ValidateAccountNameResponseEUR
+//
 //   - RO: ValidateAccountNameResponseRO
+//
 //   - UK: ValidateAccountNameResponseUK
 type ValidateAccountNameResponse struct {
 	// The name of the recipient when the account type is business.
@@ -2754,12 +2816,17 @@ type ValidateAccountNameResponseAUIndividualName struct {
 // ValidateAccountNameResponseAUResultCode the result of the check.
 //
 // Possible values for AU:
+//
 //   - **`matched`:** The name matches the provided details.
 //     For personal accounts, this also covers **close matches**, in which case the **actual name** is returned.
+//
 //   - **`close_match` (business account):** The name is similar to the provided value.
+//
 //   - **`not_matched`:** The name doesn't match the provided values.
+//
 //   - **`cannot_be_checked`:** The check cannot be performed and retries won't help.
 //     For example, the recipient's bank doesn't support CoP.
+//
 //   - **`temporarily_unavailable`:** The check cannot be performed right now.
 //     For example, the recipient's bank didn't respond to our request.
 //     You should retry the request later.
@@ -2808,13 +2875,18 @@ type ValidateAccountNameResponseEURIndividualName struct {
 // ValidateAccountNameResponseEURResultCode the result of the check.
 //
 // Possible values for EUR:
+//
 //   - **`matched`:** The name matches the provided details.
+//
 //   - **`close_match`:** The recipient's name is similar to the provided value.
 //     The **actual name** is returned.
+//
 //   - **`not_matched`:** The name and account type don't match the provided values.
 //     The **name provided in the request** is returned.
+//
 //   - **`cannot_be_checked`:** The check cannot be performed and retries won't help.
 //     For example, the recipient's bank doesn't support VoP.
+//
 //   - **`temporarily_unavailable`:** The check cannot be performed right now.
 //     For example, the recipient's bank didn't respond to our request.
 //     You should retry the request later.
@@ -2846,9 +2918,11 @@ type ValidateAccountNameResponseEUR struct {
 // Provided only if `company_name` is not specified.
 //
 // :::caution[Name considerations]
+//
 //   - The name you provide helps identify the request, but is not used for the actual check.
 //     The API simply returns the partial name associated with the IBAN for you to validate.
 //     Therefore, the **returned name may differ** from the one you provided.
+//
 //   - **Mismatched name type is not corrected**.
 //     This means that the name type in the response is returned as it was provided in the request.
 //     For example, if an individual recipient's name was provided under `company_name`, in the response it's still returned under `company_name` (instead of `individual_name`).
@@ -2866,11 +2940,14 @@ type ValidateAccountNameResponseROIndividualName struct {
 //
 // For RO CoP, the API **checks if an account exists for the provided IBAN**.
 // Possible results are:
+//
 //   - **`matched`:** An account with the provided IBAN was found.
 //     When this status is returned, the API also returns a partial name of the account holder.
 //     Use this returned name to validate your recipient's details.
+//
 //   - **`cannot_be_checked`:** The check cannot be performed and retries won't help.
 //     For example, the recipient's bank doesn't support CoP.
+//
 //   - **`temporarily_unavailable`:** The check cannot be performed right now.
 //     For example, the recipient's bank didn't respond to our request.
 //     You should retry the request later.
@@ -2913,7 +2990,9 @@ type ValidateAccountNameResponseUKIndividualName struct {
 // ValidateAccountNameResponseUKResultCode the result of the check.
 //
 // Possible values for UK:
+//
 // - **`matched`:** The name and account type match the provided details.
+//
 // - **`close_match`:** The name and/or account type are similar to the provided values:
 //
 //   - The name is a match, but the account type is incorrect.
@@ -2928,9 +3007,12 @@ type ValidateAccountNameResponseUKIndividualName struct {
 //     The **actual values** are returned.
 //
 //     The actual values are returned.
+//
 //   - **`not_matched`:** The name and account type don't match the provided values.
+//
 //   - **`cannot_be_checked`:** The check cannot be performed and retries won't help.
 //     For example, the recipient's bank doesn't support CoP.
+//
 //   - **`temporarily_unavailable`:** The check cannot be performed right now.
 //     For example, the recipient's bank didn't respond to our request.
 //     You should retry the request later.
@@ -3160,7 +3242,9 @@ const (
 // They let you set the dates when the card becomes available or unavailable for spending, and define what happens after the end date.
 //
 // If specified, you must provide at least one of these:
+//
 // - `start_date`
+//
 // - `end_date` together with `end_date_action`
 //
 // The dates provided must be in the future.
@@ -3260,7 +3344,9 @@ func (p *GetCardsParams) ApplyDefaults() {
 // In other words, the program that the card is issued under.
 //
 // Provided only for virtual cards with no holder ID (`virtual=true`, and `holder_id` not specified):
+//
 // - **Required** for [auto-issued cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards) (`contact_ids` not specified)
+//
 // - Optional for [company cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards) (`contact_ids` specified)
 //
 // Not allowed for [team member cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards) (`holder_id` present).
@@ -3287,7 +3373,9 @@ const (
 // They let you set the dates when the card becomes available or unavailable for spending, and define what happens after the end date.
 //
 // If specified, you must provide at least one of these:
+//
 // - `start_date`
+//
 // - `end_date` together with `end_date_action`
 //
 // The dates provided must be in the future.
@@ -3817,9 +3905,13 @@ type SimulateTopUpResponse struct {
 }
 
 // SimulateTransferStateUpdateResponseState indicates the simulated transaction state. Possible values:
+//
 // - `completed` - Transaction was successfully processed.
+//
 // - `reverted` - Transaction was reverted by the system or company, but not the user. This can happen for a variety of reasons, for example, the receiver being inaccessible.
+//
 // - `declined` - Transaction was declined to the user for a good reason, such as insufficient account balance, wrong receiver information, etc.
+//
 // - `failed` - Transaction failed during initiation or completion. This can happen for a variety of reasons, for example, invalid API calls, blocked payments, etc.
 type SimulateTransferStateUpdateResponseState string
 

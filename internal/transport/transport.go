@@ -415,8 +415,8 @@ func populateErrorFields(apiErr *core.APIError, body []byte) {
 		Message string          `json:"message"`
 		MsgCap  string          `json:"Message"`
 
-		ErrorID   string `json:"error_id"`
-		ErrorIDM  string `json:"errorId"`
+		ErrorID    string `json:"error_id"`
+		ErrorIDM   string `json:"errorId"`
 		ErrorIDCap string `json:"Id"`
 	}
 	if err := json.Unmarshal(body, &aux); err != nil {

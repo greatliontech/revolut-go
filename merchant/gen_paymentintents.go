@@ -25,14 +25,21 @@ type PaymentIntents struct {
 // This endpoint is used in push payments to Revolut Terminal integration, where a POS system sends payment requests to physical terminal devices. The terminal must be in Pay at Counter mode and assigned to the same location as the order.
 //
 // **Requirements:**
+//
 // - Order must be created with `channel: "pos"` and include a `location_id`
+//
 // - Terminal must be online, in `pos` operation mode, and assigned to the same location
+//
 // - Amount must match the order amount
 //
 // **What happens next:**
+//
 // - The payment request appears on the Revolut Terminal screen
+//
 // - Customer presents their card or device to complete payment
+//
 // - You should poll the payment intent status until it reaches a final state (`completed`, `cancelled`, or `failed`)
+//
 // - When the payment intent reaches `completed` state, use the returned `payment_id` to retrieve the final payment status
 //
 // :::info
@@ -90,7 +97,9 @@ func (s *PaymentIntents) Create(ctx context.Context, orderID string, revolutAPIV
 // | `failed` | Payment intent failed due to technical issues (e.g., timeout, terminal became unavailable) |
 //
 // :::tip Polling strategy
+//
 // - Poll every second while the state is `pending` or `processing`
+//
 // - Set a reasonable timeout (e.g., 60 seconds) to handle cases where the customer abandons the payment
 // :::
 //
@@ -132,7 +141,9 @@ func (s *PaymentIntents) Get(ctx context.Context, paymentIntentID string, revolu
 //
 // :::caution
 // **Requirements:**
+//
 // - Payment intent must be in `pending` state
+//
 // - Cannot cancel payment intents that are already `completed`, `cancelled`, or `failed`
 // :::
 //

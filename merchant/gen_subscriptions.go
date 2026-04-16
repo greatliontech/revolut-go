@@ -108,10 +108,15 @@ func (s *Subscriptions) GetPlanListAll(ctx context.Context, revolutAPIVersion Re
 // ### Understanding phases
 //
 // Phases execute in sequence based on their `ordinal` value (1, 2, 3, etc.):
+//
 // - Each phase has a `cycle_duration` (e.g., `P1M` for monthly)
+//
 // - Each phase has a `cycle_count` that determines how many cycles before moving to the next phase
+//
 // - If `cycle_count` is `null` or omitted, the phase continues indefinitely
+//
 // - When a phase completes its cycles, the subscription moves to the phase with the next `ordinal`
+//
 // - If the last phase completes its cycles and no next phase exists, the subscription is automatically stopped
 //
 // :::note
@@ -306,7 +311,9 @@ func (s *Subscriptions) GetListAll(ctx context.Context, revolutAPIVersion Revolu
 //
 // **Backend flow:**
 // 1. Create a subscription with optional `setup_order_redirect_url`:
+//
 //   - If provided: The setup order's `redirect_url` field will be set to this value.
+//
 //   - If omitted: The setup order will use Revolut's default redirect behavior.
 //
 // 1. The subscription is created in a `pending` state with a `setup_order_id` in the response.
@@ -317,13 +324,19 @@ func (s *Subscriptions) GetListAll(ctx context.Context, revolutAPIVersion Revolu
 // 1. Customer is redirected to Revolut's Hosted Payment Page.
 // 1. Customer completes payment on the HPP, and their payment method is saved.
 // 1. Customer redirect after payment depends on your setup:
+//
 //   - **With `setup_order_redirect_url`**: Customer is redirected to your custom URL.
+//
 //   - **Without `setup_order_redirect_url`**: Customer sees the default Revolut completion screen.
 //
 // **Key characteristics:**
+//
 // - Customer completes payment on Revolut's hosted page
+//
 // - Payment method is automatically saved for future billing cycles
+//
 // - Optional custom redirect after payment
+//
 // - Best for web-based integrations
 //
 // </details>
@@ -349,9 +362,13 @@ func (s *Subscriptions) GetListAll(ctx context.Context, revolutAPIVersion Revolu
 // 1. Customer completes payment, and their payment method is saved for future billing cycles.
 //
 // **Key characteristics:**
+//
 // - Payment experience embedded directly in your application
+//
 // - Customer never leaves your website
+//
 // - Payment method is saved for future billing cycles
+//
 // - Best for native mobile apps or fully custom web experiences
 //
 // </details>
@@ -449,6 +466,7 @@ func (s *Subscriptions) Get(ctx context.Context, subscriptionID string, revolutA
 // | `cancelled`, `finished` | You cannot modify parameters. These are final states. |
 //
 // **Common use cases:**
+//
 // - **Update external reference**: When you need to sync with updated customer records in your system, correct an initial reference value, or re-map the subscription to a different internal tracking ID to maintain consistency with your database.
 //
 // Docs: https://developer.revolut.com/docs/merchant/update-subscription

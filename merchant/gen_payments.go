@@ -23,7 +23,9 @@ type Payments struct {
 // Retrieve information about a specific payment, based on the payment's ID.
 //
 // Use this endpoint to track a payment's lifecycle, for example:
+//
 //   - When you develop a [1-click checkout process](https://developer.revolut.com/docs/guides/accept-payments/tutorials/save-and-charge-payment-methods/checkout-with-saved-card)
+//
 //   - When you build a [subscription management system](https://developer.revolut.com/docs/guides/accept-payments/tutorials/save-and-charge-payment-methods/subscription-management)
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payment-details

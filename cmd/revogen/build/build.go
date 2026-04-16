@@ -146,10 +146,10 @@ func (b *Builder) reserveResourceNames() {
 // with a deterministic sort order.
 func (b *Builder) finalize() *ir.Spec {
 	spec := &ir.Spec{
-		Package:    b.cfg.Package,
-		APIVersion: b.apiVer,
-		ErrorType:  b.errorType,
-		ErrPrefix:  b.cfg.ErrPrefix,
+		Package:     b.cfg.Package,
+		APIVersion:  b.apiVer,
+		ErrorType:   b.errorType,
+		ErrPrefix:   b.cfg.ErrPrefix,
 		DocsBase:    b.cfg.DocsBase,
 		Callbacks:   b.callbacks,
 		HostAliases: b.collectHostAliases(),
@@ -169,4 +169,3 @@ func (b *Builder) finalize() *ir.Spec {
 // defined in sibling files. The placeholders here keep the flow of
 // FromOpenAPI readable; the real logic lives next to the data it
 // touches.
-

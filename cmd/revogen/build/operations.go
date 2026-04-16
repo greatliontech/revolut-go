@@ -556,7 +556,6 @@ func (b *Builder) ensureResource(tag string) *ir.Resource {
 	return r
 }
 
-
 // docLines returns the godoc lines for an operation: the summary
 // as the lead, then the full description (every line) so wire-format
 // caveats and usage notes the spec documents survive into generated

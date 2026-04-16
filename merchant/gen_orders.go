@@ -58,11 +58,17 @@ func (s *Orders) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVersio
 // Creating orders is one of the basic operations of the Merchant API. Most of the other operations are related to creating orders. Furthermore, the payment methods merchants can use to take payments for their orders are also built on order creation.
 //
 // To learn more about how you can accept payments, see:
+//
 //   - [Revolut Pay](https://developer.revolut.com/docs/guides/accept-payments/online-payments/revolut-pay/introduction)
+//
 //   - [Card payments](https://developer.revolut.com/docs/guides/accept-payments/online-payments/card-payments/introduction)
+//
 //   - [Apple Pay and Google Pay](https://developer.revolut.com/docs/guides/accept-payments/online-payments/apple-pay-google-pay/introduction)
+//
 //   - [Pay by Bank](https://developer.revolut.com/docs/guides/accept-payments/online-payments/pay-by-bank/introduction)
+//
 //   - [Revolut Checkout](https://developer.revolut.com/docs/guides/accept-payments/online-payments/revolut-checkout/introduction)
+//
 //   - [Hosted Checkout Page](https://developer.revolut.com/docs/guides/accept-payments/online-payments/hosted-checkout-page/introduction)
 //
 // ### Pre-authorisation and incremental authorisation
@@ -70,18 +76,26 @@ func (s *Orders) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVersio
 // Orders can be created with `authorisation_type: pre_authorisation` to enable incremental authorisation. This allows you to increase the authorised amount after the initial authorisation.
 //
 // **Requirements:**
+//
 // - `capture_mode` must be set to `manual`
+//
 // - `authorisation_type` must be set to `pre_authorisation`
+//
 // - Only supported for card payments currently
 //
 // **Example use cases:**
+//
 // - Hotels: authorise deposit, then increment for room service and minibar
+//
 // - Car rentals: authorise deposit, then increment for damages or fuel
 //
 // :::info
 // For more information, see:
+//
 // - [Pre-authorisation guide](https://developer.revolut.com/docs/guides/accept-payments/tutorials/advanced-authorisation/pre-authorisation)
+//
 // - [Incremental authorisation guide](https://developer.revolut.com/docs/guides/accept-payments/tutorials/advanced-authorisation/incremental-authorisation)
+//
 // - [Increment authorisation endpoint](https://developer.revolut.com/docs/merchant/increment-authorisation)
 // :::
 //
@@ -306,9 +320,13 @@ func (s *Orders) CancelOrder(ctx context.Context, orderID string, revolutAPIVers
 // By default, uncaptured orders with **final authorisation** (`authorisation_type: final`) remain in `authorised` state for **7 days**. If not captured within this period, the funds are returned to the customer's original payment method.
 //
 // The capture deadline can be customised:
+//
 // - Use `cancel_authorised_after` parameter when creating an order to set a custom expiry period
+//
 // - The effective deadline is the earlier of `cancel_authorised_after` and the card/network clearing window
+//
 // - `capture_deadline` is set when the order becomes `authorised` and doesn't change afterwards
+//
 // - Use **pre-authorisation** (`authorisation_type: pre_authorisation`) for extended clearing windows (up to 30 days) and incremental authorisation support (see tip below)
 // :::
 //
@@ -335,10 +353,15 @@ func (s *Orders) CancelOrder(ctx context.Context, orderID string, revolutAPIVers
 //
 // :::caution
 // The following limitations apply to manual captures:
+//
 //   - An order can only be captured once
+//
 //   - Captured amount can't exceed the authorised amount
+//
 //   - On Web UI, only capturing full amount is possible
+//
 //   - `0` amount captures are not allowed
+//
 //   - For partial captures, you can only resend the request with the initial amount
 //
 // :::
@@ -346,7 +369,9 @@ func (s *Orders) CancelOrder(ctx context.Context, orderID string, revolutAPIVers
 // #### Updating line items at capture
 //
 // You can optionally provide `line_items` when capturing an order. This allows you to adjust the final order details at the time of capture, which is useful for scenarios such as:
+//
 // - **Partial captures:** Specify which items are being captured when capturing less than the full amount. Line items help accurately reflect which items were captured versus voided (see [Partial capture](#partial-capture) above).
+//
 // - **Final adjustments:** Update order details when the delivered items differ from the initial authorisation (e.g., out-of-stock items, substitutions, quantity changes).
 //
 // :::caution
@@ -362,7 +387,9 @@ func (s *Orders) CancelOrder(ctx context.Context, orderID string, revolutAPIVers
 // The capture operation is idempotent. This means that an order can only be captured once. If you send a capture request more than once:
 //
 // - The first valid request captures the order and moves it to the processing stage.
+//
 // - Any subsequent request with the same capture amount will not recapture funds and behaves like a [Retrieve an order](https://developer.revolut.com/docs/merchant/retrieve-order) request, returning the current order state.
+//
 // - A subsequent request with a different capture amount returns an error.
 //
 // :::info
@@ -416,7 +443,9 @@ func (s *Orders) CaptureOrder(ctx context.Context, orderID string, revolutAPIVer
 // ### Common use-cases
 //
 // - Hotel additional charges (e.g., minibar, room service)
+//
 // - Car rental damage or fuel charges
+//
 // - Equipment rental extensions
 //
 // ### How it works
@@ -427,11 +456,17 @@ func (s *Orders) CaptureOrder(ctx context.Context, orderID string, revolutAPIVer
 // 1. When no more increments are expected, [capture the order](https://developer.revolut.com/docs/merchant/capture-order) to complete the transaction
 //
 // :::caution
+//
 // - Can only increment orders in `authorised` state
+//
 // - Must have `authorisation_type: pre_authorisation` and `capture_mode: manual`
+//
 // - Sum of all increment amounts cannot exceed 5x the initial amount
+//
 // - Maximum 10 increments per order
+//
 // - Process increments sequentially to avoid declines
+//
 // - Currently only supported for card payments
 // :::
 //
@@ -488,7 +523,9 @@ func (s *Orders) IncrementAuthorisation(ctx context.Context, orderID string, rev
 // :::
 //
 // Use this endpoint to retrieve payment details for saved payment methods to make merchant and customer initiated transactions. For more information, see:
+//
 //   - [Speed up customer checkout by using saved card details](https://developer.revolut.com/docs/guides/accept-payments/tutorials/save-and-charge-payment-methods/checkout-with-saved-card)
+//
 //   - [Manage subscriptions](https://developer.revolut.com/docs/guides/accept-payments/tutorials/save-and-charge-payment-methods/subscription-management)
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payment-list
@@ -568,8 +605,11 @@ func (s *Orders) PayOrder(ctx context.Context, orderID string, req SavedPaymentM
 // Issue a refund for a completed order. This operation allows for either a full or partial refund, which will be processed back to the customer's original payment method.
 //
 // - The refund operation generates a new order with `type: refund`. This new order represents a full or partial refund of the original amount paid.
+//
 // - Multiple partial refunds can be issued for a single order, given the total refunded amount does not exceed the original order amount.
+//
 // - Refund orders will contain `related_order_id` which links to the original order that was refunded.
+//
 // - Refunds can only be initiated for orders that are in a `completed` state. Orders in any other state are not eligible for refunds to ensure transaction integrity and to prevent errors.
 //
 // :::note

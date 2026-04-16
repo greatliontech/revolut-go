@@ -50,7 +50,9 @@ func (s *Other) GetSynchronousWebhookList(ctx context.Context) ([]SynchronousWeb
 // 1. Respond with a JSON object containing the result of the validation
 //
 // Additionally, Revolut Pay can support multiple webhooks if you have multiple stores. For more information, see:
+//
 //   - [Manage multiple stores with Fast checkout](https://developer.revolut.com/docs/guides/accept-payments/online-payments/revolut-pay/fast-checkout#manage-multiple-stores-with-fast-checkout)
+//
 //   - [Merchant API: Locations](https://developer.revolut.com/docs/merchant/locations)
 //
 // :::note

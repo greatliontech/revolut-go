@@ -793,4 +793,3 @@ func writeFieldDoc(w *fileWriter, f *ir.Field) {
 		w.printf("\t// Deprecated: %s\n", f.Deprecated)
 	}
 }
-

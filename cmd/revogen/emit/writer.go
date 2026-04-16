@@ -67,6 +67,18 @@ func (w *fileWriter) write(s string) { w.buf.WriteString(s) }
 // flush runs gofmt on the assembled source and writes it to path.
 // On gofmt failure the unformatted source is written to <path>.bad
 // for debugging and a non-nil error is returned.
+//
+// Two formatting passes happen here:
+//
+//   - go/format.Source covers Go syntax (imports, indentation,
+//     declaration order). This is what gofmt's parser-driven phase
+//     does.
+//   - normaliseDocLists rewrites doc-comment bullet lists into
+//     gofmt's canonical "blank line between items" form. The Go
+//     standard library exposes this via go/doc/comment, but
+//     format.Source doesn't invoke it; gofmt-the-CLI does.
+//     Skipping this step leaves generated files gofmt-dirty even
+//     though they parse cleanly.
 func (w *fileWriter) flush(path string) error {
 	src := w.buf.Bytes()
 	formatted, err := format.Source(src)
@@ -75,7 +87,92 @@ func (w *fileWriter) flush(path string) error {
 		_ = os.WriteFile(bad, src, 0o644)
 		return fmt.Errorf("gofmt %s: %w (unformatted source written to %s)", path, err, bad)
 	}
+	formatted = normaliseDocLists(formatted)
 	return os.WriteFile(path, formatted, 0o644)
+}
+
+// normaliseDocLists inserts blank `//` separator lines around
+// godoc bullet items so the output matches what `gofmt -s` would
+// produce. format.Source's printer doesn't run go/doc/comment, but
+// gofmt-the-CLI does — so without this step the generator's output
+// is gofmt-dirty on every file whose spec description carries a
+// bullet list.
+//
+// Two insertion rules, both applied left-to-right in one pass:
+//
+//   - Before the first bullet of a run, if the preceding line is a
+//     non-blank godoc paragraph line (a `//` line that's not blank
+//     and not itself a bullet), inject `//`.
+//   - Between adjacent bullet items.
+//
+// The inserted separators carry the same leading indentation as
+// the bullet line so emit alignment is preserved.
+func normaliseDocLists(src []byte) []byte {
+	lines := strings.SplitAfter(string(src), "\n")
+	var out strings.Builder
+	out.Grow(len(src))
+	for i, line := range lines {
+		if isBulletItem(line) && i > 0 {
+			prev := lines[i-1]
+			if isDocParagraph(prev) {
+				out.WriteString(docIndent(line) + "//\n")
+			}
+		}
+		out.WriteString(line)
+		if i+1 >= len(lines) {
+			continue
+		}
+		next := lines[i+1]
+		if isBulletItem(line) && isBulletItem(next) {
+			out.WriteString(docIndent(line) + "//\n")
+		}
+	}
+	return []byte(out.String())
+}
+
+// isBulletItem reports whether a line is the start of a godoc
+// bullet item (indented `//` followed by `- ` or `* `).
+func isBulletItem(line string) bool {
+	trimmedLeading := strings.TrimLeft(line, " \t")
+	if !strings.HasPrefix(trimmedLeading, "//") {
+		return false
+	}
+	rest := strings.TrimPrefix(trimmedLeading, "//")
+	rest = strings.TrimLeft(rest, " \t")
+	if len(rest) < 2 {
+		return false
+	}
+	return (rest[0] == '-' || rest[0] == '*') && rest[1] == ' '
+}
+
+// isDocParagraph reports whether a line is a non-blank godoc text
+// line that is NOT itself a bullet — used to detect the
+// paragraph→bullet transition where gofmt wants a separator.
+func isDocParagraph(line string) bool {
+	trimmedLeading := strings.TrimLeft(line, " \t")
+	if !strings.HasPrefix(trimmedLeading, "//") {
+		return false
+	}
+	rest := strings.TrimPrefix(trimmedLeading, "//")
+	body := strings.TrimSpace(rest)
+	if body == "" {
+		return false
+	}
+	if isBulletItem(line) {
+		return false
+	}
+	return true
+}
+
+// docIndent extracts the leading whitespace before the `//` token
+// so the inserted separator line shares the column.
+func docIndent(line string) string {
+	for i := 0; i < len(line); i++ {
+		if line[i] != ' ' && line[i] != '\t' {
+			return line[:i]
+		}
+	}
+	return ""
 }
 
 // docComment renders a multi-line godoc block. The first line is

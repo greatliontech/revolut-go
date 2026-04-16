@@ -244,7 +244,9 @@ type Arn = string
 //
 // Only returned if the payment's state is `authentication_challenge`.
 // Variants:
+//
 //   - three_ds → ThreeDs
+//
 //   - three_ds_fingerprint → ThreeDsFingerprint
 type AuthenticationChallenge interface {
 	isAuthenticationChallenge()
@@ -292,7 +294,9 @@ type AuthorisationCode = string
 // Pre-authorisation allows you to reserve funds on a customer's card without immediately capturing them. This is useful for scenarios like:
 //
 // - Hotel bookings where the final amount may vary
+//
 // - Car rentals where additional charges may apply
+//
 // - Deposits that need to be held temporarily
 //
 // | Parameter value | Description |
@@ -1423,6 +1427,7 @@ const (
 // Only `browser` is available at the moment.
 // :::
 // Variants:
+//
 //   - browser → BrowserEnvironment
 type Environment interface {
 	isEnvironment()
@@ -1577,8 +1582,11 @@ type EventsV2 struct {
 // When the order expires, it transitions to the `failed` state and an `ORDER_FAILED` webhook event is triggered.
 //
 // :::note
+//
 // - This field can only be set during order creation and cannot be updated afterward.
+//
 // - Must be between `PT1M` (1 minute) and `PT720H` (30 days).
+//
 // - Cannot be a negative value.
 // :::
 type ExpirePendingAfter = string
@@ -1621,7 +1629,9 @@ type Fee struct {
 // During your manual capture workflow, after a payment was authorised:
 //
 //   - Check the fingerprint status by comparing it against your maintained lists and internal business rules.
+//
 //   - If you decide to proceed with the payment (e.g., the fingerprint is not on a blocklist, or matches a trusted customer's previous payment method): [Capture the order](https://developer.revolut.com/docs/merchant/capture-order).
+//
 //   - If you decide not to proceed with the payment (e.g., the fingerprint matches a known fraudulent fingerprint, or exhibits suspicious patterns): [Cancel the order](https://developer.revolut.com/docs/merchant/cancel-order).
 type Fingerprint = string
 
@@ -1732,10 +1742,15 @@ type IcppChargeID = string
 //
 // :::caution
 // Restrictions:
+//
 // - Must be a valid URI as defined by [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986)
+//
 // - URI scheme is required and must be either `http` or `https`
+//
 // - URI host is required and cannot be `localhost` or an IP address
+//
 // - Max length: `2000`
+//
 // - Reserved or invalid characters must be percent-encoded (for example, use `%20` instead of a space)
 // :::
 type ImageURL = string
@@ -1746,7 +1761,9 @@ type ImageURL = string
 // For example, if the current authorised amount is `500` and you want to add 100, pass `600`.
 //
 // :::caution
+//
 // - Must be greater than or equal to the current authorised amount (incrementing with same amount allowed to extend capture deadline for Mastercard)
+//
 // - The sum of all increment amounts cannot exceed 5x the initial authorised amount (e.g., initial amount £100 allows up to £500 in total increments)
 // :::
 type IncrementAmount = int
@@ -1922,7 +1939,9 @@ type LineItem struct {
 
 // Location location object represents merchant locations depending on type.
 // Variants:
+//
 //   - online → LocationOnline
+//
 //   - physical → LocationPhysical
 type Location interface {
 	isLocation()
@@ -1960,7 +1979,9 @@ func decodeLocation(data []byte) (Location, error) {
 
 // LocationCreation request body for creating a location. The structure of the `details` object depends on the `type` of the location.
 // Variants:
+//
 //   - online → LocationCreationOnline
+//
 //   - physical → LocationCreationPhysical
 type LocationCreation interface {
 	isLocationCreation()
@@ -2149,7 +2170,9 @@ const (
 
 // LocationUpdate request body for updating a location. The structure of the `details` object depends on the `type` of the location.
 // Variants:
+//
 //   - online → LocationUpdateOnline
+//
 //   - physical → LocationUpdatePhysical
 type LocationUpdate interface {
 	isLocationUpdate()
@@ -2210,7 +2233,9 @@ func (v LocationUpdateOnline) MarshalJSON() ([]byte, error) {
 
 // LocationUpdatePhysical location object represents merchant locations depending on type.
 // Variants:
+//
 //   - online → LocationOnline
+//
 //   - physical → LocationPhysical
 type LocationUpdatePhysical interface {
 	isLocationUpdatePhysical()
@@ -2416,10 +2441,15 @@ type MerchantOrderExternalReference = string
 //
 // :::caution
 // Restrictions:
+//
 // - Must be a valid URI as defined by [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986)
+//
 // - URI scheme is required and must be either `http` or `https`
+//
 // - URI host is required and cannot be `localhost` or an IP address
+//
 // - Max length: `2000`
+//
 // - Reserved or invalid characters must be percent-encoded (for example, use `%20` instead of a space)
 // :::
 type MerchantOrderURL = string
@@ -2430,9 +2460,13 @@ type MerchantOrderURL = string
 // **Restrictions:**
 //
 // - Both keys and values must be `string`s
+//
 // - Values cannot be `null`.
+//
 // - Max number of key-value pairs: `50`
+//
 // - Max length of values: `500` characters
+//
 // - Format of keys: Must start with a letter and contain only letters, digits, and underscores. Max 40 characters. Pattern: `^[a-zA-Z][a-zA-Z\\d_]{0,39}$`
 // :::
 type Metadata = map[string]string
@@ -2484,8 +2518,11 @@ type OpeningHours struct {
 // OrderAmountV2 the order total expressed in minor currency units, according to the [ISO 4217 standard](https://en.wikipedia.org/wiki/ISO_4217). For example, `7034` in `EUR` corresponds to €70.34.
 //
 // :::info
+//
 // - Conversion between major and minor units varies by currency. For instance, `100` minor units equal £1.00 in `GBP`, whereas in `ISK` they represent 100 units. For more details, see the [ISO 4217 standard](https://en.wikipedia.org/wiki/ISO_4217).
+//
 // - If `line_items` are provided, the order `amount` must equal the sum of all line items' `total_amount`.
+//
 // - For card payments with a non-zero amount, the order `amount` must be at least **$0.005** (or equivalent in different currencies, calculated using Revolut's exchange rate on the payment date). Otherwise, card payments can't be performed.
 // :::
 type OrderAmountV2 = int
@@ -2735,8 +2772,11 @@ const (
 // The order `token` is used for [token-based initialisation](https://developer.revolut.com/docs/sdks/merchant-web-sdk/initialisation/token-based), and is returned by the `createOrder` callback in the following payment methods:
 //
 // - [Embedded Checkout](https://developer.revolut.com/docs/sdks/merchant-web-sdk/payment-methods/embedded-checkout#embeddedcheckout options-interface)
+//
 // - [Revolut Pay](https://developer.revolut.com/docs/sdks/merchant-web-sdk/payment-methods/revolut-pay#widgetpaymentsrevolutpayoptions)
+//
 // - [Apple Pay and Google Pay](https://developer.revolut.com/docs/sdks/merchant-web-sdk/payment-methods/apple-pay-google-pay#paymentrequestoptions-interface)
+//
 // - [Pay by Bank](https://developer.revolut.com/docs/sdks/merchant-web-sdk/payment-methods/pay-by-bank#paybybankoptions-interface)
 type OrderToken = string
 
@@ -2914,9 +2954,13 @@ type PaymentAmount = int64
 // PaymentAuthorisedAmount the currently authorised amount for this payment (in minor units).
 //
 // For pre-authorised payments with incremental authorization:
+//
 // - Initially equals the `amount` field
+//
 // - Remains unchanged during increment processing
+//
 // - Updates to new amount upon successful increment
+//
 // - Remains at original amount if increment is declined
 //
 // For standard payments, this field may not be present or will equal the `amount` field.
@@ -3054,10 +3098,15 @@ type PaymentMethodUpdate struct {
 
 // PaymentMethodV2 the details of the payment method used to make the payment.
 // Variants:
+//
 //   - apple_pay → ApplePay
+//
 //   - card → Card
+//
 //   - google_pay → GooglePay
+//
 //   - revolut_pay_account → RevolutPayAccount
+//
 //   - revolut_pay_card → RevolutPayCard
 type PaymentMethodV2 interface {
 	isPaymentMethodV2()
@@ -3121,7 +3170,9 @@ func decodePaymentMethodV2(data []byte) (PaymentMethodV2, error) {
 // It differs from the `payment_method` object on a Payment, which is a transactional snapshot of how a specific charge was executed and includes additional detail such as wallet wrappers (`apple_pay`, `google_pay`) and Revolut Pay funding source (`revolut_pay_card` vs `revolut_pay_account`).
 // :::
 // Variants:
+//
 //   - card → CardV2
+//
 //   - revolut_pay → RevolutPayV2
 type PaymentMethodV4 interface {
 	isPaymentMethodV4()
@@ -3478,10 +3529,15 @@ type RpayCard struct {
 //
 // :::caution
 // Restrictions:
+//
 // - Must be a valid URI as defined by [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986)
+//
 // - URI scheme is required and must be either `http` or `https`
+//
 // - URI host is required and cannot be `localhost` or an IP address
+//
 // - Max length: `2000`
+//
 // - Reserved or invalid characters must be percent-encoded (for example, use `%20` instead of a space)
 // :::
 //
@@ -3793,7 +3849,9 @@ const (
 )
 
 // RevolutPay the spec groups these shapes under a documentation-only discriminator (no wire-level propertyName); fill in the fields that apply to your scenario. Groupings:
+//
 //   - revolut_pay_account: RPay-Account
+//
 //   - revolut_pay_card: RPay-Card
 type RevolutPay struct {
 	// ID of the saved payment method.
@@ -4025,10 +4083,15 @@ type SetupOrderID = string
 //
 // :::caution
 // Restrictions:
+//
 // - Must be a valid URI as defined by [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986)
+//
 // - URI scheme is required and must be either `http` or `https`
+//
 // - URI host is required and cannot be `localhost` or an IP address
+//
 // - Max length: `2000`
+//
 // - Reserved or invalid characters must be percent-encoded (for example, use `%20` instead of a space)
 // :::
 type SetupOrderRedirectURL = string
@@ -4071,10 +4134,13 @@ type Shipping struct {
 // The complete descriptor is built using the following format: `{base}*{suffix}`, where:
 //
 //   - **`{base}`** is the existing descriptor configured in the Revolut Business dashboard (**Settings > Business account > Merchant profile > Statement descriptor**).
+//
 //   - **`{suffix}`** is defined by the `statement_descriptor_suffix` field.
 //
 // :::note
+//
 // - If the combined descriptor's length (base + suffix) exceeds the character limits of card scheme providers, the final value will be truncated. For example if the limit is 22 characters, the base descriptor is `"base"` and the suffix is `"testdescriptorsuffix"`, the final descriptor becomes `"base*testdescriptorsuf"`.
+//
 // - The final statement descriptor shown on a cardholder's statement may vary by issuing bank, as some banks apply their own custom formatting or truncation rules.
 // :::
 type StatementDescriptorSuffix = string
@@ -4298,7 +4364,9 @@ type SubscriptionPlanName = string
 // SubscriptionPlanOrdinal the sequential order of this phase in the subscription billing lifecycle.
 //
 // Phases execute in ascending order based on this value:
+//
 // - Phase with `ordinal=1` executes first
+//
 // - Phase with `ordinal=2` executes second, and so on
 //
 // When a phase completes its `cycle_count`, the subscription automatically progresses to the phase with the next `ordinal` value.
@@ -4443,7 +4511,9 @@ type SubscriptionTrialDuration = string
 // This value is automatically calculated by the system as: `start_date` + `trial_duration`
 //
 // The `trial_duration` used in the calculation comes from either:
+//
 // - The subscription's custom `trial_duration` (if provided at creation time), or
+//
 // - The plan's default `trial_duration` (if no override was specified)
 //
 // This field is `null` when the subscription has no trial period (e.g., when `trial_duration` is not set or is `"P0D"`).
@@ -4827,10 +4897,15 @@ type WebhookUpdate struct {
 //
 // :::caution
 // Restrictions:
+//
 // - Must be a valid URI as defined by [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986)
+//
 // - URI scheme is required and must be either `http` or `https`
+//
 // - URI host is required and cannot be `localhost` or an IP address
+//
 // - Max length: `2000`
+//
 // - Reserved or invalid characters must be percent-encoded (for example, use `%20` instead of a space)
 // :::
 type WebhookURL = string
@@ -5391,9 +5466,13 @@ type WebhooksBody struct {
 }
 
 // SendWebhookEventPayload the spec groups these shapes under a documentation-only discriminator (no wire-level propertyName); fill in the fields that apply to your scenario. Groupings:
+//
 //   - Dispute event: Webhook-Dispute-Event
+//
 //   - Order or payment event: Webhook-Order-Event
+//
 //   - Payout event: Webhook-Payout-Event
+//
 //   - Subscription: Webhook-Subscription-Event
 type SendWebhookEventPayload struct {
 	// The ID of the dispute the event is related to.

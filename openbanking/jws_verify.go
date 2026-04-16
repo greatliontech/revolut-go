@@ -48,11 +48,11 @@ func (f KeyResolverFunc) Resolve(h JWSHeader) (crypto.PublicKey, error) { return
 // is preserved in Extra so callers can inspect OBIE-specific claims
 // like http://openbanking.org.uk/iat without re-parsing.
 type JWSHeader struct {
-	Alg   string                 `json:"alg"`
-	Kid   string                 `json:"kid"`
-	Typ   string                 `json:"typ,omitempty"`
-	Crit  []string               `json:"crit,omitempty"`
-	Extra map[string]any         `json:"-"`
+	Alg   string         `json:"alg"`
+	Kid   string         `json:"kid"`
+	Typ   string         `json:"typ,omitempty"`
+	Crit  []string       `json:"crit,omitempty"`
+	Extra map[string]any `json:"-"`
 }
 
 // Verify validates the Signed response's detached JWS against the

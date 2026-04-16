@@ -63,4 +63,3 @@ func writeFile(path, src string) error {
 	w.buf.WriteString(src)
 	return w.flush(path)
 }
-
