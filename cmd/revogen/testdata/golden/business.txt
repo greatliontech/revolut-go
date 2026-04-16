@@ -327,6 +327,7 @@ func (*CardInvitations) CancelCardInvitation
 func (*CardInvitations) Create
 func (*CardInvitations) Get
 func (*CardInvitations) List
+func (*CardInvitations) ListAll
 func (*CardInvitations) Update
 func (*Cards) Create
 func (*Cards) Delete

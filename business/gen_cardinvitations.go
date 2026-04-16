@@ -5,6 +5,7 @@ package business
 import (
 	"context"
 	"errors"
+	"iter"
 	"net/http"
 	"net/url"
 
@@ -30,6 +31,34 @@ func (s *CardInvitations) List(ctx context.Context, opts *GetCardInvitationsPara
 		return nil, err
 	}
 	return out, nil
+}
+
+// ListAll iterates every page of List, yielding one CardInvitationResponse per
+// step. Break out of the loop to stop early.
+func (s *CardInvitations) ListAll(ctx context.Context, opts *GetCardInvitationsParams) iter.Seq2[CardInvitationResponse, error] {
+	return func(yield func(CardInvitationResponse, error) bool) {
+		var p GetCardInvitationsParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.List(ctx, &p)
+			if err != nil {
+				var zero CardInvitationResponse
+				yield(zero, err)
+				return
+			}
+			if len(resp) == 0 {
+				return
+			}
+			for _, item := range resp {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			p.CreatedBefore = resp[len(resp)-1].CreatedAt
+		}
+	}
 }
 
 // Create create a card invitation

@@ -113,7 +113,7 @@ func (b *Builder) timeWindowPagination(m *ir.Method, params *ir.Decl) *ir.Pagina
 	fromItem := ""
 	var fallback []string
 	for _, f := range itemDecl.Fields {
-		if !isPlainTimeType(f.Type) {
+		if !b.isPlainTimeType(f.Type) {
 			continue
 		}
 		if f.JSONName == "created_at" {
@@ -131,7 +131,7 @@ func (b *Builder) timeWindowPagination(m *ir.Method, params *ir.Decl) *ir.Pagina
 		return nil
 	}
 	for _, f := range params.Fields {
-		if (f.JSONName == "to" || f.JSONName == "created_before") && isPlainTimeType(f.Type) {
+		if (f.JSONName == "to" || f.JSONName == "created_before") && b.isPlainTimeType(f.Type) {
 			return &ir.Pagination{
 				Shape:           ir.PaginationTimeWindow,
 				ItemType:        itemType,
@@ -143,11 +143,31 @@ func (b *Builder) timeWindowPagination(m *ir.Method, params *ir.Decl) *ir.Pagina
 	return nil
 }
 
-// isPlainTimeType reports whether t is an unwrapped time.Time — the
-// iterator emits `p.Param = resp[...].Field` without dereference, so
-// a *time.Time on either side would be a type error.
-func isPlainTimeType(t *ir.Type) bool {
-	return t != nil && t.Kind == ir.KindPrim && t.Name == "time.Time"
+// isPlainTimeType reports whether t is an unwrapped time.Time.
+// Accepts named aliases whose alias target is time.Time — Revolut's
+// specs often define per-field timestamp aliases like
+// `CardInvitationCreatedAt: { type: string, format: date-time }`
+// which resolve to `type CardInvitationCreatedAt = time.Time` in Go.
+// Without alias unwrap, the pagination detector would reject any
+// endpoint whose item timestamps are aliased (the majority in
+// business), leaving paginated resources without iterators.
+//
+// Iterator emission still uses the aliased type at the assignment
+// site (`p.CreatedBefore = resp[...].CreatedAt`), which Go type-
+// checks because both sides resolve to time.Time.
+func (b *Builder) isPlainTimeType(t *ir.Type) bool {
+	if t == nil {
+		return false
+	}
+	if t.Kind == ir.KindPrim && t.Name == "time.Time" {
+		return true
+	}
+	if t.IsNamed() {
+		if d, ok := b.declByName[t.Name]; ok && d.Kind == ir.DeclAlias {
+			return b.isPlainTimeType(d.AliasTarget)
+		}
+	}
+	return false
 }
 
 // limitPagination detects params with a bare `limit` field (no
