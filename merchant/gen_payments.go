@@ -37,8 +37,10 @@ func (s *Payments) GetDetails(ctx context.Context, paymentID string, revolutAPIV
 		return nil, err
 	}
 	var out PaymentRetrievalV2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }

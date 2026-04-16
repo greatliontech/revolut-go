@@ -42,6 +42,11 @@ func (s *CardInvitations) ListAll(ctx context.Context, opts *GetCardInvitationsP
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero CardInvitationResponse
+				yield(zero, err)
+				return
+			}
 			resp, err := s.List(ctx, &p)
 			if err != nil {
 				var zero CardInvitationResponse
@@ -56,7 +61,11 @@ func (s *CardInvitations) ListAll(ctx context.Context, opts *GetCardInvitationsP
 					return
 				}
 			}
-			p.CreatedBefore = resp[len(resp)-1].CreatedAt
+			nextAdv := resp[len(resp)-1].CreatedAt
+			if nextAdv == p.CreatedBefore {
+				return
+			}
+			p.CreatedBefore = nextAdv
 		}
 	}
 }

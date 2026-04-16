@@ -68,8 +68,10 @@ func (s *FilePayment) CreateConsents(ctx context.Context, xFAPIFinancialID strin
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteFileConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -123,8 +125,10 @@ func (s *FilePayment) CreateConsentsSigned(ctx context.Context, xFAPIFinancialID
 		return nil, err
 	}
 	var out ObwriteFileConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteFileConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -162,8 +166,10 @@ func (s *FilePayment) GetConsentsConsentID(ctx context.Context, consentID string
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteFileConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -200,8 +206,10 @@ func (s *FilePayment) GetConsentsConsentIDSigned(ctx context.Context, consentID 
 		return nil, err
 	}
 	var out ObwriteFileConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteFileConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -210,7 +218,7 @@ func (s *FilePayment) GetConsentsConsentIDSigned(ctx context.Context, consentID 
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-file-payment-consents-consent-id-file
 // Required scopes: payments
-func (s *FilePayment) GetConsentsConsentIDFile(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) ([]byte, ResponseMetadata, error) {
+func (s *FilePayment) GetConsentsConsentIDFile(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (io.ReadCloser, ResponseMetadata, error) {
 	if consentID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ConsentId is required")
 	}
@@ -236,11 +244,11 @@ func (s *FilePayment) GetConsentsConsentIDFile(ctx context.Context, consentID st
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, hdr, err := s.t.DoRaw(ctx, http.MethodGet, "file-payment-consents/"+url.PathEscape(consentID)+"/file", r)
+	stream, hdr, err := s.t.DoRawStream(ctx, http.MethodGet, "file-payment-consents/"+url.PathEscape(consentID)+"/file", r)
 	if err != nil {
 		return nil, ResponseMetadata{}, err
 	}
-	return body, extractResponseMetadata(hdr), nil
+	return stream, extractResponseMetadata(hdr), nil
 }
 
 // CreateConsentsConsentIDFile upload a payment file
@@ -291,8 +299,10 @@ func (s *FilePayment) CreateConsentsConsentIDFile(ctx context.Context, consentID
 		return nil, ResponseMetadata{}, err
 	}
 	var out EmptyBody
-	if err := json.Unmarshal(respBody, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(respBody) > 0 {
+		if err := json.Unmarshal(respBody, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -350,8 +360,10 @@ func (s *FilePayment) Create(ctx context.Context, xFAPIFinancialID string, xFAPI
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteFileResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -408,8 +420,10 @@ func (s *FilePayment) CreateSigned(ctx context.Context, xFAPIFinancialID string,
 		return nil, err
 	}
 	var out ObwriteFileResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteFileResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -447,8 +461,10 @@ func (s *FilePayment) GetFilePaymentID(ctx context.Context, filePaymentID string
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteFileResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -485,8 +501,10 @@ func (s *FilePayment) GetFilePaymentIDSigned(ctx context.Context, filePaymentID 
 		return nil, err
 	}
 	var out ObwriteFileResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteFileResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -524,8 +542,10 @@ func (s *FilePayment) GetFilePaymentIDReportFile(ctx context.Context, filePaymen
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObreportFileResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -562,8 +582,10 @@ func (s *FilePayment) GetFilePaymentIDReportFileSigned(ctx context.Context, file
 		return nil, err
 	}
 	var out ObreportFileResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObreportFileResponse]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }

@@ -44,8 +44,10 @@ func (s *Trades) GetAllTrades(ctx context.Context, symbol string, xRevxTimestamp
 		return nil, err
 	}
 	var out AllTradesPaginatedResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -64,6 +66,11 @@ func (s *Trades) GetAllTradesAll(ctx context.Context, symbol string, xRevxTimest
 			return
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero Trade
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetAllTrades(ctx, symbol, xRevxTimestamp, xRevxSignature, &p)
 			if err != nil {
 				var zero Trade
@@ -81,7 +88,11 @@ func (s *Trades) GetAllTradesAll(ctx context.Context, symbol string, xRevxTimest
 			if resp.Metadata.NextCursor == "" {
 				return
 			}
-			p.Cursor = resp.Metadata.NextCursor
+			nextTok := resp.Metadata.NextCursor
+			if nextTok == p.Cursor {
+				return
+			}
+			p.Cursor = nextTok
 		}
 	}
 }
@@ -111,8 +122,10 @@ func (s *Trades) GetPrivateTrades(ctx context.Context, symbol string, xRevxTimes
 		return nil, err
 	}
 	var out PrivateTradesPaginatedResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -131,6 +144,11 @@ func (s *Trades) GetPrivateTradesAll(ctx context.Context, symbol string, xRevxTi
 			return
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero ClientTrade
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetPrivateTrades(ctx, symbol, xRevxTimestamp, xRevxSignature, &p)
 			if err != nil {
 				var zero ClientTrade
@@ -148,7 +166,11 @@ func (s *Trades) GetPrivateTradesAll(ctx context.Context, symbol string, xRevxTi
 			if resp.Metadata.NextCursor == "" {
 				return
 			}
-			p.Cursor = resp.Metadata.NextCursor
+			nextTok := resp.Metadata.NextCursor
+			if nextTok == p.Cursor {
+				return
+			}
+			p.Cursor = nextTok
 		}
 	}
 }

@@ -42,6 +42,11 @@ func (s *Accounting) GetCategoriesAll(ctx context.Context, opts *GetAccountingCa
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero AccountingCategoryResponse
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetCategories(ctx, &p)
 			if err != nil {
 				var zero AccountingCategoryResponse
@@ -56,7 +61,11 @@ func (s *Accounting) GetCategoriesAll(ctx context.Context, opts *GetAccountingCa
 			if resp.NextPageToken == "" {
 				return
 			}
-			p.PageToken = resp.NextPageToken
+			nextTok := resp.NextPageToken
+			if nextTok == p.PageToken {
+				return
+			}
+			p.PageToken = nextTok
 		}
 	}
 }
@@ -150,6 +159,11 @@ func (s *Accounting) GetLabelGroupsAll(ctx context.Context, opts *GetLabelGroups
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero LabelGroupResponse
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetLabelGroups(ctx, &p)
 			if err != nil {
 				var zero LabelGroupResponse
@@ -164,7 +178,11 @@ func (s *Accounting) GetLabelGroupsAll(ctx context.Context, opts *GetLabelGroups
 			if resp.NextPageToken == "" {
 				return
 			}
-			p.PageToken = resp.NextPageToken
+			nextTok := resp.NextPageToken
+			if nextTok == p.PageToken {
+				return
+			}
+			p.PageToken = nextTok
 		}
 	}
 }
@@ -272,6 +290,11 @@ func (s *Accounting) GetLabelsAll(ctx context.Context, groupID string, opts *Get
 			return
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero LabelResponse
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetLabels(ctx, groupID, &p)
 			if err != nil {
 				var zero LabelResponse
@@ -286,7 +309,11 @@ func (s *Accounting) GetLabelsAll(ctx context.Context, groupID string, opts *Get
 			if resp.NextPageToken == "" {
 				return
 			}
-			p.PageToken = resp.NextPageToken
+			nextTok := resp.NextPageToken
+			if nextTok == p.PageToken {
+				return
+			}
+			p.PageToken = nextTok
 		}
 	}
 }
@@ -380,6 +407,11 @@ func (s *Accounting) GetTaxRatesAll(ctx context.Context, opts *GetTaxRatesParams
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero TaxRateResponse
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetTaxRates(ctx, &p)
 			if err != nil {
 				var zero TaxRateResponse
@@ -394,7 +426,11 @@ func (s *Accounting) GetTaxRatesAll(ctx context.Context, opts *GetTaxRatesParams
 			if resp.NextPageToken == "" {
 				return
 			}
-			p.PageToken = resp.NextPageToken
+			nextTok := resp.NextPageToken
+			if nextTok == p.PageToken {
+				return
+			}
+			p.PageToken = nextTok
 		}
 	}
 }

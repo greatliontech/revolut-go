@@ -39,8 +39,10 @@ func (s *Subscriptions) GetPlanList(ctx context.Context, revolutAPIVersion Revol
 		return nil, err
 	}
 	var out SubscriptionPlans
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -54,6 +56,11 @@ func (s *Subscriptions) GetPlanListAll(ctx context.Context, revolutAPIVersion Re
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero SubscriptionPlan
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetPlanList(ctx, revolutAPIVersion, &p)
 			if err != nil {
 				var zero SubscriptionPlan
@@ -68,7 +75,11 @@ func (s *Subscriptions) GetPlanListAll(ctx context.Context, revolutAPIVersion Re
 			if resp.NextPageToken == nil || *resp.NextPageToken == "" {
 				return
 			}
-			p.PageToken = *resp.NextPageToken
+			nextTok := *resp.NextPageToken
+			if nextTok == p.PageToken {
+				return
+			}
+			p.PageToken = nextTok
 		}
 	}
 }
@@ -98,8 +109,10 @@ func (s *Subscriptions) CreatePlan(ctx context.Context, revolutAPIVersion Revolu
 		return nil, err
 	}
 	var out SubscriptionPlan
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -127,8 +140,10 @@ func (s *Subscriptions) GetPlan(ctx context.Context, subscriptionPlanID string, 
 		return nil, err
 	}
 	var out SubscriptionPlan
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -154,8 +169,10 @@ func (s *Subscriptions) GetList(ctx context.Context, revolutAPIVersion RevolutAP
 		return nil, err
 	}
 	var out SubscriptionsResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -169,6 +186,11 @@ func (s *Subscriptions) GetListAll(ctx context.Context, revolutAPIVersion Revolu
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero Subscription
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetList(ctx, revolutAPIVersion, &p)
 			if err != nil {
 				var zero Subscription
@@ -183,7 +205,11 @@ func (s *Subscriptions) GetListAll(ctx context.Context, revolutAPIVersion Revolu
 			if resp.NextPageToken == nil || *resp.NextPageToken == "" {
 				return
 			}
-			p.PageToken = string(*resp.NextPageToken)
+			nextTok := string(*resp.NextPageToken)
+			if nextTok == p.PageToken {
+				return
+			}
+			p.PageToken = nextTok
 		}
 	}
 }
@@ -216,8 +242,10 @@ func (s *Subscriptions) Create(ctx context.Context, revolutAPIVersion RevolutAPI
 		return nil, err
 	}
 	var out Subscription
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -245,8 +273,10 @@ func (s *Subscriptions) Get(ctx context.Context, subscriptionID string, revolutA
 		return nil, err
 	}
 	var out Subscription
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -276,8 +306,10 @@ func (s *Subscriptions) Update(ctx context.Context, subscriptionID string, revol
 		return nil, err
 	}
 	var out Subscription
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -335,8 +367,10 @@ func (s *Subscriptions) GetCycleList(ctx context.Context, subscriptionID string,
 		return nil, err
 	}
 	var out SubscriptionCycles
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -355,6 +389,11 @@ func (s *Subscriptions) GetCycleListAll(ctx context.Context, subscriptionID stri
 			return
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero SubscriptionCycle
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetCycleList(ctx, subscriptionID, revolutAPIVersion, &p)
 			if err != nil {
 				var zero SubscriptionCycle
@@ -369,7 +408,11 @@ func (s *Subscriptions) GetCycleListAll(ctx context.Context, subscriptionID stri
 			if resp.NextPageToken == nil || *resp.NextPageToken == "" {
 				return
 			}
-			p.PageToken = *resp.NextPageToken
+			nextTok := *resp.NextPageToken
+			if nextTok == p.PageToken {
+				return
+			}
+			p.PageToken = nextTok
 		}
 	}
 }
@@ -403,8 +446,10 @@ func (s *Subscriptions) GetCycle(ctx context.Context, subscriptionID string, cyc
 		return nil, err
 	}
 	var out SubscriptionCycle
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }

@@ -42,6 +42,11 @@ func (s *Cards) ListAll(ctx context.Context, opts *GetCardsParams) iter.Seq2[Car
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero CardResponse
+				yield(zero, err)
+				return
+			}
 			resp, err := s.List(ctx, &p)
 			if err != nil {
 				var zero CardResponse
@@ -56,7 +61,11 @@ func (s *Cards) ListAll(ctx context.Context, opts *GetCardsParams) iter.Seq2[Car
 					return
 				}
 			}
-			p.CreatedBefore = resp[len(resp)-1].CreatedAt
+			nextAdv := resp[len(resp)-1].CreatedAt
+			if nextAdv == p.CreatedBefore {
+				return
+			}
+			p.CreatedBefore = nextAdv
 		}
 	}
 }

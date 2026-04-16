@@ -265,8 +265,8 @@ func TestOperations_RawBytesResponse(t *testing.T) {
 	b.buildOperations()
 
 	m := b.resourceByName["X"].Methods[0]
-	if m.HTTPCall.RespKind != ir.RespRawBytes || m.Returns.GoExpr() != "[]byte" {
-		t.Errorf("pdf resp: %+v", m.HTTPCall)
+	if m.HTTPCall.RespKind != ir.RespRawBytes || m.Returns.GoExpr() != "io.ReadCloser" {
+		t.Errorf("pdf resp: %+v, return=%s", m.HTTPCall, m.Returns.GoExpr())
 	}
 	if m.HTTPCall.Accept != "application/pdf" {
 		t.Errorf("accept: %q", m.HTTPCall.Accept)

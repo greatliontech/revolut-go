@@ -88,8 +88,10 @@ func (s *DomesticScheduledPayment) CreateConsents(ctx context.Context, xFAPIFina
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteDomesticScheduledConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -164,8 +166,10 @@ func (s *DomesticScheduledPayment) CreateConsentsSigned(ctx context.Context, xFA
 		return nil, err
 	}
 	var out ObwriteDomesticScheduledConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteDomesticScheduledConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -203,8 +207,10 @@ func (s *DomesticScheduledPayment) GetConsentsConsentID(ctx context.Context, con
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteDomesticScheduledConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -241,8 +247,10 @@ func (s *DomesticScheduledPayment) GetConsentsConsentIDSigned(ctx context.Contex
 		return nil, err
 	}
 	var out ObwriteDomesticScheduledConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteDomesticScheduledConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -318,8 +326,10 @@ func (s *DomesticScheduledPayment) Create(ctx context.Context, xFAPIFinancialID 
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteDomesticScheduledResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -394,8 +404,10 @@ func (s *DomesticScheduledPayment) CreateSigned(ctx context.Context, xFAPIFinanc
 		return nil, err
 	}
 	var out ObwriteDomesticScheduledResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteDomesticScheduledResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -433,8 +445,10 @@ func (s *DomesticScheduledPayment) GetDomesticScheduledPaymentID(ctx context.Con
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteDomesticScheduledResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -471,8 +485,10 @@ func (s *DomesticScheduledPayment) GetDomesticScheduledPaymentIDSigned(ctx conte
 		return nil, err
 	}
 	var out ObwriteDomesticScheduledResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteDomesticScheduledResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }

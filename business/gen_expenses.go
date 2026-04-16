@@ -5,6 +5,7 @@ package business
 import (
 	"context"
 	"errors"
+	"io"
 	"iter"
 	"net/http"
 	"net/url"
@@ -42,6 +43,11 @@ func (s *Expenses) ListAll(ctx context.Context, opts *GetExpensesParams) iter.Se
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero Expense
+				yield(zero, err)
+				return
+			}
 			resp, err := s.List(ctx, &p)
 			if err != nil {
 				var zero Expense
@@ -56,7 +62,11 @@ func (s *Expenses) ListAll(ctx context.Context, opts *GetExpensesParams) iter.Se
 					return
 				}
 			}
-			p.To = resp[len(resp)-1].ExpenseDate
+			nextAdv := resp[len(resp)-1].ExpenseDate
+			if nextAdv == p.To {
+				return
+			}
+			p.To = nextAdv
 		}
 	}
 }
@@ -83,7 +93,7 @@ func (s *Expenses) GetExpense(ctx context.Context, expenseID string) (*Expense, 
 //
 // Docs: https://developer.revolut.com/docs/business/get-expense-receipt
 // Required scopes: READ
-func (s *Expenses) GetExpenseReceipt(ctx context.Context, expenseID string, receiptID string) ([]byte, error) {
+func (s *Expenses) GetExpenseReceipt(ctx context.Context, expenseID string, receiptID string) (io.ReadCloser, error) {
 	if expenseID == "" {
 		return nil, errors.New("business: expense_id is required")
 	}
@@ -99,9 +109,9 @@ func (s *Expenses) GetExpenseReceipt(ctx context.Context, expenseID string, rece
 	r := transport.RawRequest{
 		Accept: "*/*",
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "expenses/"+url.PathEscape(expenseID)+"/receipts/"+url.PathEscape(receiptID)+"/content", r)
+	stream, _, err := s.t.DoRawStream(ctx, http.MethodGet, "expenses/"+url.PathEscape(expenseID)+"/receipts/"+url.PathEscape(receiptID)+"/content", r)
 	if err != nil {
 		return nil, err
 	}
-	return body, nil
+	return stream, nil
 }

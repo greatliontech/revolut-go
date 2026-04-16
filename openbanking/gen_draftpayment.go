@@ -59,8 +59,10 @@ func (s *DraftPayment) Create(ctx context.Context, xIdempotencyKey string, body 
 		return nil, err
 	}
 	var out DraftPaymentResponse
-	if err := json.Unmarshal(respBody, &out); err != nil {
-		return nil, err
+	if len(respBody) > 0 {
+		if err := json.Unmarshal(respBody, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -87,7 +89,7 @@ func (s *DraftPayment) FindDraftPayment(ctx context.Context, draftPaymentID stri
 //
 // Docs: https://developer.revolut.com/docs/openbanking/delete-draft-payment
 // Required scopes: draftpayments
-func (s *DraftPayment) Delete(ctx context.Context, draftPaymentID string) ([]byte, error) {
+func (s *DraftPayment) Delete(ctx context.Context, draftPaymentID string) (io.ReadCloser, error) {
 	if draftPaymentID == "" {
 		return nil, errors.New("openbanking: DraftPaymentId is required")
 	}
@@ -97,18 +99,18 @@ func (s *DraftPayment) Delete(ctx context.Context, draftPaymentID string) ([]byt
 	r := transport.RawRequest{
 		Accept: "text/plain",
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodDelete, "https://apis.revolut.com/"+"draft-payments/"+url.PathEscape(draftPaymentID), r)
+	stream, _, err := s.t.DoRawStream(ctx, http.MethodDelete, "https://apis.revolut.com/"+"draft-payments/"+url.PathEscape(draftPaymentID), r)
 	if err != nil {
 		return nil, err
 	}
-	return body, nil
+	return stream, nil
 }
 
 // DeleteTransfer delete a draft payment transfer
 //
 // Docs: https://developer.revolut.com/docs/openbanking/delete-draft-payment-transfer
 // Required scopes: draftpayments
-func (s *DraftPayment) DeleteTransfer(ctx context.Context, draftPaymentID string, draftPaymentTransferID string) ([]byte, error) {
+func (s *DraftPayment) DeleteTransfer(ctx context.Context, draftPaymentID string, draftPaymentTransferID string) (io.ReadCloser, error) {
 	if draftPaymentID == "" {
 		return nil, errors.New("openbanking: DraftPaymentId is required")
 	}
@@ -124,9 +126,9 @@ func (s *DraftPayment) DeleteTransfer(ctx context.Context, draftPaymentID string
 	r := transport.RawRequest{
 		Accept: "text/plain",
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodDelete, "https://apis.revolut.com/"+"draft-payments/"+url.PathEscape(draftPaymentID)+"/transfers/"+url.PathEscape(draftPaymentTransferID), r)
+	stream, _, err := s.t.DoRawStream(ctx, http.MethodDelete, "https://apis.revolut.com/"+"draft-payments/"+url.PathEscape(draftPaymentID)+"/transfers/"+url.PathEscape(draftPaymentTransferID), r)
 	if err != nil {
 		return nil, err
 	}
-	return body, nil
+	return stream, nil
 }

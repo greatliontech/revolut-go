@@ -91,8 +91,10 @@ func (s *InternationalStandingOrder) CreateConsents(ctx context.Context, xFAPIFi
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteInternationalStandingOrderConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -170,8 +172,10 @@ func (s *InternationalStandingOrder) CreateConsentsSigned(ctx context.Context, x
 		return nil, err
 	}
 	var out ObwriteInternationalStandingOrderConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteInternationalStandingOrderConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -209,8 +213,10 @@ func (s *InternationalStandingOrder) GetConsentsConsentID(ctx context.Context, c
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteInternationalStandingOrderConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -247,8 +253,10 @@ func (s *InternationalStandingOrder) GetConsentsConsentIDSigned(ctx context.Cont
 		return nil, err
 	}
 	var out ObwriteInternationalStandingOrderConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteInternationalStandingOrderConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -327,8 +335,10 @@ func (s *InternationalStandingOrder) Create(ctx context.Context, xFAPIFinancialI
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteInternationalStandingOrderResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -406,8 +416,10 @@ func (s *InternationalStandingOrder) CreateSigned(ctx context.Context, xFAPIFina
 		return nil, err
 	}
 	var out ObwriteInternationalStandingOrderResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteInternationalStandingOrderResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -445,8 +457,10 @@ func (s *InternationalStandingOrder) GetInternationalStandingOrderID(ctx context
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteInternationalStandingOrderResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -483,8 +497,10 @@ func (s *InternationalStandingOrder) GetInternationalStandingOrderIDSigned(ctx c
 		return nil, err
 	}
 	var out ObwriteInternationalStandingOrderResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteInternationalStandingOrderResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }

@@ -43,8 +43,10 @@ func (s *MarketData) GetCandles(ctx context.Context, symbol string, xRevxTimesta
 		return nil, err
 	}
 	var out GetCandlesResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -74,8 +76,10 @@ func (s *MarketData) GetOrderBook(ctx context.Context, symbol string, xRevxTimes
 		return nil, err
 	}
 	var out OrderBook
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -102,8 +106,10 @@ func (s *MarketData) GetTicker(ctx context.Context, xRevxTimestamp int, xRevxSig
 		return nil, err
 	}
 	var out TickersResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }

@@ -42,6 +42,11 @@ func (s *TeamMembers) GetRolesAll(ctx context.Context, opts *GetRolesParams) ite
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero Role
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetRoles(ctx, &p)
 			if err != nil {
 				var zero Role
@@ -56,7 +61,11 @@ func (s *TeamMembers) GetRolesAll(ctx context.Context, opts *GetRolesParams) ite
 					return
 				}
 			}
-			p.CreatedBefore = resp[len(resp)-1].CreatedAt
+			nextAdv := resp[len(resp)-1].CreatedAt
+			if nextAdv == p.CreatedBefore {
+				return
+			}
+			p.CreatedBefore = nextAdv
 		}
 	}
 }
@@ -86,6 +95,11 @@ func (s *TeamMembers) ListAll(ctx context.Context, opts *GetTeamMembersParams) i
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero TeamMember
+				yield(zero, err)
+				return
+			}
 			resp, err := s.List(ctx, &p)
 			if err != nil {
 				var zero TeamMember
@@ -100,7 +114,11 @@ func (s *TeamMembers) ListAll(ctx context.Context, opts *GetTeamMembersParams) i
 					return
 				}
 			}
-			p.CreatedBefore = resp[len(resp)-1].CreatedAt
+			nextAdv := resp[len(resp)-1].CreatedAt
+			if nextAdv == p.CreatedBefore {
+				return
+			}
+			p.CreatedBefore = nextAdv
 		}
 	}
 }

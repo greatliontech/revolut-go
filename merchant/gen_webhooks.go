@@ -34,8 +34,10 @@ func (s *Webhooks) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVers
 		return nil, err
 	}
 	var out WebhooksResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -65,8 +67,10 @@ func (s *Webhooks) Create(ctx context.Context, revolutAPIVersion RevolutAPIVersi
 		return nil, err
 	}
 	var out WebhookV2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -94,8 +98,10 @@ func (s *Webhooks) Get(ctx context.Context, webhookID string, revolutAPIVersion 
 		return nil, err
 	}
 	var out WebhookV2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -125,8 +131,10 @@ func (s *Webhooks) Update(ctx context.Context, webhookID string, revolutAPIVersi
 		return nil, err
 	}
 	var out WebhookV2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -182,8 +190,10 @@ func (s *Webhooks) RotateWebhookSigningSecret(ctx context.Context, webhookID str
 		return nil, err
 	}
 	var out WebhookV2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }

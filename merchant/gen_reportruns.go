@@ -5,6 +5,7 @@ package merchant
 import (
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -47,7 +48,7 @@ func (s *ReportRuns) GetDetails(ctx context.Context, reportRunID string) (*Repor
 // DownloadReportFile download report file
 //
 // Docs: https://developer.revolut.com/docs/merchant/download-report-file
-func (s *ReportRuns) DownloadReportFile(ctx context.Context, reportRunID string) ([]byte, error) {
+func (s *ReportRuns) DownloadReportFile(ctx context.Context, reportRunID string) (io.ReadCloser, error) {
 	if reportRunID == "" {
 		return nil, errors.New("merchant: report_run_id is required")
 	}
@@ -57,9 +58,9 @@ func (s *ReportRuns) DownloadReportFile(ctx context.Context, reportRunID string)
 	r := transport.RawRequest{
 		Accept: "text/csv",
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "api/report-runs/"+url.PathEscape(reportRunID)+"/file", r)
+	stream, _, err := s.t.DoRawStream(ctx, http.MethodGet, "api/report-runs/"+url.PathEscape(reportRunID)+"/file", r)
 	if err != nil {
 		return nil, err
 	}
-	return body, nil
+	return stream, nil
 }

@@ -38,8 +38,10 @@ func (s *Orders) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVersio
 		return nil, err
 	}
 	var out OrdersV2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -69,8 +71,10 @@ func (s *Orders) Create(ctx context.Context, revolutAPIVersion RevolutAPIVersion
 		return nil, err
 	}
 	var out OrderV6
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -98,8 +102,10 @@ func (s *Orders) Get(ctx context.Context, orderID string, revolutAPIVersion Revo
 		return nil, err
 	}
 	var out OrderV6
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -129,8 +135,10 @@ func (s *Orders) Update(ctx context.Context, orderID string, revolutAPIVersion R
 		return nil, err
 	}
 	var out OrderV6
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -155,8 +163,10 @@ func (s *Orders) CancelOrder(ctx context.Context, orderID string, revolutAPIVers
 		return nil, err
 	}
 	var out OrderV6
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -186,8 +196,10 @@ func (s *Orders) CaptureOrder(ctx context.Context, orderID string, revolutAPIVer
 		return nil, err
 	}
 	var out OrderV6
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -220,8 +232,10 @@ func (s *Orders) IncrementAuthorisation(ctx context.Context, orderID string, rev
 		return nil, err
 	}
 	var out OrderV6
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -309,8 +323,10 @@ func (s *Orders) RefundOrder(ctx context.Context, orderID string, revolutAPIVers
 		return nil, err
 	}
 	var out OrderV6
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }

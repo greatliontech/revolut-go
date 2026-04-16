@@ -85,8 +85,10 @@ func (s *DomesticPayment) CreateConsents(ctx context.Context, xFAPIFinancialID s
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteDomesticConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -158,8 +160,10 @@ func (s *DomesticPayment) CreateConsentsSigned(ctx context.Context, xFAPIFinanci
 		return nil, err
 	}
 	var out ObwriteDomesticConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteDomesticConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -197,8 +201,10 @@ func (s *DomesticPayment) GetConsentsConsentID(ctx context.Context, consentID st
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteDomesticConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -235,8 +241,10 @@ func (s *DomesticPayment) GetConsentsConsentIDSigned(ctx context.Context, consen
 		return nil, err
 	}
 	var out ObwriteDomesticConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteDomesticConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -274,8 +282,10 @@ func (s *DomesticPayment) GetConsentsConsentIDFundsConfirmation(ctx context.Cont
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteFundsConfirmationResponse1
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -312,8 +322,10 @@ func (s *DomesticPayment) GetConsentsConsentIDFundsConfirmationSigned(ctx contex
 		return nil, err
 	}
 	var out ObwriteFundsConfirmationResponse1
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteFundsConfirmationResponse1]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -389,8 +401,10 @@ func (s *DomesticPayment) Create(ctx context.Context, xFAPIFinancialID string, x
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteDomesticResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -465,8 +479,10 @@ func (s *DomesticPayment) CreateSigned(ctx context.Context, xFAPIFinancialID str
 		return nil, err
 	}
 	var out ObwriteDomesticResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteDomesticResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -504,8 +520,10 @@ func (s *DomesticPayment) GetDomesticPaymentID(ctx context.Context, domesticPaym
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteDomesticResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -542,8 +560,10 @@ func (s *DomesticPayment) GetDomesticPaymentIDSigned(ctx context.Context, domest
 		return nil, err
 	}
 	var out ObwriteDomesticResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteDomesticResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }

@@ -39,8 +39,10 @@ func (s *Disputes) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVers
 		return nil, err
 	}
 	var out []Dispute
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return out, nil
 }
@@ -54,6 +56,11 @@ func (s *Disputes) GetListAll(ctx context.Context, revolutAPIVersion RevolutAPIV
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero Dispute
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetList(ctx, revolutAPIVersion, &p)
 			if err != nil {
 				var zero Dispute
@@ -98,8 +105,10 @@ func (s *Disputes) Get(ctx context.Context, disputeID string, revolutAPIVersion 
 		return nil, err
 	}
 	var out Dispute
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -193,8 +202,10 @@ func (s *Disputes) UploadDisputeEvidence(ctx context.Context, disputeID string, 
 		return nil, err
 	}
 	var out DisputeEvidence
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }

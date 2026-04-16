@@ -39,8 +39,10 @@ func (s *Customers) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVer
 		return nil, err
 	}
 	var out CustomersResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -54,6 +56,11 @@ func (s *Customers) GetListAll(ctx context.Context, revolutAPIVersion RevolutAPI
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero CustomerSimplified
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetList(ctx, revolutAPIVersion, &p)
 			if err != nil {
 				var zero CustomerSimplified
@@ -68,7 +75,11 @@ func (s *Customers) GetListAll(ctx context.Context, revolutAPIVersion RevolutAPI
 			if resp.NextPageToken == nil || *resp.NextPageToken == "" {
 				return
 			}
-			p.PageToken = string(*resp.NextPageToken)
+			nextTok := string(*resp.NextPageToken)
+			if nextTok == p.PageToken {
+				return
+			}
+			p.PageToken = nextTok
 		}
 	}
 }
@@ -95,8 +106,10 @@ func (s *Customers) Create(ctx context.Context, revolutAPIVersion RevolutAPIVers
 		return nil, err
 	}
 	var out CustomerCreated
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -124,8 +137,10 @@ func (s *Customers) Get(ctx context.Context, customerID string, revolutAPIVersio
 		return nil, err
 	}
 	var out CustomerV3
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -155,8 +170,10 @@ func (s *Customers) Update(ctx context.Context, customerID string, revolutAPIVer
 		return nil, err
 	}
 	var out CustomerV3
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -214,8 +231,10 @@ func (s *Customers) GetPaymentMethodList(ctx context.Context, customerID string,
 		return nil, err
 	}
 	var out CustomerPaymentMethodsV2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -249,8 +268,10 @@ func (s *Customers) GetPaymentMethod(ctx context.Context, customerID string, pay
 		return nil, err
 	}
 	var out PaymentMethodV4
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -286,8 +307,10 @@ func (s *Customers) UpdatePaymentMethod(ctx context.Context, customerID string, 
 		return nil, err
 	}
 	var out PaymentMethodV4
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }

@@ -91,8 +91,10 @@ func (s *InternationalScheduledPayment) CreateConsents(ctx context.Context, xFAP
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteInternationalScheduledConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -170,8 +172,10 @@ func (s *InternationalScheduledPayment) CreateConsentsSigned(ctx context.Context
 		return nil, err
 	}
 	var out ObwriteInternationalScheduledConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteInternationalScheduledConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -209,8 +213,10 @@ func (s *InternationalScheduledPayment) GetConsentsConsentID(ctx context.Context
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteInternationalScheduledConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -247,8 +253,10 @@ func (s *InternationalScheduledPayment) GetConsentsConsentIDSigned(ctx context.C
 		return nil, err
 	}
 	var out ObwriteInternationalScheduledConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteInternationalScheduledConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -286,8 +294,10 @@ func (s *InternationalScheduledPayment) GetConsentsConsentIDFundsConfirmation(ct
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteFundsConfirmationResponse1
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -324,8 +334,10 @@ func (s *InternationalScheduledPayment) GetConsentsConsentIDFundsConfirmationSig
 		return nil, err
 	}
 	var out ObwriteFundsConfirmationResponse1
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteFundsConfirmationResponse1]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -404,8 +416,10 @@ func (s *InternationalScheduledPayment) Create(ctx context.Context, xFAPIFinanci
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteInternationalScheduledResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -483,8 +497,10 @@ func (s *InternationalScheduledPayment) CreateSigned(ctx context.Context, xFAPIF
 		return nil, err
 	}
 	var out ObwriteInternationalScheduledResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteInternationalScheduledResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -522,8 +538,10 @@ func (s *InternationalScheduledPayment) GetInternationalScheduledPaymentID(ctx c
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteInternationalScheduledResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -560,8 +578,10 @@ func (s *InternationalScheduledPayment) GetInternationalScheduledPaymentIDSigned
 		return nil, err
 	}
 	var out ObwriteInternationalScheduledResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteInternationalScheduledResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }

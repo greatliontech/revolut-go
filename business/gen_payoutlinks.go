@@ -42,6 +42,11 @@ func (s *PayoutLinks) ListAll(ctx context.Context, opts *GetPayoutLinksParams) i
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero PayoutLink
+				yield(zero, err)
+				return
+			}
 			resp, err := s.List(ctx, &p)
 			if err != nil {
 				var zero PayoutLink
@@ -56,7 +61,11 @@ func (s *PayoutLinks) ListAll(ctx context.Context, opts *GetPayoutLinksParams) i
 					return
 				}
 			}
-			p.CreatedBefore = resp[len(resp)-1].CreatedAt
+			nextAdv := resp[len(resp)-1].CreatedAt
+			if nextAdv == p.CreatedBefore {
+				return
+			}
+			p.CreatedBefore = nextAdv
 		}
 	}
 }

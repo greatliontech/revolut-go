@@ -32,8 +32,10 @@ func (s *Webhooks) List(ctx context.Context, xAPIKey string) ([]Webhook, error) 
 		return nil, err
 	}
 	var out []Webhook
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return out, nil
 }
@@ -61,8 +63,10 @@ func (s *Webhooks) Create(ctx context.Context, xAPIKey string, req WebhookCreate
 		return nil, err
 	}
 	var out Webhook
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -88,8 +92,10 @@ func (s *Webhooks) Get(ctx context.Context, webhookID string, xAPIKey string) (*
 		return nil, err
 	}
 	var out Webhook
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -117,8 +123,10 @@ func (s *Webhooks) Update(ctx context.Context, webhookID string, xAPIKey string,
 		return nil, err
 	}
 	var out Webhook
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }

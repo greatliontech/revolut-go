@@ -476,8 +476,14 @@ func (b *Builder) applyResponse(m *ir.Method, op *openapi3.Operation) {
 		}
 		if mime, mt := pickRawContent(rr.Value.Content); mime != "" {
 			_ = mt
-			m.Returns = ir.Prim("[]byte")
+			// Stream non-JSON responses (statements, report PDFs,
+			// CSV exports) so the caller can pipe to disk without
+			// buffering the whole payload. The emitter uses the
+			// transport's DoRawStream path and returns
+			// io.ReadCloser; caller is responsible for Close().
+			m.Returns = ir.Prim("io.ReadCloser", "io")
 			m.HTTPCall.RespKind = ir.RespRawBytes
+			m.HTTPCall.RespType = m.Returns
 			m.HTTPCall.Accept = mime
 			return
 		}

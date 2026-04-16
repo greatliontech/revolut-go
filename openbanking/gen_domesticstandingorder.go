@@ -88,8 +88,10 @@ func (s *DomesticStandingOrder) CreateConsents(ctx context.Context, xFAPIFinanci
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteDomesticStandingOrderConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -164,8 +166,10 @@ func (s *DomesticStandingOrder) CreateConsentsSigned(ctx context.Context, xFAPIF
 		return nil, err
 	}
 	var out ObwriteDomesticStandingOrderConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteDomesticStandingOrderConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -203,8 +207,10 @@ func (s *DomesticStandingOrder) GetConsentsConsentID(ctx context.Context, consen
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteDomesticStandingOrderConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -241,8 +247,10 @@ func (s *DomesticStandingOrder) GetConsentsConsentIDSigned(ctx context.Context, 
 		return nil, err
 	}
 	var out ObwriteDomesticStandingOrderConsentResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteDomesticStandingOrderConsentResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -318,8 +326,10 @@ func (s *DomesticStandingOrder) Create(ctx context.Context, xFAPIFinancialID str
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteDomesticStandingOrderResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -394,8 +404,10 @@ func (s *DomesticStandingOrder) CreateSigned(ctx context.Context, xFAPIFinancial
 		return nil, err
 	}
 	var out ObwriteDomesticStandingOrderResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteDomesticStandingOrderResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }
@@ -433,8 +445,10 @@ func (s *DomesticStandingOrder) GetDomesticStandingOrderID(ctx context.Context, 
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObwriteDomesticStandingOrderResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -471,8 +485,10 @@ func (s *DomesticStandingOrder) GetDomesticStandingOrderIDSigned(ctx context.Con
 		return nil, err
 	}
 	var out ObwriteDomesticStandingOrderResponse2
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &Signed[ObwriteDomesticStandingOrderResponse2]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil
 }

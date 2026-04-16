@@ -43,8 +43,10 @@ func (s *Applications) RegisterApplication(ctx context.Context, body io.Reader) 
 		return nil, err
 	}
 	var out RegisterApplicationResponse
-	if err := json.Unmarshal(respBody, &out); err != nil {
-		return nil, err
+	if len(respBody) > 0 {
+		if err := json.Unmarshal(respBody, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -81,8 +83,10 @@ func (s *Applications) Update(ctx context.Context, clientID string, body io.Read
 		return nil, err
 	}
 	var out GetApplicationResponse
-	if err := json.Unmarshal(respBody, &out); err != nil {
-		return nil, err
+	if len(respBody) > 0 {
+		if err := json.Unmarshal(respBody, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }

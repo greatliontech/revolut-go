@@ -33,8 +33,10 @@ func (s *Terminals) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVer
 		return nil, err
 	}
 	var out TerminalsResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }

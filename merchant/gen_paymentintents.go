@@ -45,8 +45,10 @@ func (s *PaymentIntents) Create(ctx context.Context, orderID string, revolutAPIV
 		return nil, err
 	}
 	var out PaymentIntent
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -71,8 +73,10 @@ func (s *PaymentIntents) Get(ctx context.Context, paymentIntentID string, revolu
 		return nil, err
 	}
 	var out PaymentIntent
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -97,8 +101,10 @@ func (s *PaymentIntents) CancelPaymentIntent(ctx context.Context, paymentIntentI
 		return nil, err
 	}
 	var out PaymentIntent
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }

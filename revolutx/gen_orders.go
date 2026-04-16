@@ -51,8 +51,10 @@ func (s *Orders) PlaceOrder(ctx context.Context, xRevxTimestamp int, xRevxSignat
 		return nil, err
 	}
 	var out OrderPlacementResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -100,8 +102,10 @@ func (s *Orders) GetActiveOrders(ctx context.Context, xRevxTimestamp int, xRevxS
 		return nil, err
 	}
 	var out ActiveOrdersPaginatedResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -115,6 +119,11 @@ func (s *Orders) GetActiveOrdersAll(ctx context.Context, xRevxTimestamp int, xRe
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero Order
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetActiveOrders(ctx, xRevxTimestamp, xRevxSignature, &p)
 			if err != nil {
 				var zero Order
@@ -132,7 +141,11 @@ func (s *Orders) GetActiveOrdersAll(ctx context.Context, xRevxTimestamp int, xRe
 			if resp.Metadata.NextCursor == "" {
 				return
 			}
-			p.Cursor = resp.Metadata.NextCursor
+			nextTok := resp.Metadata.NextCursor
+			if nextTok == p.Cursor {
+				return
+			}
+			p.Cursor = nextTok
 		}
 	}
 }
@@ -161,8 +174,10 @@ func (s *Orders) GetFills(ctx context.Context, venueOrderID string, xRevxTimesta
 		return nil, err
 	}
 	var out GetOrderFillsResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -189,8 +204,10 @@ func (s *Orders) GetHistoricalOrders(ctx context.Context, xRevxTimestamp int, xR
 		return nil, err
 	}
 	var out HistoricalOrdersPaginatedResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -204,6 +221,11 @@ func (s *Orders) GetHistoricalOrdersAll(ctx context.Context, xRevxTimestamp int,
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero Order
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetHistoricalOrders(ctx, xRevxTimestamp, xRevxSignature, &p)
 			if err != nil {
 				var zero Order
@@ -221,7 +243,11 @@ func (s *Orders) GetHistoricalOrdersAll(ctx context.Context, xRevxTimestamp int,
 			if resp.Metadata.NextCursor == "" {
 				return
 			}
-			p.Cursor = resp.Metadata.NextCursor
+			nextTok := resp.Metadata.NextCursor
+			if nextTok == p.Cursor {
+				return
+			}
+			p.Cursor = nextTok
 		}
 	}
 }
@@ -250,8 +276,10 @@ func (s *Orders) Get(ctx context.Context, venueOrderID string, xRevxTimestamp in
 		return nil, err
 	}
 	var out GetOrderResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }

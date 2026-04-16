@@ -39,8 +39,10 @@ func (s *Payouts) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVersi
 		return nil, err
 	}
 	var out []Payout
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return out, nil
 }
@@ -54,6 +56,11 @@ func (s *Payouts) GetListAll(ctx context.Context, revolutAPIVersion RevolutAPIVe
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero Payout
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetList(ctx, revolutAPIVersion, &p)
 			if err != nil {
 				var zero Payout
@@ -98,8 +105,10 @@ func (s *Payouts) Get(ctx context.Context, payoutID string, revolutAPIVersion Re
 		return nil, err
 	}
 	var out Payout
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }

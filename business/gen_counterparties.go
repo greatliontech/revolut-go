@@ -54,6 +54,11 @@ func (s *Counterparties) ListAll(ctx context.Context, opts *GetCounterpartiesPar
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero Counterparty
+				yield(zero, err)
+				return
+			}
 			resp, err := s.List(ctx, &p)
 			if err != nil {
 				var zero Counterparty
@@ -68,7 +73,11 @@ func (s *Counterparties) ListAll(ctx context.Context, opts *GetCounterpartiesPar
 					return
 				}
 			}
-			p.CreatedBefore = resp[len(resp)-1].CreatedAt
+			nextAdv := resp[len(resp)-1].CreatedAt
+			if nextAdv == p.CreatedBefore {
+				return
+			}
+			p.CreatedBefore = nextAdv
 		}
 	}
 }

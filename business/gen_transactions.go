@@ -61,6 +61,11 @@ func (s *Transactions) ListAll(ctx context.Context, opts *GetTransactionsParams)
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero Transaction
+				yield(zero, err)
+				return
+			}
 			resp, err := s.List(ctx, &p)
 			if err != nil {
 				var zero Transaction
@@ -75,7 +80,11 @@ func (s *Transactions) ListAll(ctx context.Context, opts *GetTransactionsParams)
 					return
 				}
 			}
-			p.To = resp[len(resp)-1].CreatedAt
+			nextAdv := resp[len(resp)-1].CreatedAt
+			if nextAdv == p.To {
+				return
+			}
+			p.To = nextAdv
 		}
 	}
 }

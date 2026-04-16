@@ -50,8 +50,10 @@ func (s *Transactions) GetAccountsAccountIDDirectDebits(ctx context.Context, acc
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObreadDirectDebit1
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -89,8 +91,10 @@ func (s *Transactions) GetAccountsAccountIDStandingOrders(ctx context.Context, a
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObreadStandingOrder4
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -132,8 +136,10 @@ func (s *Transactions) GetAccountsAccountIDTransactions(ctx context.Context, acc
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObreadTransaction4
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }

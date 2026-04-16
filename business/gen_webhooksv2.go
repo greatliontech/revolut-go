@@ -130,6 +130,11 @@ func (s *WebhooksV2) GetFailedWebhookEventsAll(ctx context.Context, webhookID st
 			return
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero WebhookEvent
+				yield(zero, err)
+				return
+			}
 			resp, err := s.GetFailedWebhookEvents(ctx, webhookID, &p)
 			if err != nil {
 				var zero WebhookEvent
@@ -144,7 +149,11 @@ func (s *WebhooksV2) GetFailedWebhookEventsAll(ctx context.Context, webhookID st
 					return
 				}
 			}
-			p.CreatedBefore = resp[len(resp)-1].CreatedAt
+			nextAdv := resp[len(resp)-1].CreatedAt
+			if nextAdv == p.CreatedBefore {
+				return
+			}
+			p.CreatedBefore = nextAdv
 		}
 	}
 }

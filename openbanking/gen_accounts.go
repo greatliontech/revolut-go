@@ -52,8 +52,10 @@ func (s *Accounts) CreateAccessConsents(ctx context.Context, xFAPIFinancialID st
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObreadConsentResponse1
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -91,8 +93,10 @@ func (s *Accounts) GetAccessConsentsConsentID(ctx context.Context, consentID str
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObreadConsentResponse1
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -163,8 +167,10 @@ func (s *Accounts) List(ctx context.Context, xFAPIFinancialID string, xFAPICusto
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObreadAccount3
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -202,8 +208,10 @@ func (s *Accounts) GetAccountID(ctx context.Context, accountID string, xFAPIFina
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObreadAccount3
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -241,8 +249,10 @@ func (s *Accounts) GetAccountIDBalances(ctx context.Context, accountID string, x
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObreadBalance1
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }
@@ -280,8 +290,10 @@ func (s *Accounts) GetAccountIDBeneficiaries(ctx context.Context, accountID stri
 		return nil, ResponseMetadata{}, err
 	}
 	var out ObreadBeneficiary3
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, ResponseMetadata{}, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, ResponseMetadata{}, err
+		}
 	}
 	return &out, extractResponseMetadata(hdr), nil
 }

@@ -134,7 +134,12 @@ func writeSignedHTTPCall(w *fileWriter, m *ir.Method) {
 	w.printf("\tbody, hdr, err := s.t.DoRaw(ctx, %s, %s, r)\n", httpVerb, pathExpr)
 	w.write("\tif err != nil { return nil, err }\n")
 	w.printf("\tvar out %s\n", m.HTTPCall.RespType.GoExpr())
-	w.write("\tif err := json.Unmarshal(body, &out); err != nil { return nil, err }\n")
+	// Empty 2xx (204 No Content, async endpoints returning 200 without
+	// a body) leave out at its zero value; Signed still returns the
+	// raw bytes + metadata so callers can inspect what the server sent.
+	w.write("\tif len(body) > 0 {\n")
+	w.write("\t\tif err := json.Unmarshal(body, &out); err != nil { return nil, err }\n")
+	w.write("\t}\n")
 	w.printf("\treturn &Signed[%s]{Typed: &out, Raw: body, Metadata: extractResponseMetadata(hdr)}, nil\n",
 		m.Returns.GoExpr())
 }
@@ -429,6 +434,27 @@ func writeRawHTTPCall(w *fileWriter, m *ir.Method, pathExpr string) {
 	}
 
 	httpVerb := "http.Method" + httpVerbWord(m.HTTPCall.Method)
+
+	// Streaming path: when the response is declared non-JSON
+	// (PDFs, CSV, octet-stream), return io.ReadCloser instead of
+	// buffering the body. Caller owns the Close().
+	if m.HTTPCall.RespKind == ir.RespRawBytes {
+		hdrBind := "_"
+		if emitsResponseMetadata(m) {
+			hdrBind = "hdr"
+		}
+		w.printf("\tstream, %s, err := s.t.DoRawStream(ctx, %s, %s, r)\n", hdrBind, httpVerb, pathExpr)
+		w.write("\tif err != nil {\n")
+		w.printf("\t\treturn %serr\n", zeroForReturn(m))
+		w.write("\t}\n")
+		if emitsResponseMetadata(m) {
+			w.write("\treturn stream, extractResponseMetadata(hdr), nil\n")
+		} else {
+			w.write("\treturn stream, nil\n")
+		}
+		return
+	}
+
 	hdrBind := "_"
 	if emitsResponseMetadata(m) {
 		hdrBind = "hdr"
@@ -456,18 +482,24 @@ func writeRawHTTPCall(w *fileWriter, m *ir.Method, pathExpr string) {
 		} else {
 			w.write("\treturn nil\n")
 		}
-	case ir.RespRawBytes:
-		w.printf("\treturn %s, %snil\n", respLocal, metaSuffix)
 	case ir.RespJSONList:
 		w.printf("\tvar out %s\n", m.HTTPCall.RespType.GoExpr())
-		w.printf("\tif err := json.Unmarshal(%s, &out); err != nil {\n", respLocal)
-		w.printf("\t\treturn %serr\n", zeroForReturn(m))
-		w.printf("\t}\n\treturn out, %snil\n", metaSuffix)
+		// Empty 2xx (204 / async ack) leaves out at its zero value
+		// instead of erroring on json.Unmarshal("", ...).
+		w.printf("\tif len(%s) > 0 {\n", respLocal)
+		w.printf("\t\tif err := json.Unmarshal(%s, &out); err != nil {\n", respLocal)
+		w.printf("\t\t\treturn %serr\n", zeroForReturn(m))
+		w.write("\t\t}\n")
+		w.write("\t}\n")
+		w.printf("\treturn out, %snil\n", metaSuffix)
 	default:
 		w.printf("\tvar out %s\n", m.HTTPCall.RespType.GoExpr())
-		w.printf("\tif err := json.Unmarshal(%s, &out); err != nil {\n", respLocal)
-		w.printf("\t\treturn %serr\n", zeroForReturn(m))
-		w.printf("\t}\n\treturn &out, %snil\n", metaSuffix)
+		w.printf("\tif len(%s) > 0 {\n", respLocal)
+		w.printf("\t\tif err := json.Unmarshal(%s, &out); err != nil {\n", respLocal)
+		w.printf("\t\t\treturn %serr\n", zeroForReturn(m))
+		w.write("\t\t}\n")
+		w.write("\t}\n")
+		w.printf("\treturn &out, %snil\n", metaSuffix)
 	}
 }
 
@@ -608,6 +640,14 @@ func writePaginationMethod(w *fileWriter, spec *ir.Spec, m *ir.Method) {
 		w.write("\t\t\treturn\n\t\t}\n")
 	}
 	w.write("\t\tfor {\n")
+	// Honour context cancellation before each page: the caller's ctx
+	// may already be Done even though the previous page returned
+	// cleanly (classic: the caller broke out of the loop in code that
+	// returned before reaching the `break`). Without this check the
+	// iterator would spend one more round-trip before failing.
+	w.printf("\t\t\tif err := ctx.Err(); err != nil {\n")
+	w.printf("\t\t\t\tvar zero %s\n", p.ItemType.GoExpr())
+	w.write("\t\t\t\tyield(zero, err)\n\t\t\t\treturn\n\t\t\t}\n")
 	call := "s." + m.Name + "(ctx"
 	for _, pp := range m.PathParams {
 		call += ", " + pp.Name
@@ -653,12 +693,21 @@ func writePaginationMethod(w *fileWriter, spec *ir.Spec, m *ir.Method) {
 				assign = ptName + "(" + tokenExpr + ")"
 			}
 		}
-		w.printf("\t\t\tp.%s = %s\n", p.PageTokenParam, assign)
+		// Stall guard: a buggy server that returns the same cursor
+		// would otherwise spin the iterator forever. Compare against
+		// the previous token value and stop on equality.
+		w.printf("\t\t\tnextTok := %s\n", assign)
+		w.printf("\t\t\tif nextTok == p.%s { return }\n", p.PageTokenParam)
+		w.printf("\t\t\tp.%s = nextTok\n", p.PageTokenParam)
 	case ir.PaginationTimeWindow:
 		w.write("\t\t\tif len(resp) == 0 { return }\n")
 		w.write("\t\t\tfor _, item := range resp {\n")
 		w.write("\t\t\t\tif !yield(item, nil) { return }\n\t\t\t}\n")
-		w.printf("\t\t\tp.%s = resp[len(resp)-1].%s\n", p.AdvanceParam, p.AdvanceFromItem)
+		// Stall guard: if the advance field on the last item equals
+		// the current cursor, the server isn't making progress.
+		w.printf("\t\t\tnextAdv := resp[len(resp)-1].%s\n", p.AdvanceFromItem)
+		w.printf("\t\t\tif nextAdv == p.%s { return }\n", p.AdvanceParam)
+		w.printf("\t\t\tp.%s = nextAdv\n", p.AdvanceParam)
 	case ir.PaginationLimit:
 		w.write("\t\t\tif len(resp) == 0 { return }\n")
 		w.write("\t\t\tfor _, item := range resp {\n")

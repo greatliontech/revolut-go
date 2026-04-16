@@ -35,8 +35,10 @@ func (s *Configuration) GetAllCurrencies(ctx context.Context, xRevxTimestamp int
 		return nil, err
 	}
 	var out CurrenciesResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -59,8 +61,10 @@ func (s *Configuration) GetAllCurrencyPairs(ctx context.Context, xRevxTimestamp 
 		return nil, err
 	}
 	var out CurrencyPairsResponse
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }

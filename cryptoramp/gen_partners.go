@@ -58,8 +58,10 @@ func (s *Partners) GetBuy(ctx context.Context, xAPIKey string, opts *GetBuyParam
 		return nil, err
 	}
 	var out RampRedirectURL
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -79,8 +81,10 @@ func (s *Partners) GetConfig(ctx context.Context, xAPIKey string) (*Config, erro
 		return nil, err
 	}
 	var out Config
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
@@ -113,8 +117,10 @@ func (s *Partners) ListOrders(ctx context.Context, xAPIKey string, opts *GetOrde
 		return nil, err
 	}
 	var out []Order
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return out, nil
 }
@@ -128,6 +134,11 @@ func (s *Partners) ListOrdersAll(ctx context.Context, xAPIKey string, opts *GetO
 			p = *opts
 		}
 		for {
+			if err := ctx.Err(); err != nil {
+				var zero Order
+				yield(zero, err)
+				return
+			}
 			resp, err := s.ListOrders(ctx, xAPIKey, &p)
 			if err != nil {
 				var zero Order
@@ -177,8 +188,10 @@ func (s *Partners) GetOrder(ctx context.Context, orderID string, xAPIKey string,
 		return nil, err
 	}
 	var out Order
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, err
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &out); err != nil {
+			return nil, err
+		}
 	}
 	return &out, nil
 }
