@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -276,7 +277,7 @@ func (s *FilePayment) GetConsentsConsentIDFile(ctx context.Context, consentID st
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-file-payment-consents-consent-id-file
 // Required scopes: payments
-func (s *FilePayment) CreateConsentsConsentIDFile(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string) (*EmptyBody, ResponseMetadata, error) {
+func (s *FilePayment) CreateConsentsConsentIDFile(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, body io.Reader) (*EmptyBody, ResponseMetadata, error) {
 	if consentID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ConsentId is required")
 	}
@@ -292,7 +293,10 @@ func (s *FilePayment) CreateConsentsConsentIDFile(ctx context.Context, consentID
 	if xJWSSignature == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: x-jws-signature is required")
 	}
-	r := transport.RawRequest{}
+	r := transport.RawRequest{
+		RawBody:        body,
+		RawContentType: "text/csv",
+	}
 	r.Headers = http.Header{}
 	if xFAPIFinancialID != "" {
 		r.Headers.Set("x-fapi-financial-id", xFAPIFinancialID)
@@ -318,12 +322,12 @@ func (s *FilePayment) CreateConsentsConsentIDFile(ctx context.Context, consentID
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
 	}
-	body, hdr, err := s.t.DoRaw(ctx, http.MethodPost, "file-payment-consents/"+url.PathEscape(consentID)+"/file", r)
+	respBody, hdr, err := s.t.DoRaw(ctx, http.MethodPost, "file-payment-consents/"+url.PathEscape(consentID)+"/file", r)
 	if err != nil {
 		return nil, ResponseMetadata{}, err
 	}
 	var out EmptyBody
-	if err := json.Unmarshal(body, &out); err != nil {
+	if err := json.Unmarshal(respBody, &out); err != nil {
 		return nil, ResponseMetadata{}, err
 	}
 	return &out, extractResponseMetadata(hdr), nil

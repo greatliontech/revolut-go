@@ -4,7 +4,9 @@ package openbanking
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -31,9 +33,17 @@ func (s *Applications) GetDistinguishedName(ctx context.Context) (*GetDistinguis
 //
 // Docs: https://developer.revolut.com/docs/openbanking/register-application
 // Required scopes: openid
-func (s *Applications) RegisterApplication(ctx context.Context) (*RegisterApplicationResponse, error) {
+func (s *Applications) RegisterApplication(ctx context.Context, body io.Reader) (*RegisterApplicationResponse, error) {
+	r := transport.RawRequest{
+		RawBody:        body,
+		RawContentType: "text/plain",
+	}
+	respBody, _, err := s.t.DoRaw(ctx, http.MethodPost, "register", r)
+	if err != nil {
+		return nil, err
+	}
 	var out RegisterApplicationResponse
-	if err := s.t.Do(ctx, http.MethodPost, "register", nil, &out); err != nil {
+	if err := json.Unmarshal(respBody, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -58,12 +68,20 @@ func (s *Applications) Get(ctx context.Context, clientID string) (*GetApplicatio
 //
 // Docs: https://developer.revolut.com/docs/openbanking/update-application
 // Required scopes: openid
-func (s *Applications) Update(ctx context.Context, clientID string) (*GetApplicationResponse, error) {
+func (s *Applications) Update(ctx context.Context, clientID string, body io.Reader) (*GetApplicationResponse, error) {
 	if clientID == "" {
 		return nil, errors.New("openbanking: ClientId is required")
 	}
+	r := transport.RawRequest{
+		RawBody:        body,
+		RawContentType: "text/plain",
+	}
+	respBody, _, err := s.t.DoRaw(ctx, http.MethodPut, "register/"+url.PathEscape(clientID), r)
+	if err != nil {
+		return nil, err
+	}
 	var out GetApplicationResponse
-	if err := s.t.Do(ctx, http.MethodPut, "register/"+url.PathEscape(clientID), nil, &out); err != nil {
+	if err := json.Unmarshal(respBody, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil

@@ -395,7 +395,11 @@ func writeRawHTTPCall(w *fileWriter, m *ir.Method, pathExpr string) {
 	case ir.BodyRawStream:
 		if m.BodyParam != nil {
 			w.printf("\t\tRawBody: %s,\n", m.BodyParam.Name)
-			w.write("\t\tRawContentType: \"application/octet-stream\",\n")
+			ct := m.HTTPCall.BodyContentType
+			if ct == "" {
+				ct = "application/octet-stream"
+			}
+			w.printf("\t\tRawContentType: %q,\n", ct)
 		}
 	case ir.BodyMultipart:
 		// RawBody/RawContentType filled in below after invoking the
@@ -429,7 +433,13 @@ func writeRawHTTPCall(w *fileWriter, m *ir.Method, pathExpr string) {
 	if emitsResponseMetadata(m) {
 		hdrBind = "hdr"
 	}
-	w.printf("\tbody, %s, err := s.t.DoRaw(ctx, %s, %s, r)\n", hdrBind, httpVerb, pathExpr)
+	// Name the response body local so it can't shadow a request
+	// body param whose name is also "body" (text/csv, octet-stream).
+	respLocal := "body"
+	if m.BodyParam != nil && m.BodyParam.Name == "body" {
+		respLocal = "respBody"
+	}
+	w.printf("\t%s, %s, err := s.t.DoRaw(ctx, %s, %s, r)\n", respLocal, hdrBind, httpVerb, pathExpr)
 	w.write("\tif err != nil {\n")
 	w.printf("\t\treturn %serr\n", zeroForReturn(m))
 	w.write("\t}\n")
@@ -440,22 +450,22 @@ func writeRawHTTPCall(w *fileWriter, m *ir.Method, pathExpr string) {
 	}
 	switch m.HTTPCall.RespKind {
 	case ir.RespNone:
-		w.write("\t_ = body\n")
+		w.printf("\t_ = %s\n", respLocal)
 		if emitsResponseMetadata(m) {
 			w.write("\treturn extractResponseMetadata(hdr), nil\n")
 		} else {
 			w.write("\treturn nil\n")
 		}
 	case ir.RespRawBytes:
-		w.printf("\treturn body, %snil\n", metaSuffix)
+		w.printf("\treturn %s, %snil\n", respLocal, metaSuffix)
 	case ir.RespJSONList:
 		w.printf("\tvar out %s\n", m.HTTPCall.RespType.GoExpr())
-		w.write("\tif err := json.Unmarshal(body, &out); err != nil {\n")
+		w.printf("\tif err := json.Unmarshal(%s, &out); err != nil {\n", respLocal)
 		w.printf("\t\treturn %serr\n", zeroForReturn(m))
 		w.printf("\t}\n\treturn out, %snil\n", metaSuffix)
 	default:
 		w.printf("\tvar out %s\n", m.HTTPCall.RespType.GoExpr())
-		w.write("\tif err := json.Unmarshal(body, &out); err != nil {\n")
+		w.printf("\tif err := json.Unmarshal(%s, &out); err != nil {\n", respLocal)
 		w.printf("\t\treturn %serr\n", zeroForReturn(m))
 		w.printf("\t}\n\treturn &out, %snil\n", metaSuffix)
 	}

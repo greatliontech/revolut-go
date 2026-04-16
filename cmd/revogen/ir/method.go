@@ -117,6 +117,11 @@ type HTTPCall struct {
 
 	BodyKind BodyKind
 	BodyExpr string // Go expression for the body value
+	// BodyContentType overrides the default Content-Type for a
+	// BodyRawStream request (application/octet-stream). Populated
+	// when the spec declares the body as text/csv, text/plain, or
+	// another literal type the transport should send verbatim.
+	BodyContentType string
 
 	RespKind RespKind
 	RespType *Type  // target type for JSON decode; nil for RespNone / RespRawBytes

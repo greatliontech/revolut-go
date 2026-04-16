@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -37,7 +38,7 @@ func (s *DraftPayment) List(ctx context.Context, opts *ListDraftPaymentParams) (
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-draft-payment
 // Required scopes: draftpayments
-func (s *DraftPayment) Create(ctx context.Context, xIdempotencyKey string, opts *CreateDraftPaymentParams) (*DraftPaymentResponse, error) {
+func (s *DraftPayment) Create(ctx context.Context, xIdempotencyKey string, body io.Reader, opts *CreateDraftPaymentParams) (*DraftPaymentResponse, error) {
 	if xIdempotencyKey == "" {
 		return nil, errors.New("openbanking: x-idempotency-key is required")
 	}
@@ -45,17 +46,20 @@ func (s *DraftPayment) Create(ctx context.Context, xIdempotencyKey string, opts 
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
 	}
-	r := transport.RawRequest{}
+	r := transport.RawRequest{
+		RawBody:        body,
+		RawContentType: "text/csv",
+	}
 	r.Headers = http.Header{}
 	if xIdempotencyKey != "" {
 		r.Headers.Set("x-idempotency-key", xIdempotencyKey)
 	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodPost, path, r)
+	respBody, _, err := s.t.DoRaw(ctx, http.MethodPost, path, r)
 	if err != nil {
 		return nil, err
 	}
 	var out DraftPaymentResponse
-	if err := json.Unmarshal(body, &out); err != nil {
+	if err := json.Unmarshal(respBody, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil

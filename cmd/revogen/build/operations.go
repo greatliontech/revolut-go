@@ -289,7 +289,33 @@ func (b *Builder) applyRequestBody(m *ir.Method, op *openapi3.Operation) {
 		m.BodyParam = &ir.Param{Name: "body", Type: ir.Prim("io.Reader", "io")}
 		m.HTTPCall.BodyKind = ir.BodyRawStream
 		m.HTTPCall.BodyExpr = "body"
+		m.HTTPCall.BodyContentType = "application/octet-stream"
+	default:
+		// text/* bodies — csv, plain, xml, etc. — are sent as
+		// raw io.Reader with the spec-declared Content-Type.
+		// OB ships /file-payment-consents/.../file (text/csv),
+		// /draft-payments (text/csv) and /register (text/plain).
+		if mime := pickTextBodyContentType(content); mime != "" {
+			m.BodyParam = &ir.Param{Name: "body", Type: ir.Prim("io.Reader", "io")}
+			m.HTTPCall.BodyKind = ir.BodyRawStream
+			m.HTTPCall.BodyExpr = "body"
+			m.HTTPCall.BodyContentType = mime
+		}
 	}
+}
+
+// pickTextBodyContentType returns the most-specific text-family
+// content type the spec's request body declares, or "" when the
+// body isn't a recognised text shape. Order mirrors the other
+// content-type dispatchers — specific shapes first so text/plain
+// doesn't swallow text/csv when both are present.
+func pickTextBodyContentType(content openapi3.Content) string {
+	for _, mime := range []string{"text/csv", "text/xml", "text/plain", "text/html"} {
+		if _, ok := content[mime]; ok {
+			return mime
+		}
+	}
+	return ""
 }
 
 // stripOuterPointer peels every leading *T wrapper from a type. Used
