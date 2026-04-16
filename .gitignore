@@ -16,3 +16,4 @@
 # Scratch output from `task test:gen-all`.
 /.revogen-scratch
 /ob-jwks
+/ob-bootstrap

@@ -156,4 +156,3 @@ func rsaThumbprint(pub *rsa.PublicKey) string {
 	sum := sha256.Sum256(buf)
 	return base64.RawURLEncoding.EncodeToString(sum[:])
 }
-
