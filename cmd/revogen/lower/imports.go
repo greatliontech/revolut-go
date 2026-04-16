@@ -180,23 +180,17 @@ func FileImports(spec *ir.Spec) map[string][]string {
 }
 
 // headerSetImport reports the stdlib package emit's writeHeaderSet
-// needs for a header param of the given type, or "". Mirrors the
-// switch in emit/methods.go so the computed import list matches
-// what the emitter actually renders. Keep the two in sync.
+// needs for a header param of the given type, or "". Dispatches on
+// ir.Shape so the result stays in sync with writeHeaderSet's
+// case table without a parallel switch.
 func headerSetImport(t *ir.Type) string {
-	if t == nil {
+	switch t.Shape() {
+	case ir.ShapeString, ir.ShapeNamedString:
 		return ""
-	}
-	if t.Kind == ir.KindPrim {
-		switch t.Name {
-		case "string":
-			return ""
-		case "int", "int32", "int64", "bool":
-			return "strconv"
-		}
-	}
-	if t.Kind == ir.KindNamed {
-		return ""
+	case ir.ShapeInt, ir.ShapeBool:
+		return "strconv"
+	case ir.ShapeOther:
+		return "fmt"
 	}
 	return "fmt"
 }
@@ -217,36 +211,25 @@ func specUsesResponseMetadata(spec *ir.Spec) bool {
 }
 
 // addQueryFieldImports examines a query-param field's Go type and
-// records the stdlib packages its serialiser needs. Mirrors the
-// switch in emit.queryStringify so the import list never lies.
+// records the stdlib packages its serialiser needs. Dispatches on
+// ir.Shape so the result stays in sync with emit.queryStringify.
 func addQueryFieldImports(t *ir.Type, set map[string]struct{}) {
 	if t == nil {
 		return
 	}
-	if t.IsSlice() {
+	switch t.Shape() {
+	case ir.ShapeSlice, ir.ShapePointer:
 		addQueryFieldImports(t.Elem, set)
-		return
+	case ir.ShapeInt, ir.ShapeBool:
+		set["strconv"] = struct{}{}
+	case ir.ShapeTime:
+		set["time"] = struct{}{}
+	case ir.ShapeString, ir.ShapeJSONNumber, ir.ShapeCurrency, ir.ShapeNamedString:
+		// stringify is direct (or a string cast); no stdlib helpers.
+	default:
+		// Map / raw / other: fall back to fmt.Sprint.
+		set["fmt"] = struct{}{}
 	}
-	if t.IsPointer() {
-		addQueryFieldImports(t.Elem, set)
-		return
-	}
-	if t.Kind == ir.KindPrim {
-		switch t.Name {
-		case "int", "int32", "int64", "bool":
-			set["strconv"] = struct{}{}
-		case "time.Time":
-			set["time"] = struct{}{}
-		}
-		return
-	}
-	if t.IsNamed() {
-		// Named string-backed types stringify with `string(v)`; no
-		// imports.
-		return
-	}
-	// Unknown / map / raw: fall back to fmt.Sprint.
-	set["fmt"] = struct{}{}
 }
 
 func collectDeclImports(d *ir.Decl, set map[string]struct{}) {

@@ -139,7 +139,7 @@ func constraintValidators(f *ir.Field, expr, jsonPath, errPrefix string, declByN
 	// String length + pattern. Only apply to plain string / json.Number /
 	// string-backed named types whose wire shape is a string.
 	switch {
-	case isStringLike(f.Type) && !isNamedMapOrStruct(f.Type, declByName):
+	case isStringLikeValidatable(f.Type, declByName):
 		base := stringAccess(f.Type, expr)
 		if f.MinLength > 0 {
 			out = append(out, wrapGuard(ir.Validator{
@@ -160,7 +160,7 @@ func constraintValidators(f *ir.Field, expr, jsonPath, errPrefix string, declByN
 				Uses:    ir.UsesPattern,
 			}, present))
 		}
-	case isNumericLike(f.Type):
+	case isNumericValidatable(f.Type):
 		base := numericAccess(f.Type, expr)
 		numericUses := ir.ValidatorUses(0)
 		if isJSONNumber(f.Type) {
@@ -231,7 +231,7 @@ func isJSONNumber(t *ir.Type) bool {
 	for t != nil && t.IsPointer() {
 		t = t.Elem
 	}
-	return t != nil && t.Kind == ir.KindPrim && t.Name == "json.Number"
+	return t != nil && t.Shape() == ir.ShapeJSONNumber
 }
 
 // presentGuard returns the "set" condition for an optional field,
@@ -246,10 +246,10 @@ func presentGuard(f *ir.Field, expr string) string {
 	if f.Type.IsSlice() {
 		return "len(" + expr + ") > 0"
 	}
-	if isStringLike(f.Type) {
+	if f.Type.IsStringLike() {
 		return expr + ` != ""`
 	}
-	if isNumericLike(f.Type) {
+	if f.Type.IsNumeric() {
 		return expr + ` != 0`
 	}
 	return ""
@@ -300,68 +300,56 @@ func numericAccess(t *ir.Type, expr string) string {
 	return expr
 }
 
-func isStringLike(t *ir.Type) bool {
+// isStringLikeValidatable reports whether t is a string-backed wire
+// shape AND the lower pass has enough information (Decl kind when
+// named) to emit length/pattern validators against it. Named types
+// that resolve to a struct or map-alias are excluded; those share
+// t.IsStringLike() == true under the naive check but would produce
+// uncompilable `len(struct{}(...))` if we treated them as strings.
+func isStringLikeValidatable(t *ir.Type, declByName map[string]*ir.Decl) bool {
 	if t == nil {
 		return false
 	}
-	if t.IsPointer() {
-		return isStringLike(t.Elem)
+	// Peel pointer so Shape() doesn't return ShapePointer.
+	target := t
+	for target.IsPointer() {
+		target = target.Elem
 	}
-	if t.Kind == ir.KindPrim {
-		switch t.Name {
-		case "string", "json.Number", "core.Currency":
-			return true
-		}
+	if !target.IsStringLike() {
 		return false
 	}
-	return t.IsNamed()
-}
-
-// isNamedMapOrStruct peels named types back to their underlying
-// Decl kind. Structs and map-typed aliases aren't string-like even
-// though t.IsNamed() is true.
-func isNamedMapOrStruct(t *ir.Type, declByName map[string]*ir.Decl) bool {
-	if t == nil || declByName == nil {
-		return false
+	if !target.IsNamed() {
+		return true
 	}
-	for t.IsPointer() {
-		t = t.Elem
+	if declByName == nil {
+		return true
 	}
-	if !t.IsNamed() {
-		return false
-	}
-	d := declByName[t.Name]
+	d := declByName[target.Name]
 	if d == nil {
-		return false
+		return true
 	}
 	switch d.Kind {
 	case ir.DeclStruct:
-		return true
+		return false
 	case ir.DeclAlias:
-		// Alias-to-map → not string-like. Alias-to-string → still OK.
-		if d.AliasTarget != nil {
-			if d.AliasTarget.Kind == ir.KindMap {
-				return true
-			}
+		if d.AliasTarget != nil && d.AliasTarget.Kind == ir.KindMap {
+			return false
 		}
 	}
-	return false
+	return true
 }
 
-func isNumericLike(t *ir.Type) bool {
+// isNumericValidatable reports whether t is a numeric shape (peeled
+// of any pointer) the lower pass can emit bound checks against.
+func isNumericValidatable(t *ir.Type) bool {
 	if t == nil {
 		return false
 	}
-	if t.IsPointer() {
-		return isNumericLike(t.Elem)
+	target := t
+	for target.IsPointer() {
+		target = target.Elem
 	}
-	if t.Kind == ir.KindPrim {
-		switch t.Name {
-		case "int", "int32", "int64", "float32", "float64", "json.Number":
-			return true
-		}
-	}
-	return false
+	return target.IsNumeric()
 }
 
 func formatNumericLiteral(v float64, t *ir.Type) string {

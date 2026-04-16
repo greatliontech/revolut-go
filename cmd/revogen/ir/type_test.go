@@ -106,6 +106,81 @@ func TestIsStdlib(t *testing.T) {
 	}
 }
 
+func TestShape(t *testing.T) {
+	cases := []struct {
+		name string
+		t    *Type
+		want Shape
+	}{
+		{"nil", nil, ShapeOther},
+		{"string", Prim("string"), ShapeString},
+		{"json.Number", Prim("json.Number", "encoding/json"), ShapeJSONNumber},
+		{"currency", Prim("core.Currency", "..."), ShapeCurrency},
+		{"int", Prim("int"), ShapeInt},
+		{"int32", Prim("int32"), ShapeInt},
+		{"int64", Prim("int64"), ShapeInt},
+		{"float32", Prim("float32"), ShapeFloat},
+		{"float64", Prim("float64"), ShapeFloat},
+		{"bool", Prim("bool"), ShapeBool},
+		{"time", Prim("time.Time", "time"), ShapeTime},
+		{"io.Reader", Prim("io.Reader", "io"), ShapeIOReader},
+		{"named", Named("Status"), ShapeNamedString},
+		{"pointer", Pointer(Prim("string")), ShapePointer},
+		{"slice", Slice(Prim("string")), ShapeSlice},
+		{"map", Map(Prim("string"), Prim("string")), ShapeMap},
+		{"raw", Raw("json.RawMessage"), ShapeOther},
+		{"unknown prim", Prim("byte"), ShapeOther},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := c.t.Shape(); got != c.want {
+				t.Errorf("Shape() = %v; want %v", got, c.want)
+			}
+		})
+	}
+}
+
+func TestIsStringLike(t *testing.T) {
+	for _, tc := range []struct {
+		t    *Type
+		want bool
+	}{
+		{Prim("string"), true},
+		{Prim("json.Number"), true},
+		{Prim("core.Currency"), true},
+		{Named("Status"), true},
+		{Prim("int"), false},
+		{Prim("bool"), false},
+		{Prim("time.Time"), false},
+		{Pointer(Prim("string")), false}, // callers must Deref first
+		{Slice(Prim("string")), false},
+		{nil, false},
+	} {
+		if got := tc.t.IsStringLike(); got != tc.want {
+			t.Errorf("IsStringLike(%v) = %v; want %v", tc.t.GoExpr(), got, tc.want)
+		}
+	}
+}
+
+func TestIsNumeric(t *testing.T) {
+	for _, tc := range []struct {
+		t    *Type
+		want bool
+	}{
+		{Prim("int"), true},
+		{Prim("int64"), true},
+		{Prim("float64"), true},
+		{Prim("json.Number"), true},
+		{Prim("string"), false},
+		{Prim("bool"), false},
+		{Named("Foo"), false},
+	} {
+		if got := tc.t.IsNumeric(); got != tc.want {
+			t.Errorf("IsNumeric(%v) = %v; want %v", tc.t.GoExpr(), got, tc.want)
+		}
+	}
+}
+
 func TestSortedImports(t *testing.T) {
 	set := map[string]struct{}{"time": {}, "encoding/json": {}, "io": {}}
 	got := SortedImports(set)

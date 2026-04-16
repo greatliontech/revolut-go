@@ -417,31 +417,29 @@ func defaultLiteralStringExpr(f *ir.Field) string {
 }
 
 // queryStringify renders a Go expression that converts a typed
-// scalar to the string written into url.Values. Mirrors
-// formStringify but uses time.RFC3339Nano for time.Time so cursor
-// pagination's nanosecond precision survives.
+// scalar to the string written into url.Values. Dispatches via
+// ir.Shape so it and the import-computation pass in lower/imports
+// agree on every case without parallel switches. Uses
+// time.RFC3339Nano for time.Time so cursor pagination's nanosecond
+// precision survives.
 func queryStringify(t *ir.Type, expr string) string {
 	if t == nil {
 		return expr
 	}
-	if t.IsPointer() {
+	switch t.Shape() {
+	case ir.ShapePointer:
 		return queryStringify(t.Elem, "*"+expr)
-	}
-	if t.Kind == ir.KindPrim {
-		switch t.Name {
-		case "string":
-			return expr
-		case "bool":
-			return "strconv.FormatBool(" + expr + ")"
-		case "int", "int32", "int64":
-			return "strconv.FormatInt(int64(" + expr + "), 10)"
-		case "json.Number":
-			return "string(" + expr + ")"
-		case "time.Time":
-			return expr + ".UTC().Format(time.RFC3339Nano)"
-		}
-	}
-	if t.IsNamed() {
+	case ir.ShapeString:
+		return expr
+	case ir.ShapeBool:
+		return "strconv.FormatBool(" + expr + ")"
+	case ir.ShapeInt:
+		return "strconv.FormatInt(int64(" + expr + "), 10)"
+	case ir.ShapeJSONNumber:
+		return "string(" + expr + ")"
+	case ir.ShapeTime:
+		return expr + ".UTC().Format(time.RFC3339Nano)"
+	case ir.ShapeCurrency, ir.ShapeNamedString:
 		return "string(" + expr + ")"
 	}
 	return "fmt.Sprint(" + expr + ")"
@@ -680,59 +678,45 @@ func isSet(t *ir.Type, expr string) string {
 	if t == nil {
 		return "true"
 	}
-	if t.IsPointer() {
+	switch t.Shape() {
+	case ir.ShapePointer:
 		return expr + " != nil"
-	}
-	if t.IsSlice() {
+	case ir.ShapeSlice, ir.ShapeMap:
 		return "len(" + expr + ") > 0"
-	}
-	if t.Kind == ir.KindMap {
-		return "len(" + expr + ") > 0"
-	}
-	if t.Kind == ir.KindPrim {
-		switch t.Name {
-		case "string", "json.Number", "core.Currency":
-			return expr + ` != ""`
-		case "time.Time":
-			return "!" + expr + ".IsZero()"
-		case "int", "int32", "int64", "float32", "float64":
-			return expr + " != 0"
-		case "bool":
-			return expr
-		}
-		return "true"
-	}
-	if t.IsNamed() {
-		// Treat alias / enum (string-backed) the same as string.
+	case ir.ShapeString, ir.ShapeJSONNumber, ir.ShapeCurrency, ir.ShapeNamedString:
 		return expr + ` != ""`
+	case ir.ShapeTime:
+		return "!" + expr + ".IsZero()"
+	case ir.ShapeInt, ir.ShapeFloat:
+		return expr + " != 0"
+	case ir.ShapeBool:
+		return expr
 	}
 	return "true"
 }
 
 // formStringify renders the Go expression that converts a typed
 // field value to the string written into url.Values / multipart.
+// Uses ir.Shape so the case table stays in sync with queryStringify
+// and the import-computation pass.
 func formStringify(t *ir.Type, expr string) string {
 	if t == nil {
 		return expr
 	}
-	if t.IsPointer() {
+	switch t.Shape() {
+	case ir.ShapePointer:
 		return formStringify(t.Elem, "*"+expr)
-	}
-	if t.Kind == ir.KindPrim {
-		switch t.Name {
-		case "string":
-			return expr
-		case "bool":
-			return "strconv.FormatBool(" + expr + ")"
-		case "int", "int32", "int64":
-			return "strconv.FormatInt(int64(" + expr + "), 10)"
-		case "json.Number":
-			return "string(" + expr + ")"
-		case "time.Time":
-			return expr + ".UTC().Format(time.RFC3339Nano)"
-		}
-	}
-	if t.IsNamed() {
+	case ir.ShapeString:
+		return expr
+	case ir.ShapeBool:
+		return "strconv.FormatBool(" + expr + ")"
+	case ir.ShapeInt:
+		return "strconv.FormatInt(int64(" + expr + "), 10)"
+	case ir.ShapeJSONNumber:
+		return "string(" + expr + ")"
+	case ir.ShapeTime:
+		return expr + ".UTC().Format(time.RFC3339Nano)"
+	case ir.ShapeCurrency, ir.ShapeNamedString:
 		return "string(" + expr + ")"
 	}
 	// Fallback uses fmt.Sprint so unmodelled types still serialise.

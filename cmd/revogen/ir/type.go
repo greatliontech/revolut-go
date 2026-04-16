@@ -124,6 +124,118 @@ func (t *Type) Deref() *Type {
 	return t
 }
 
+// Shape classifies a Type by the wire-value category the generator
+// cares about. Collapses the parallel switches that used to live in
+// emit and lower into a single dispatch point: call Shape once,
+// switch on the result.
+type Shape int
+
+const (
+	// ShapeOther is the default for types the generator has no
+	// specialised handling for (structs, interfaces, maps with
+	// non-primitive keys, io.Reader, etc.).
+	ShapeOther Shape = iota
+	// ShapeString is a plain Go string.
+	ShapeString
+	// ShapeNamedString is a named type backed by a string on the
+	// wire (enums, aliases). A cast to string recovers the payload.
+	ShapeNamedString
+	// ShapeJSONNumber is encoding/json.Number: string on the wire,
+	// numeric semantics at validation time.
+	ShapeJSONNumber
+	// ShapeCurrency is internal/core.Currency: ISO 4217 string.
+	ShapeCurrency
+	// ShapeInt covers int / int32 / int64 (Go's default "counting
+	// numbers" — the emitter picks the right formatter off Name).
+	ShapeInt
+	// ShapeFloat covers float32 / float64.
+	ShapeFloat
+	// ShapeBool is the built-in bool.
+	ShapeBool
+	// ShapeTime is time.Time.
+	ShapeTime
+	// ShapeIOReader is io.Reader (used for multipart uploads).
+	ShapeIOReader
+	// ShapePointer, ShapeSlice, ShapeMap indicate the top-level
+	// wrapper kind when callers need it; the element is at t.Elem /
+	// t.Key / t.Val.
+	ShapePointer
+	ShapeSlice
+	ShapeMap
+)
+
+// Shape returns t's wire-value category. Named types that the
+// emitter can't classify without a Decl lookup (struct vs enum vs
+// alias-to-map) resolve to ShapeNamedString only when their name
+// suggests no ambiguity; otherwise return ShapeOther and let the
+// caller consult declByName. Nil types are ShapeOther.
+func (t *Type) Shape() Shape {
+	if t == nil {
+		return ShapeOther
+	}
+	switch t.Kind {
+	case KindPointer:
+		return ShapePointer
+	case KindSlice:
+		return ShapeSlice
+	case KindMap:
+		return ShapeMap
+	case KindPrim:
+		switch t.Name {
+		case "string":
+			return ShapeString
+		case "json.Number":
+			return ShapeJSONNumber
+		case "core.Currency":
+			return ShapeCurrency
+		case "int", "int32", "int64":
+			return ShapeInt
+		case "float32", "float64":
+			return ShapeFloat
+		case "bool":
+			return ShapeBool
+		case "time.Time":
+			return ShapeTime
+		case "io.Reader":
+			return ShapeIOReader
+		}
+	case KindNamed:
+		// Without declByName we can't know the underlying kind of a
+		// Named type. Callers that care resolve via declByName;
+		// callers that only need "is this a string-like scalar"
+		// treat Named the same as named-string by convention.
+		return ShapeNamedString
+	}
+	return ShapeOther
+}
+
+// IsStringLike reports whether t is one of the string-backed wire
+// shapes the emitter handles uniformly for query / form / header
+// encoding and for length / pattern validation.
+func (t *Type) IsStringLike() bool {
+	switch t.Shape() {
+	case ShapeString, ShapeNamedString, ShapeJSONNumber, ShapeCurrency:
+		return true
+	}
+	return false
+}
+
+// IsNumeric reports whether t is a Go numeric primitive (integer or
+// floating point) or json.Number.
+func (t *Type) IsNumeric() bool {
+	switch t.Shape() {
+	case ShapeInt, ShapeFloat, ShapeJSONNumber:
+		return true
+	}
+	return false
+}
+
+// IsTime reports whether t is time.Time (not a pointer wrapper).
+func (t *Type) IsTime() bool { return t.Shape() == ShapeTime }
+
+// IsIOReader reports whether t is io.Reader.
+func (t *Type) IsIOReader() bool { return t.Shape() == ShapeIOReader }
+
 // SortedImports returns the set's keys in stable order.
 func SortedImports(set map[string]struct{}) []string {
 	out := make([]string, 0, len(set))

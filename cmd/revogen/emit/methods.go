@@ -569,28 +569,30 @@ func headerWireName(p ir.Param) string {
 }
 
 // writeHeaderSet emits the r.Headers.Set call for one header param.
-// String-typed headers get an empty-string guard (matching the
-// Revolut spec convention that omitted headers mean "default").
-// Numeric and boolean headers are always set — there's no zero
-// sentinel. Named string-backed types (spec enums) get the guard
-// plus a string(...) conversion.
+// Dispatches on ir.Shape so the case table stays in sync with
+// queryStringify and headerSetImport.
 func writeHeaderSet(w *fileWriter, hp ir.Param) {
 	wire := headerWireName(hp)
 	t := hp.Type
-	switch {
-	case t.Kind == ir.KindPrim && t.Name == "string":
+	switch t.Shape() {
+	case ir.ShapeString:
 		w.printf("\tif %s != \"\" {\n", hp.Name)
 		w.printf("\t\tr.Headers.Set(%q, %s)\n", wire, hp.Name)
 		w.write("\t}\n")
-	case t.Kind == ir.KindNamed:
+	case ir.ShapeNamedString:
 		w.printf("\tif %s != \"\" {\n", hp.Name)
 		w.printf("\t\tr.Headers.Set(%q, string(%s))\n", wire, hp.Name)
 		w.write("\t}\n")
-	case t.Kind == ir.KindPrim && (t.Name == "int" || t.Name == "int32"):
-		w.printf("\tr.Headers.Set(%q, strconv.Itoa(int(%s)))\n", wire, hp.Name)
-	case t.Kind == ir.KindPrim && t.Name == "int64":
-		w.printf("\tr.Headers.Set(%q, strconv.FormatInt(%s, 10))\n", wire, hp.Name)
-	case t.Kind == ir.KindPrim && t.Name == "bool":
+	case ir.ShapeInt:
+		// int64 gets FormatInt directly; int / int32 are cast first
+		// so the same expression covers all three without collapsing
+		// int64 through int (which would truncate on 32-bit).
+		if t.Name == "int64" {
+			w.printf("\tr.Headers.Set(%q, strconv.FormatInt(%s, 10))\n", wire, hp.Name)
+		} else {
+			w.printf("\tr.Headers.Set(%q, strconv.Itoa(int(%s)))\n", wire, hp.Name)
+		}
+	case ir.ShapeBool:
 		w.printf("\tr.Headers.Set(%q, strconv.FormatBool(%s))\n", wire, hp.Name)
 	default:
 		w.printf("\tr.Headers.Set(%q, fmt.Sprint(%s))\n", wire, hp.Name)
