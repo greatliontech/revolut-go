@@ -29,6 +29,13 @@ const defaultUserAgent = "revolut-go"
 // the caller to OOM.
 const DefaultMaxResponseBytes int64 = 10 << 20 // 10 MiB
 
+// DefaultHTTPTimeout is the per-request timeout the transport
+// applies when the caller doesn't supply an *http.Client. http.
+// DefaultClient has no timeout, which is hostile to anything past
+// "small dev script" — pick a long-but-finite default so a stuck
+// upstream never wedges a goroutine forever.
+const DefaultHTTPTimeout = 30 * time.Second
+
 // Transport carries the per-API HTTP configuration: base URL, the auth
 // scheme to apply, and the *http.Client to dispatch on.
 //
@@ -41,6 +48,7 @@ type Transport struct {
 	hostAliases      map[string]string
 	maxResponseBytes int64
 	retryAfterUnit   time.Duration
+	retry            core.RetryPolicy
 }
 
 // Config configures a [Transport]. BaseURL is required.
@@ -68,6 +76,17 @@ type Config struct {
 	// Revolut APIs (revolut-x) document the value in milliseconds.
 	// Zero defaults to seconds.
 	RetryAfterUnit time.Duration
+
+	// RetryPolicy, when non-nil, drives transport-level retries.
+	// The policy is consulted after every transport error and
+	// after every non-2xx response; ctx cancellation overrides any
+	// requested delay.
+	//
+	// Bodies that arrive as a raw io.Reader are buffered into
+	// memory (capped by MaxResponseBytes) before the first attempt
+	// so retry can replay them. Buffer-busting uploads should pick
+	// a policy that excludes the methods they hit.
+	RetryPolicy core.RetryPolicy
 }
 
 // New builds a Transport from cfg.
@@ -81,7 +100,10 @@ func New(cfg Config) (*Transport, error) {
 	}
 	hc := cfg.HTTPClient
 	if hc == nil {
-		hc = http.DefaultClient
+		// http.DefaultClient has no timeout. Use a private client
+		// with DefaultHTTPTimeout so a stuck upstream doesn't
+		// wedge the calling goroutine indefinitely.
+		hc = &http.Client{Timeout: DefaultHTTPTimeout}
 	}
 	ua := cfg.UserAgent
 	if ua == "" {
@@ -115,7 +137,60 @@ func New(cfg Config) (*Transport, error) {
 		hostAliases:      aliases,
 		maxResponseBytes: maxBytes,
 		retryAfterUnit:   unit,
+		retry:            cfg.RetryPolicy,
 	}, nil
+}
+
+// dispatch issues a single HTTP request, optionally replaying it
+// via the configured RetryPolicy. The build callback recreates the
+// request from scratch on every attempt — required because
+// http.Request bodies are typically single-use io.Readers, and
+// because Authenticator may want to refresh credentials between
+// tries. The caller is still responsible for closing the returned
+// response's body.
+//
+// Cancellation: the parent ctx interrupts the inter-attempt sleep
+// and is propagated into every rebuilt request, so a cancelled ctx
+// stops retries promptly.
+func (t *Transport) dispatch(ctx context.Context, build func() (*http.Request, error)) (*http.Response, error) {
+	for attempt := 0; ; attempt++ {
+		req, err := build()
+		if err != nil {
+			return nil, err
+		}
+		resp, err := t.httpc.Do(req)
+		if t.retry == nil {
+			return resp, err
+		}
+		delay, retry := t.retry.Next(attempt+1, resp, err)
+		if !retry {
+			return resp, err
+		}
+		// Drain & close the previous response so the connection
+		// stays in the pool. A nil resp (transport-level error)
+		// has nothing to clean up.
+		if resp != nil {
+			_, _ = io.Copy(io.Discard, resp.Body)
+			_ = resp.Body.Close()
+			// If the policy didn't pick its own delay, fall back
+			// to the response's Retry-After header.
+			if delay == 0 {
+				if hint := t.parseRetryAfter(resp.Header.Get("Retry-After")); hint > 0 {
+					delay = hint
+				}
+			}
+		}
+		if delay <= 0 {
+			continue
+		}
+		timer := time.NewTimer(delay)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return nil, ctx.Err()
+		case <-timer.C:
+		}
+	}
 }
 
 // Do performs an HTTP request against path (which is joined onto the
@@ -140,11 +215,25 @@ func (t *Transport) DoWithHeaders(ctx context.Context, method, path string, body
 }
 
 func (t *Transport) doJSON(ctx context.Context, method, path string, body, dst any) (http.Header, error) {
-	req, err := t.newJSONRequest(ctx, method, path, body)
-	if err != nil {
-		return nil, err
+	// Marshal once; rebuild the request per attempt so retry can
+	// replay the body without consuming it.
+	var encoded []byte
+	if body != nil {
+		var err error
+		encoded, err = json.Marshal(body)
+		if err != nil {
+			return nil, fmt.Errorf("revolut: encode %s %s body: %w", method, path, err)
+		}
 	}
-	resp, err := t.httpc.Do(req)
+	resp, err := t.dispatch(ctx, func() (*http.Request, error) {
+		var reader io.Reader
+		var contentType string
+		if encoded != nil {
+			reader = bytes.NewReader(encoded)
+			contentType = "application/json"
+		}
+		return t.newRequestWithBody(ctx, method, path, reader, contentType, "application/json")
+	})
 	if err != nil {
 		return nil, fmt.Errorf("revolut: %s %s: %w", method, path, err)
 	}
@@ -194,47 +283,12 @@ type RawRequest struct {
 // []byte along with the response headers. Non-2xx errors are surfaced
 // as *[core.APIError] just like Do.
 func (t *Transport) DoRaw(ctx context.Context, method, path string, r RawRequest) ([]byte, http.Header, error) {
-	var reader io.Reader
-	var contentType string
-	switch {
-	case r.JSONBody != nil:
-		buf, err := json.Marshal(r.JSONBody)
-		if err != nil {
-			return nil, nil, fmt.Errorf("revolut: encode %s %s body: %w", method, path, err)
-		}
-		reader = bytes.NewReader(buf)
-		contentType = "application/json"
-	case r.FormBody != nil:
-		reader = strings.NewReader(r.FormBody.Encode())
-		contentType = "application/x-www-form-urlencoded"
-	case r.RawBody != nil:
-		reader = r.RawBody
-		contentType = r.RawContentType
-		if contentType == "" {
-			return nil, nil, errors.New("revolut: RawBody set without RawContentType")
-		}
-	}
-	accept := r.Accept
-	if accept == "" {
-		accept = "application/json"
-	}
-	req, err := t.newRequestWithBody(ctx, method, path, reader, contentType, accept)
+	build, accept, err := t.rawRequestBuilder(ctx, method, path, r, "application/json")
 	if err != nil {
 		return nil, nil, err
 	}
-	for k, vs := range r.Headers {
-		// Don't let the caller override transport-owned headers via
-		// the generic Headers field — Authorization comes from
-		// auth.Apply, User-Agent from the transport config,
-		// Content-Type / Accept are picked by this call's
-		// body/response shape.
-		switch http.CanonicalHeaderKey(k) {
-		case "Content-Type", "Accept", "Authorization", "User-Agent":
-			continue
-		}
-		req.Header[http.CanonicalHeaderKey(k)] = append([]string(nil), vs...)
-	}
-	resp, err := t.httpc.Do(req)
+	_ = accept
+	resp, err := t.dispatch(ctx, build)
 	if err != nil {
 		return nil, nil, fmt.Errorf("revolut: %s %s: %w", method, path, err)
 	}
@@ -254,42 +308,11 @@ func (t *Transport) DoRaw(ctx context.Context, method, path string, r RawRequest
 // generated methods whose response is a large non-JSON payload
 // (PDF / CSV statements). The caller is responsible for Close().
 func (t *Transport) DoRawStream(ctx context.Context, method, path string, r RawRequest) (io.ReadCloser, http.Header, error) {
-	var reader io.Reader
-	var contentType string
-	switch {
-	case r.JSONBody != nil:
-		buf, err := json.Marshal(r.JSONBody)
-		if err != nil {
-			return nil, nil, fmt.Errorf("revolut: encode %s %s body: %w", method, path, err)
-		}
-		reader = bytes.NewReader(buf)
-		contentType = "application/json"
-	case r.FormBody != nil:
-		reader = strings.NewReader(r.FormBody.Encode())
-		contentType = "application/x-www-form-urlencoded"
-	case r.RawBody != nil:
-		reader = r.RawBody
-		contentType = r.RawContentType
-		if contentType == "" {
-			return nil, nil, errors.New("revolut: RawBody set without RawContentType")
-		}
-	}
-	accept := r.Accept
-	if accept == "" {
-		accept = "application/octet-stream"
-	}
-	req, err := t.newRequestWithBody(ctx, method, path, reader, contentType, accept)
+	build, _, err := t.rawRequestBuilder(ctx, method, path, r, "application/octet-stream")
 	if err != nil {
 		return nil, nil, err
 	}
-	for k, vs := range r.Headers {
-		switch http.CanonicalHeaderKey(k) {
-		case "Content-Type", "Accept", "Authorization", "User-Agent":
-			continue
-		}
-		req.Header[http.CanonicalHeaderKey(k)] = append([]string(nil), vs...)
-	}
-	resp, err := t.httpc.Do(req)
+	resp, err := t.dispatch(ctx, build)
 	if err != nil {
 		return nil, nil, fmt.Errorf("revolut: %s %s: %w", method, path, err)
 	}
@@ -298,6 +321,70 @@ func (t *Transport) DoRawStream(ctx context.Context, method, path string, r RawR
 		return nil, nil, t.decodeError(resp)
 	}
 	return &limitReadCloser{rc: resp.Body, r: t.limit(resp.Body)}, resp.Header, nil
+}
+
+// rawRequestBuilder validates the RawRequest, materialises any
+// io.Reader body into memory (so retry can replay it), and returns
+// a builder closure dispatch can call once per attempt.
+//
+// defaultAccept is used when r.Accept is empty — JSON callers want
+// "application/json", streaming callers want
+// "application/octet-stream".
+func (t *Transport) rawRequestBuilder(ctx context.Context, method, path string, r RawRequest, defaultAccept string) (func() (*http.Request, error), string, error) {
+	var bodyBytes []byte
+	var contentType string
+	switch {
+	case r.JSONBody != nil:
+		buf, err := json.Marshal(r.JSONBody)
+		if err != nil {
+			return nil, "", fmt.Errorf("revolut: encode %s %s body: %w", method, path, err)
+		}
+		bodyBytes = buf
+		contentType = "application/json"
+	case r.FormBody != nil:
+		bodyBytes = []byte(r.FormBody.Encode())
+		contentType = "application/x-www-form-urlencoded"
+	case r.RawBody != nil:
+		if r.RawContentType == "" {
+			return nil, "", errors.New("revolut: RawBody set without RawContentType")
+		}
+		buf, err := io.ReadAll(r.RawBody)
+		if err != nil {
+			return nil, "", fmt.Errorf("revolut: buffer raw body: %w", err)
+		}
+		bodyBytes = buf
+		contentType = r.RawContentType
+	}
+	accept := r.Accept
+	if accept == "" {
+		accept = defaultAccept
+	}
+	// Defensive copy of caller-supplied headers so a mutation
+	// after the call returns (or between retries) doesn't shift
+	// the request under us.
+	headersCopy := make(http.Header, len(r.Headers))
+	for k, vs := range r.Headers {
+		switch http.CanonicalHeaderKey(k) {
+		case "Content-Type", "Accept", "Authorization", "User-Agent":
+			continue
+		}
+		headersCopy[http.CanonicalHeaderKey(k)] = append([]string(nil), vs...)
+	}
+	build := func() (*http.Request, error) {
+		var reader io.Reader
+		if bodyBytes != nil {
+			reader = bytes.NewReader(bodyBytes)
+		}
+		req, err := t.newRequestWithBody(ctx, method, path, reader, contentType, accept)
+		if err != nil {
+			return nil, err
+		}
+		for k, vs := range headersCopy {
+			req.Header[k] = append([]string(nil), vs...)
+		}
+		return req, nil
+	}
+	return build, accept, nil
 }
 
 type limitReadCloser struct {

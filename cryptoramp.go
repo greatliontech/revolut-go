@@ -35,6 +35,7 @@ func NewCryptoRampClient(auth Authenticator, opts ...Option) (*cryptoramp.Client
 		Auth:        auth,
 		UserAgent:   o.userAgent,
 		HostAliases: sandboxAliases(o, cryptoramp.SandboxHostAliases),
+		RetryPolicy: o.retry,
 	})
 	if err != nil {
 		return nil, err

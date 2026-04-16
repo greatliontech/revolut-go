@@ -34,6 +34,7 @@ func NewMerchantClient(auth Authenticator, opts ...Option) (*merchant.Client, er
 		Auth:        auth,
 		UserAgent:   o.userAgent,
 		HostAliases: sandboxAliases(o, merchant.SandboxHostAliases),
+		RetryPolicy: o.retry,
 	})
 	if err != nil {
 		return nil, err

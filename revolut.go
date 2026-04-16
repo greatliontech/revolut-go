@@ -60,6 +60,7 @@ type clientOptions struct {
 	httpClient  *http.Client
 	userAgent   string
 	hostAliases map[string]string // extra caller-supplied aliases
+	retry       core.RetryPolicy  // nil = no retry
 }
 
 // WithEnvironment selects sandbox or production. Default is sandbox.

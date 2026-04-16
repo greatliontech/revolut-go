@@ -46,6 +46,7 @@ func NewRevolutXClient(auth Authenticator, opts ...Option) (*revolutx.Client, er
 		// RFC 7231. Propagate that quirk into transport so
 		// APIError.RetryAfter is in real time.
 		RetryAfterUnit: time.Millisecond,
+		RetryPolicy:    o.retry,
 	})
 	if err != nil {
 		return nil, err

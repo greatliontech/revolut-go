@@ -43,6 +43,7 @@ func NewOpenBankingClient(auth Authenticator, opts ...Option) (*openbanking.Clie
 		Auth:        auth,
 		UserAgent:   o.userAgent,
 		HostAliases: sandboxAliases(o, openbanking.SandboxHostAliases),
+		RetryPolicy: o.retry,
 	})
 	if err != nil {
 		return nil, err

@@ -105,14 +105,14 @@ func (s *Signer) Sign(payload []byte) (string, error) {
 		return "", errors.New("openbanking: signing empty payload")
 	}
 	header := map[string]any{
-		"alg":                                   s.alg,
-		"kid":                                   s.kid,
-		"typ":                                   "JOSE",
-		"cty":                                   "application/json",
-		"b64":                                   false,
-		"http://openbanking.org.uk/iat":         s.now().Unix(),
-		"http://openbanking.org.uk/iss":         s.issuer,
-		"http://openbanking.org.uk/tan":         s.trustAnchor,
+		"alg":                           s.alg,
+		"kid":                           s.kid,
+		"typ":                           "JOSE",
+		"cty":                           "application/json",
+		"b64":                           false,
+		"http://openbanking.org.uk/iat": s.now().Unix(),
+		"http://openbanking.org.uk/iss": s.issuer,
+		"http://openbanking.org.uk/tan": s.trustAnchor,
 		"crit": []string{
 			"b64",
 			"http://openbanking.org.uk/iat",

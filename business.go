@@ -34,6 +34,7 @@ func NewBusinessClient(auth Authenticator, opts ...Option) (*business.Client, er
 		Auth:        auth,
 		UserAgent:   o.userAgent,
 		HostAliases: sandboxAliases(o, business.SandboxHostAliases),
+		RetryPolicy: o.retry,
 	})
 	if err != nil {
 		return nil, err

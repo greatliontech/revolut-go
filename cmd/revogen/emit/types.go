@@ -107,7 +107,6 @@ func specNeedsSigned(spec *ir.Spec) bool {
 	return false
 }
 
-
 // writeDecl dispatches to the kind-specific emitter.
 func writeDecl(w *fileWriter, d *ir.Decl) {
 	switch d.Kind {
