@@ -274,3 +274,102 @@ func coalesceAlg(a string) string {
 	}
 	return a
 }
+
+// loadAISPTokens reads the tokens-aisp.json that ob-bootstrap
+// writes after the one-time consent flow. Skips the test when the
+// file is missing.
+func loadAISPTokens(t *testing.T, dir string) (openbanking.AuthCodeToken, string) {
+	t.Helper()
+	path := filepath.Join(dir, "tokens-aisp.json")
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			t.Skipf("AISP tokens missing (%s) — run `go run ./cmd/ob-bootstrap` first", path)
+		}
+		t.Fatalf("read AISP tokens: %v", err)
+	}
+	var bundle struct {
+		Token     openbanking.AuthCodeToken `json:"token"`
+		ConsentID string                    `json:"consent_id"`
+	}
+	if err := json.Unmarshal(raw, &bundle); err != nil {
+		t.Fatalf("parse AISP tokens: %v", err)
+	}
+	if bundle.Token.AccessToken == "" {
+		t.Fatalf("AISP tokens file has no access_token")
+	}
+	return bundle.Token, bundle.ConsentID
+}
+
+// TestSandbox_OpenBanking_AISP_AccountsList reads the test PSU's
+// accounts using the access token captured by ob-bootstrap. End-
+// to-end proof of the AISP consent flow: request_object signing,
+// browser consent, code-for-token exchange, bearer auth on a
+// real API call against PSU data.
+func TestSandbox_OpenBanking_AISP_AccountsList(t *testing.T) {
+	cfg := loadOBSandbox(t)
+	tok, consentID := loadAISPTokens(t, cfg.dir)
+
+	key := cfg.loadPrivateKey(t)
+	cert, err := openbanking.LoadTransportCert(
+		filepath.Join(cfg.dir, cfg.TransportCertFile),
+		filepath.Join(cfg.dir, cfg.PrivateKeyFile),
+	)
+	if err != nil {
+		t.Fatalf("LoadTransportCert: %v", err)
+	}
+	bundle, err := os.ReadFile(filepath.Join(cfg.dir, "obie-pp-ca-bundle.pem"))
+	if err != nil {
+		t.Fatalf("read OBIE PP CA bundle: %v", err)
+	}
+	mtls := openbanking.MTLSHTTPClient(cert, bundle)
+
+	src, err := openbanking.NewAuthCodeTokenSource(openbanking.AuthCodeConfig{
+		ClientID:      cfg.ClientID,
+		TokenURL:      "https://sandbox-oba-auth.revolut.com/token",
+		Kid:           cfg.Kid,
+		PrivateKey:    key,
+		TransportCert: cert,
+		Alg:           coalesceAlg(cfg.Alg),
+		HTTPClient:    mtls,
+	}, tok)
+	if err != nil {
+		t.Fatalf("NewAuthCodeTokenSource: %v", err)
+	}
+
+	client, err := revolut.NewOpenBankingClient(src,
+		revolut.WithEnvironment(revolut.EnvironmentSandbox),
+		revolut.WithHTTPClient(mtls),
+	)
+	if err != nil {
+		t.Fatalf("NewOpenBankingClient: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	// FAPI headers are positional params on every OB read. The
+	// sandbox tolerates synthetic values for the customer
+	// identifiers; only x-fapi-financial-id is meaningful (the
+	// ASPSP ID, fixed for Revolut OB).
+	accts, _, err := client.Accounts.List(ctx,
+		"001580000103UAvAAM",                 // x-fapi-financial-id
+		time.Now().UTC().Format(time.RFC1123), // x-fapi-customer-last-logged-time
+		"127.0.0.1",                          // x-fapi-customer-ip-address
+		"sandbox-test",                       // x-fapi-interaction-id
+		"revolut-go-sandbox-test/0.1",        // x-customer-user-agent
+	)
+	if err != nil {
+		var apiErr *revolut.APIError
+		if errors.As(err, &apiErr) {
+			t.Fatalf("Accounts.List APIError: status=%d body=%s", apiErr.StatusCode, apiErr.Body)
+		}
+		t.Fatalf("Accounts.List: %v", err)
+	}
+	if accts == nil {
+		t.Fatal("nil accounts response")
+	}
+	t.Logf("AISP consent_id=%s -> %d account(s)", consentID, len(accts.Data.Account))
+	for i, a := range accts.Data.Account {
+		t.Logf("  [%d] AccountId=%s Currency=%s Nickname=%s", i, a.AccountID, a.Currency, a.Nickname)
+	}
+}

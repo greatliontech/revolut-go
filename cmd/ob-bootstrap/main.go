@@ -90,10 +90,17 @@ func run() error {
 		redirectURI: "https://127.0.0.1:8787/callback",
 		openBrowser: true,
 		output:      "",
-		// Sandbox defaults; flip via flags for production.
-		authzURL: "https://sandbox-oba-auth.revolut.com/ui/index.html",
+		// Sandbox defaults. Two distinct hosts:
+		//   sandbox-oba-auth.revolut.com — TPP-facing, MTLS required
+		//     (token, register, account-access-consents, all API calls)
+		//   sandbox-oba.revolut.com — PSU-facing browser UI for the
+		//     consent flow, no MTLS (browsers don't have client certs)
+		// Production mirrors the same split: oba-auth.revolut.com vs
+		// oba.revolut.com. Discoverable from /.well-known/openid-configuration
+		// when fetched WITH MTLS against the auth host.
+		authzURL: "https://sandbox-oba.revolut.com/ui/index.html",
 		tokenURL: "https://sandbox-oba-auth.revolut.com/token",
-		audience: "https://sandbox-oba-auth.revolut.com/",
+		audience: "https://sandbox-oba-auth.revolut.com",
 		apiHost:  "https://sandbox-oba-auth.revolut.com",
 	}
 	flag.StringVar(&cfg.dir, "dir", cfg.dir, "directory containing credentials.json + cert/key files")
