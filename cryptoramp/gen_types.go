@@ -4,6 +4,7 @@ package cryptoramp
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -298,6 +299,21 @@ type Webhook struct {
 	// The webhook's URL to which event notifications will be sent.
 	URL string `json:"url"`
 }
+
+// String returns a fmt-friendly representation of Webhook with
+// credential-bearing fields replaced by a redaction marker. JSON
+// serialisation is unaffected.
+func (v Webhook) String() string {
+	type alias Webhook
+	clone := alias(v)
+	if clone.SigningSecret != "" {
+		clone.SigningSecret = "[REDACTED]"
+	}
+	return fmt.Sprintf("%+v", Webhook(clone))
+}
+
+// GoString mirrors String so %#v and slog.Value both redact.
+func (v Webhook) GoString() string { return v.String() }
 
 // WebhookCreateRequest webhook create parameters
 type WebhookCreateRequest struct {

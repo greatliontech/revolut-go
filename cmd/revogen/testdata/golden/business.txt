@@ -400,6 +400,12 @@ func (*WebhooksV2) GetFailedWebhookEventsAll
 func (*WebhooksV2) List
 func (*WebhooksV2) RotateWebhookSigningSecret
 func (*WebhooksV2) Update
+func (GetSensitiveCardDetailsResponse) GoString
+func (GetSensitiveCardDetailsResponse) String
+func (TransactionCard) GoString
+func (TransactionCard) String
+func (WebhookV2) GoString
+func (WebhookV2) String
 func New
 type Account struct { Balance json.Number `json:"balance"` CreatedAt time.Time `json:"created_at"` Currency AccountCurrency `json:"currency"` ID string `json:"id"` Name string `json:"name,omitempty"` Public bool `json:"public"` State AccountState `json:"state"` UpdatedAt time.Time `json:"updated_at"` }
 type AccountBankDetailsItem struct { AccountNo string `json:"account_no,omitempty"` BankCountry BankCountryCode `json:"bank_country,omitempty"` Beneficiary string `json:"beneficiary"` BeneficiaryAddress BeneficiaryAddress `json:"beneficiary_address"` BIC string `json:"bic,omitempty"` EstimatedTime EstimatedTime `json:"estimated_time"` IBAN string `json:"iban,omitempty"` Pooled bool `json:"pooled,omitempty"` RoutingNumber string `json:"routing_number,omitempty"` Schemes []PaymentSystem `json:"schemes"` SortCode string `json:"sort_code,omitempty"` UniqueReference string `json:"unique_reference,omitempty"` }

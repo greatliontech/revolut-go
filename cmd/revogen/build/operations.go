@@ -299,13 +299,36 @@ func (b *Builder) applyRequestBody(m *ir.Method, op *openapi3.Operation) {
 			b.flagEncoderOnTarget(typ, func(d *ir.Decl) { d.FormEncoder = true })
 		}
 	case content["multipart/form-data"] != nil:
-		typ := b.resolveType(content["multipart/form-data"].Schema, Context{Parent: m.Receiver, Field: "body"})
+		mt := content["multipart/form-data"]
+		typ := b.resolveType(mt.Schema, Context{Parent: m.Receiver, Field: "body"})
 		if typ != nil {
 			typ = stripOuterPointer(typ)
 			m.BodyParam = &ir.Param{Name: "req", Type: typ}
 			m.HTTPCall.BodyKind = ir.BodyMultipart
 			m.HTTPCall.BodyExpr = "req"
-			b.flagEncoderOnTarget(typ, func(d *ir.Decl) { d.MultipartEncoder = true })
+			b.flagEncoderOnTarget(typ, func(d *ir.Decl) {
+				d.MultipartEncoder = true
+				// Thread the per-property encoding.contentType into the
+				// matching Field so the emitter can stamp it onto the
+				// Content-Type of the generated part.
+				if mt.Encoding != nil {
+					for _, f := range d.Fields {
+						enc, ok := mt.Encoding[f.JSONName]
+						if !ok || enc == nil || enc.ContentType == "" {
+							continue
+						}
+						// Spec lists comma-separated MIME options
+						// (application/pdf, image/png). Pick the first
+						// as the default; callers can override via
+						// <Field>ContentType at runtime.
+						if comma := strings.Index(enc.ContentType, ","); comma >= 0 {
+							f.MultipartContentType = strings.TrimSpace(enc.ContentType[:comma])
+						} else {
+							f.MultipartContentType = enc.ContentType
+						}
+					}
+				}
+			})
 		}
 	case content["application/octet-stream"] != nil:
 		m.BodyParam = &ir.Param{Name: "body", Type: ir.Prim("io.Reader", "io")}

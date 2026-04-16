@@ -25,6 +25,23 @@ type TokenResponse struct {
 	RefreshToken string `json:"refresh_token,omitempty"`
 }
 
+// String redacts the access and refresh tokens so fmt.Sprintf("%+v", tr)
+// or slog-rendering a TokenResponse doesn't leak credentials.
+func (tr TokenResponse) String() string {
+	redacted := tr
+	if redacted.AccessToken != "" {
+		redacted.AccessToken = "[REDACTED]"
+	}
+	if redacted.RefreshToken != "" {
+		redacted.RefreshToken = "[REDACTED]"
+	}
+	return fmt.Sprintf("TokenResponse{AccessToken:%q TokenType:%q ExpiresIn:%d RefreshToken:%q}",
+		redacted.AccessToken, redacted.TokenType, redacted.ExpiresIn, redacted.RefreshToken)
+}
+
+// GoString mirrors String so %#v redacts too.
+func (tr TokenResponse) GoString() string { return tr.String() }
+
 // TokenError carries a failing /auth/token response. Revolut emits
 // OAuth 2.0-style error JSON on 4xx.
 type TokenError struct {

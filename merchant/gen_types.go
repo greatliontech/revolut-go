@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
+	"net/textproto"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -710,6 +711,21 @@ type CardChecksV2 struct {
 	ThreeDs *CardChecksV2ThreeDs `json:"three_ds,omitempty"`
 }
 
+// String returns a fmt-friendly representation of CardChecksV2 with
+// credential-bearing fields replaced by a redaction marker. JSON
+// serialisation is unaffected.
+func (v CardChecksV2) String() string {
+	type alias CardChecksV2
+	clone := alias(v)
+	if clone.CvvVerification != "" {
+		clone.CvvVerification = "[REDACTED]"
+	}
+	return fmt.Sprintf("%+v", CardChecksV2(clone))
+}
+
+// GoString mirrors String so %#v and slog.Value both redact.
+func (v CardChecksV2) GoString() string { return v.String() }
+
 // CardExpiryMonth the expiry month of the payment card.
 type CardExpiryMonth = int
 
@@ -1281,7 +1297,9 @@ type DisputeEvidence struct {
 
 type DisputeEvidenceCreation struct {
 	// The single evidence file to upload.
-	File io.Reader `json:"file"`
+	File            io.Reader `json:"file"`
+	FileFilename    string    `json:"-"`
+	FileContentType string    `json:"-"`
 }
 
 // encodeMultipart builds the DisputeEvidenceCreation multipart/form-data body.
@@ -1290,7 +1308,18 @@ func (r *DisputeEvidenceCreation) encodeMultipart() (io.Reader, string, error) {
 	w := multipart.NewWriter(&body)
 	if r != nil {
 		if r.File != nil {
-			part, err := w.CreateFormFile("file", "file")
+			filename := r.FileFilename
+			if filename == "" {
+				filename = "file"
+			}
+			contentType := r.FileContentType
+			if contentType == "" {
+				contentType = "application/pdf"
+			}
+			partHdr := textproto.MIMEHeader{}
+			partHdr.Set("Content-Disposition", fmt.Sprintf("form-data; name=%q; filename=%q", "file", filename))
+			partHdr.Set("Content-Type", contentType)
+			part, err := w.CreatePart(partHdr)
 			if err != nil {
 				return nil, "", err
 			}
@@ -4831,6 +4860,21 @@ type WebhookV2 struct {
 	// Your webhook's URL to which event notifications will be sent.
 	URL WebhookURL `json:"url"`
 }
+
+// String returns a fmt-friendly representation of WebhookV2 with
+// credential-bearing fields replaced by a redaction marker. JSON
+// serialisation is unaffected.
+func (v WebhookV2) String() string {
+	type alias WebhookV2
+	clone := alias(v)
+	if clone.SigningSecret != "" {
+		clone.SigningSecret = "[REDACTED]"
+	}
+	return fmt.Sprintf("%+v", WebhookV2(clone))
+}
+
+// GoString mirrors String so %#v and slog.Value both redact.
+func (v WebhookV2) GoString() string { return v.String() }
 
 type WebhooksResponse struct {
 	// List of webhooks.

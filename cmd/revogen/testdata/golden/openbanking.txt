@@ -199,6 +199,10 @@ func (*InternationalStandingOrder) GetInternationalStandingOrderIDSigned
 func (*Transactions) GetAccountsAccountIDDirectDebits
 func (*Transactions) GetAccountsAccountIDStandingOrders
 func (*Transactions) GetAccountsAccountIDTransactions
+func (GetApplicationResponse) GoString
+func (GetApplicationResponse) String
+func (RegisterApplicationResponse) GoString
+func (RegisterApplicationResponse) String
 func New
 type AccountID string
 type Accounts struct { t *transport.Transport }

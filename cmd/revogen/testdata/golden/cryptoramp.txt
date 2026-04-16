@@ -67,6 +67,8 @@ func (*Webhooks) Delete
 func (*Webhooks) Get
 func (*Webhooks) List
 func (*Webhooks) Update
+func (Webhook) GoString
+func (Webhook) String
 func New
 type BadRequestError struct { Message string `json:"message"` }
 type Blockchain string

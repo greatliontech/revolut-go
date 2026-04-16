@@ -122,6 +122,17 @@ type Field struct {
 
 	// Pattern is a regex the string field must match when non-empty.
 	Pattern string
+
+	// MultipartContentType carries the spec's
+	// encoding.contentType for a file field in a multipart/form-data
+	// request body. Empty means "no per-part override"; the encoder
+	// defaults to application/octet-stream.
+	MultipartContentType string
+
+	// Sensitive marks a field that carries a credential or other
+	// value the SDK should not expose via fmt's default %+v /
+	// LogValue rendering. Populated by build/decls' name heuristic.
+	Sensitive bool
 }
 
 // EnumValue is one entry in an enum.

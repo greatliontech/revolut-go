@@ -413,6 +413,8 @@ func (*Webhooks) Update
 func (ApplePay) MarshalJSON
 func (BrowserEnvironment) MarshalJSON
 func (Card) MarshalJSON
+func (CardChecksV2) GoString
+func (CardChecksV2) String
 func (CardV2) MarshalJSON
 func (GooglePay) MarshalJSON
 func (LocationCreationOnline) MarshalJSON
@@ -425,6 +427,8 @@ func (RevolutPayCard) MarshalJSON
 func (RevolutPayV2) MarshalJSON
 func (ThreeDs) MarshalJSON
 func (ThreeDsFingerprint) MarshalJSON
+func (WebhookV2) GoString
+func (WebhookV2) String
 func DecodeSendWebhookEvent
 func New
 type AddressV2 struct { City string `json:"city,omitempty"` CountryCode string `json:"country_code"` Postcode string `json:"postcode"` Region string `json:"region,omitempty"` StreetLine1 string `json:"street_line_1,omitempty"` StreetLine2 string `json:"street_line_2,omitempty"` }
@@ -506,7 +510,7 @@ type DisputeChallenge struct { Comment DisputeChallengeComment `json:"comment,om
 type DisputeChallengeComment string
 type DisputeChallengeReason string
 type DisputeEvidence struct { ID string `json:"id"` }
-type DisputeEvidenceCreation struct { File io.Reader `json:"file"` }
+type DisputeEvidenceCreation struct { File io.Reader `json:"file"` FileFilename string `json:"-"` FileContentType string `json:"-"` }
 type DisputePayment struct { Amount int `json:"amount,omitempty"` Arn string `json:"arn,omitempty"` CreatedAt *time.Time `json:"created_at,omitempty"` Currency Currency `json:"currency,omitempty"` ID string `json:"id,omitempty"` OrderID string `json:"order_id,omitempty"` PaymentMethod *DisputePaymentPaymentMethod `json:"payment_method,omitempty"` }
 type DisputePaymentPaymentMethod struct { CardBrand DisputePaymentPaymentMethodCardBrand `json:"card_brand,omitempty"` CardLastFour string `json:"card_last_four,omitempty"` Type DisputePaymentPaymentMethodType `json:"type,omitempty"` }
 type DisputePaymentPaymentMethodCardBrand string

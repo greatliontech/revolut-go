@@ -229,6 +229,9 @@ func (b *Builder) structFromSchema(goName string, s *openapi3.Schema) *ir.Decl {
 			DefaultLiteral: defaultLiteral(pv, fieldType),
 		}
 		applySchemaConstraints(f, pv)
+		if isSensitiveName(propName) {
+			f.Sensitive = true
+		}
 		decl.Fields = append(decl.Fields, f)
 	}
 
@@ -297,6 +300,35 @@ func deprecationMessage(s *openapi3.Schema) string {
 		return firstLine(s.Description)
 	}
 	return "retained for backwards compatibility; the API may remove it."
+}
+
+// isSensitiveName reports whether a JSON field name suggests a
+// credential or other value the SDK should redact when rendered via
+// fmt's %+v or slog. The heuristic is deliberately broad but
+// conservative: matches a curated suffix/infix set so legitimate
+// non-sensitive names ("secret_santa_name") don't trigger.
+func isSensitiveName(jsonName string) bool {
+	lower := strings.ToLower(jsonName)
+	for _, needle := range []string{
+		"access_token", "refresh_token", "id_token",
+		"client_secret", "signing_secret",
+		"api_key", "apikey",
+		"card_number", "card_cvv", "cvv",
+		"private_key",
+	} {
+		if strings.Contains(lower, needle) {
+			return true
+		}
+	}
+	// Suffix match for the generic "secret" / "password" so
+	// "webhook_secret", "password_reset_token" etc. are caught
+	// without matching "secret_santa_game".
+	for _, suf := range []string{"_secret", "password"} {
+		if strings.HasSuffix(lower, suf) || lower == strings.TrimPrefix(suf, "_") {
+			return true
+		}
+	}
+	return false
 }
 
 // applySchemaConstraints copies numeric bounds, string lengths,

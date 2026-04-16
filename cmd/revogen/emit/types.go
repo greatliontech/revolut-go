@@ -283,6 +283,16 @@ func writeStruct(w *fileWriter, d *ir.Decl) {
 		}
 		writeFieldDoc(w, f)
 		w.printf("\t%s %s `json:%q`\n", f.GoName, f.Type.GoExpr(), jsonTag(f))
+		if d.MultipartEncoder && f.Type.GoExpr() == "io.Reader" {
+			// Companion knobs on an io.Reader multipart field: a
+			// Filename override (defaults to the JSON name) and a
+			// ContentType override (defaults to the spec-declared
+			// encoding.contentType, or application/octet-stream).
+			// json:"-" keeps them off the wire — they're only
+			// consulted by encodeMultipart.
+			w.printf("\t%sFilename string `json:\"-\"`\n", f.GoName)
+			w.printf("\t%sContentType string `json:\"-\"`\n", f.GoName)
+		}
 	}
 	if d.ExtraMap != nil {
 		if len(d.Fields) > 0 {
@@ -318,6 +328,54 @@ func writeStruct(w *fileWriter, d *ir.Decl) {
 		writeQueryParamsEncoder(w, d)
 		writeApplyDefaults(w, d)
 	}
+	writeSensitiveRedaction(w, d)
+}
+
+// writeSensitiveRedaction emits a String + GoString method on any
+// struct that carries at least one sensitive field. Both methods
+// render the struct with the sensitive field's value replaced by
+// "[REDACTED]", so fmt.Sprintf("%+v", resp) or slog printing the
+// struct won't leak credentials. json.Marshal goes through tagged
+// fields and is unaffected: callers who explicitly serialise to
+// JSON still get the real value.
+func writeSensitiveRedaction(w *fileWriter, d *ir.Decl) {
+	if d.Kind != ir.DeclStruct {
+		return
+	}
+	hasSensitive := false
+	for _, f := range d.Fields {
+		if f.Sensitive {
+			hasSensitive = true
+			break
+		}
+	}
+	if !hasSensitive {
+		return
+	}
+	w.printf("// String returns a fmt-friendly representation of %s with\n", d.Name)
+	w.write("// credential-bearing fields replaced by a redaction marker. JSON\n")
+	w.write("// serialisation is unaffected.\n")
+	w.printf("func (v %s) String() string {\n", d.Name)
+	w.printf("\ttype alias %s\n", d.Name)
+	w.write("\tclone := alias(v)\n")
+	for _, f := range d.Fields {
+		if !f.Sensitive {
+			continue
+		}
+		switch {
+		case f.Type.Kind == ir.KindPrim && f.Type.Name == "string":
+			w.printf("\tif clone.%s != \"\" { clone.%s = \"[REDACTED]\" }\n", f.GoName, f.GoName)
+		case f.Type.IsNamed():
+			w.printf("\tif clone.%s != \"\" { clone.%s = \"[REDACTED]\" }\n", f.GoName, f.GoName)
+		case f.Type.IsPointer() && f.Type.Elem != nil && f.Type.Elem.Kind == ir.KindPrim && f.Type.Elem.Name == "string":
+			w.printf("\tif clone.%s != nil { redacted := \"[REDACTED]\"; clone.%s = &redacted }\n",
+				f.GoName, f.GoName)
+		}
+	}
+	w.printf("\treturn fmt.Sprintf(\"%%+v\", %s(clone))\n", d.Name)
+	w.write("}\n\n")
+	w.printf("// GoString mirrors String so %%#v and slog.Value both redact.\n")
+	w.printf("func (v %s) GoString() string { return v.String() }\n\n", d.Name)
 }
 
 // writeApplyDefaults emits ApplyDefaults on a Params struct when
@@ -669,7 +727,11 @@ func writeFormEncoder(w *fileWriter, d *ir.Decl) {
 }
 
 // writeMultipartEncoder emits encodeMultipart() returning the
-// reader, content-type, and any error.
+// reader, content-type, and any error. Each io.Reader field is paired
+// with a companion <Field>Filename / <Field>ContentType set of fields
+// the caller can use to override the part's filename and MIME type;
+// the filename defaults to the JSON name, the content type to the
+// spec-declared encoding.contentType (or application/octet-stream).
 func writeMultipartEncoder(w *fileWriter, d *ir.Decl) {
 	w.printf("// encodeMultipart builds the %s multipart/form-data body.\n", d.Name)
 	w.printf("func (r *%s) encodeMultipart() (io.Reader, string, error) {\n", d.Name)
@@ -680,7 +742,22 @@ func writeMultipartEncoder(w *fileWriter, d *ir.Decl) {
 		expr := "r." + f.GoName
 		if f.Type.GoExpr() == "io.Reader" {
 			w.printf("\t\tif %s != nil {\n", expr)
-			w.printf("\t\t\tpart, err := w.CreateFormFile(%q, %q)\n", f.JSONName, f.JSONName)
+			w.printf("\t\t\tfilename := r.%sFilename\n", f.GoName)
+			w.write("\t\t\tif filename == \"\" {\n")
+			w.printf("\t\t\t\tfilename = %q\n", f.JSONName)
+			w.write("\t\t\t}\n")
+			w.printf("\t\t\tcontentType := r.%sContentType\n", f.GoName)
+			w.write("\t\t\tif contentType == \"\" {\n")
+			defaultCT := f.MultipartContentType
+			if defaultCT == "" {
+				defaultCT = "application/octet-stream"
+			}
+			w.printf("\t\t\t\tcontentType = %q\n", defaultCT)
+			w.write("\t\t\t}\n")
+			w.write("\t\t\tpartHdr := textproto.MIMEHeader{}\n")
+			w.printf("\t\t\tpartHdr.Set(\"Content-Disposition\", fmt.Sprintf(\"form-data; name=%%q; filename=%%q\", %q, filename))\n", f.JSONName)
+			w.write("\t\t\tpartHdr.Set(\"Content-Type\", contentType)\n")
+			w.write("\t\t\tpart, err := w.CreatePart(partHdr)\n")
 			w.write("\t\t\tif err != nil { return nil, \"\", err }\n")
 			w.printf("\t\t\tif _, err := io.Copy(part, %s); err != nil { return nil, \"\", err }\n", expr)
 			w.write("\t\t}\n")

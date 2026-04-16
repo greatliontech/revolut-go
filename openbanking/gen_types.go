@@ -4,6 +4,7 @@ package openbanking
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -211,6 +212,21 @@ type GetApplicationResponse struct {
 	// Specifies the authentication method for the `/token` endpoint.
 	TokenEndpointAuthMethod GetApplicationResponseTokenEndpointAuthMethod `json:"token_endpoint_auth_method,omitempty"`
 }
+
+// String returns a fmt-friendly representation of GetApplicationResponse with
+// credential-bearing fields replaced by a redaction marker. JSON
+// serialisation is unaffected.
+func (v GetApplicationResponse) String() string {
+	type alias GetApplicationResponse
+	clone := alias(v)
+	if clone.IDTokenSignedResponseAlg != "" {
+		clone.IDTokenSignedResponseAlg = "[REDACTED]"
+	}
+	return fmt.Sprintf("%+v", GetApplicationResponse(clone))
+}
+
+// GoString mirrors String so %#v and slog.Value both redact.
+func (v GetApplicationResponse) GoString() string { return v.String() }
 
 type InstructedAmount struct {
 	// The amount of money.
@@ -2902,6 +2918,21 @@ type RegisterApplicationResponse struct {
 	// Specifies the authentication method for the `/token` endpoint.
 	TokenEndpointAuthMethod RegisterApplicationResponseTokenEndpointAuthMethod `json:"token_endpoint_auth_method,omitempty"`
 }
+
+// String returns a fmt-friendly representation of RegisterApplicationResponse with
+// credential-bearing fields replaced by a redaction marker. JSON
+// serialisation is unaffected.
+func (v RegisterApplicationResponse) String() string {
+	type alias RegisterApplicationResponse
+	clone := alias(v)
+	if clone.IDTokenSignedResponseAlg != "" {
+		clone.IDTokenSignedResponseAlg = "[REDACTED]"
+	}
+	return fmt.Sprintf("%+v", RegisterApplicationResponse(clone))
+}
+
+// GoString mirrors String so %#v and slog.Value both redact.
+func (v RegisterApplicationResponse) GoString() string { return v.String() }
 
 // TransactionInformation the additional information of the transaction, which is unstructured text.
 type TransactionInformation = string

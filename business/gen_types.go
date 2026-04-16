@@ -4,6 +4,7 @@ package business
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -2230,6 +2231,21 @@ type TransactionCard struct {
 	References []CardReference `json:"references,omitempty"`
 }
 
+// String returns a fmt-friendly representation of TransactionCard with
+// credential-bearing fields replaced by a redaction marker. JSON
+// serialisation is unaffected.
+func (v TransactionCard) String() string {
+	type alias TransactionCard
+	clone := alias(v)
+	if clone.CardNumber != "" {
+		clone.CardNumber = "[REDACTED]"
+	}
+	return fmt.Sprintf("%+v", TransactionCard(clone))
+}
+
+// GoString mirrors String so %#v and slog.Value both redact.
+func (v TransactionCard) GoString() string { return v.String() }
+
 type TransactionCounterparty struct {
 	// The ID of the counterparty account.
 	AccountID string `json:"account_id,omitempty"`
@@ -2963,6 +2979,21 @@ type WebhookV2 struct {
 	URL string `json:"url"`
 }
 
+// String returns a fmt-friendly representation of WebhookV2 with
+// credential-bearing fields replaced by a redaction marker. JSON
+// serialisation is unaffected.
+func (v WebhookV2) String() string {
+	type alias WebhookV2
+	clone := alias(v)
+	if clone.SigningSecret != "" {
+		clone.SigningSecret = "[REDACTED]"
+	}
+	return fmt.Sprintf("%+v", WebhookV2(clone))
+}
+
+// GoString mirrors String so %#v and slog.Value both redact.
+func (v WebhookV2) GoString() string { return v.String() }
+
 type WebhookV2Basic struct {
 	// The list of event types that you are subscribed to.
 	Events []WebhookEventType `json:"events"`
@@ -3322,6 +3353,21 @@ type GetSensitiveCardDetailsResponse struct {
 	// The PAN (Primary Account Number) of the card.
 	Pan string `json:"pan"`
 }
+
+// String returns a fmt-friendly representation of GetSensitiveCardDetailsResponse with
+// credential-bearing fields replaced by a redaction marker. JSON
+// serialisation is unaffected.
+func (v GetSensitiveCardDetailsResponse) String() string {
+	type alias GetSensitiveCardDetailsResponse
+	clone := alias(v)
+	if clone.Cvv != "" {
+		clone.Cvv = "[REDACTED]"
+	}
+	return fmt.Sprintf("%+v", GetSensitiveCardDetailsResponse(clone))
+}
+
+// GoString mirrors String so %#v and slog.Value both redact.
+func (v GetSensitiveCardDetailsResponse) GoString() string { return v.String() }
 
 // GetCounterpartiesParams query parameters for: Retrieve a list of counterparties
 type GetCounterpartiesParams struct {

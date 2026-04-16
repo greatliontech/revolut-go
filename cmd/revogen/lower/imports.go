@@ -42,6 +42,7 @@ func FileImports(spec *ir.Spec) map[string][]string {
 			typesSet["fmt"] = struct{}{}
 			typesSet["io"] = struct{}{}
 			typesSet["mime/multipart"] = struct{}{}
+			typesSet["net/textproto"] = struct{}{}
 			typesSet["strconv"] = struct{}{}
 			typesSet["time"] = struct{}{}
 		}
@@ -68,6 +69,16 @@ func FileImports(spec *ir.Spec) map[string][]string {
 				// strings.Join so the wire shape matches the spec.
 				if f.ExplodeFalse {
 					typesSet["strings"] = struct{}{}
+				}
+			}
+		}
+		// Any struct with at least one sensitive field carries a
+		// String/GoString method that fmt.Sprintf's.
+		if d.Kind == ir.DeclStruct {
+			for _, f := range d.Fields {
+				if f.Sensitive {
+					typesSet["fmt"] = struct{}{}
+					break
 				}
 			}
 		}
