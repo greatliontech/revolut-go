@@ -4,7 +4,6 @@ package merchant
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/url"
@@ -20,21 +19,9 @@ type ReportRuns struct {
 // Create create a new report run
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-report-run
-func (s *ReportRuns) Create(ctx context.Context, authorization string) (*ReportRunDetails, error) {
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
-	r := transport.RawRequest{}
-	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodPost, "api/report-runs", r)
-	if err != nil {
-		return nil, err
-	}
+func (s *ReportRuns) Create(ctx context.Context) (*ReportRunDetails, error) {
 	var out ReportRunDetails
-	if err := json.Unmarshal(body, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodPost, "api/report-runs", nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -43,27 +30,15 @@ func (s *ReportRuns) Create(ctx context.Context, authorization string) (*ReportR
 // GetDetails retrieve report run details
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-report-run-details
-func (s *ReportRuns) GetDetails(ctx context.Context, reportRunID string, authorization string) (*ReportRunDetails, error) {
+func (s *ReportRuns) GetDetails(ctx context.Context, reportRunID string) (*ReportRunDetails, error) {
 	if reportRunID == "" {
 		return nil, errors.New("merchant: report_run_id is required")
 	}
 	if !isUUID(reportRunID) {
 		return nil, errors.New("merchant: report_run_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
-	r := transport.RawRequest{}
-	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "api/report-runs/"+url.PathEscape(reportRunID), r)
-	if err != nil {
-		return nil, err
-	}
 	var out ReportRunDetails
-	if err := json.Unmarshal(body, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, "api/report-runs/"+url.PathEscape(reportRunID), nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -72,22 +47,15 @@ func (s *ReportRuns) GetDetails(ctx context.Context, reportRunID string, authori
 // DownloadReportFile download report file
 //
 // Docs: https://developer.revolut.com/docs/merchant/download-report-file
-func (s *ReportRuns) DownloadReportFile(ctx context.Context, reportRunID string, authorization string) ([]byte, error) {
+func (s *ReportRuns) DownloadReportFile(ctx context.Context, reportRunID string) ([]byte, error) {
 	if reportRunID == "" {
 		return nil, errors.New("merchant: report_run_id is required")
 	}
 	if !isUUID(reportRunID) {
 		return nil, errors.New("merchant: report_run_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
 	r := transport.RawRequest{
 		Accept: "text/csv",
-	}
-	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
 	}
 	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "api/report-runs/"+url.PathEscape(reportRunID)+"/file", r)
 	if err != nil {

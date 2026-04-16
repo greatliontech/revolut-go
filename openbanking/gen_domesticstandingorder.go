@@ -21,12 +21,9 @@ type DomesticStandingOrder struct {
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-domestic-standing-order-consents
 // Required scopes: payments
-func (s *DomesticStandingOrder) CreateConsents(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteDomesticStandingOrderConsent2) (*ObwriteDomesticStandingOrderConsentResponse2, ResponseMetadata, error) {
+func (s *DomesticStandingOrder) CreateConsents(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteDomesticStandingOrderConsent2) (*ObwriteDomesticStandingOrderConsentResponse2, ResponseMetadata, error) {
 	if xFAPIFinancialID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
-	}
-	if authorization == "" {
-		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
 	}
 	if xIdempotencyKey == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: x-idempotency-key is required")
@@ -77,9 +74,6 @@ func (s *DomesticStandingOrder) CreateConsents(ctx context.Context, xFAPIFinanci
 	if xFAPIInteractionID != "" {
 		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
 	}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if xIdempotencyKey != "" {
 		r.Headers.Set("x-idempotency-key", xIdempotencyKey)
 	}
@@ -103,12 +97,9 @@ func (s *DomesticStandingOrder) CreateConsents(ctx context.Context, xFAPIFinanci
 // CreateConsentsSigned is CreateConsents with the raw response body and ResponseMetadata
 // preserved alongside the typed payload. Use it when you need to verify
 // the detached x-jws-signature header against the untouched bytes.
-func (s *DomesticStandingOrder) CreateConsentsSigned(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteDomesticStandingOrderConsent2) (*Signed[ObwriteDomesticStandingOrderConsentResponse2], error) {
+func (s *DomesticStandingOrder) CreateConsentsSigned(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteDomesticStandingOrderConsent2) (*Signed[ObwriteDomesticStandingOrderConsentResponse2], error) {
 	if xFAPIFinancialID == "" {
 		return nil, errors.New("openbanking: x-fapi-financial-id is required")
-	}
-	if authorization == "" {
-		return nil, errors.New("openbanking: Authorization is required")
 	}
 	if xIdempotencyKey == "" {
 		return nil, errors.New("openbanking: x-idempotency-key is required")
@@ -159,9 +150,6 @@ func (s *DomesticStandingOrder) CreateConsentsSigned(ctx context.Context, xFAPIF
 	if xFAPIInteractionID != "" {
 		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
 	}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if xIdempotencyKey != "" {
 		r.Headers.Set("x-idempotency-key", xIdempotencyKey)
 	}
@@ -186,15 +174,12 @@ func (s *DomesticStandingOrder) CreateConsentsSigned(ctx context.Context, xFAPIF
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-domestic-standing-order-consents-consent-id
 // Required scopes: payments
-func (s *DomesticStandingOrder) GetConsentsConsentID(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObwriteDomesticStandingOrderConsentResponse2, ResponseMetadata, error) {
+func (s *DomesticStandingOrder) GetConsentsConsentID(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*ObwriteDomesticStandingOrderConsentResponse2, ResponseMetadata, error) {
 	if consentID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ConsentId is required")
 	}
 	if xFAPIFinancialID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
-	}
-	if authorization == "" {
-		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
@@ -209,9 +194,6 @@ func (s *DomesticStandingOrder) GetConsentsConsentID(ctx context.Context, consen
 	}
 	if xFAPIInteractionID != "" {
 		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
-	}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
 	}
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
@@ -230,15 +212,12 @@ func (s *DomesticStandingOrder) GetConsentsConsentID(ctx context.Context, consen
 // GetConsentsConsentIDSigned is GetConsentsConsentID with the raw response body and ResponseMetadata
 // preserved alongside the typed payload. Use it when you need to verify
 // the detached x-jws-signature header against the untouched bytes.
-func (s *DomesticStandingOrder) GetConsentsConsentIDSigned(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*Signed[ObwriteDomesticStandingOrderConsentResponse2], error) {
+func (s *DomesticStandingOrder) GetConsentsConsentIDSigned(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*Signed[ObwriteDomesticStandingOrderConsentResponse2], error) {
 	if consentID == "" {
 		return nil, errors.New("openbanking: ConsentId is required")
 	}
 	if xFAPIFinancialID == "" {
 		return nil, errors.New("openbanking: x-fapi-financial-id is required")
-	}
-	if authorization == "" {
-		return nil, errors.New("openbanking: Authorization is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
@@ -253,9 +232,6 @@ func (s *DomesticStandingOrder) GetConsentsConsentIDSigned(ctx context.Context, 
 	}
 	if xFAPIInteractionID != "" {
 		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
-	}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
 	}
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
@@ -275,12 +251,9 @@ func (s *DomesticStandingOrder) GetConsentsConsentIDSigned(ctx context.Context, 
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-domestic-standing-orders
 // Required scopes: payments
-func (s *DomesticStandingOrder) Create(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteDomesticStandingOrder2) (*ObwriteDomesticStandingOrderResponse2, ResponseMetadata, error) {
+func (s *DomesticStandingOrder) Create(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteDomesticStandingOrder2) (*ObwriteDomesticStandingOrderResponse2, ResponseMetadata, error) {
 	if xFAPIFinancialID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
-	}
-	if authorization == "" {
-		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
 	}
 	if xIdempotencyKey == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: x-idempotency-key is required")
@@ -331,9 +304,6 @@ func (s *DomesticStandingOrder) Create(ctx context.Context, xFAPIFinancialID str
 	if xFAPIInteractionID != "" {
 		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
 	}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if xIdempotencyKey != "" {
 		r.Headers.Set("x-idempotency-key", xIdempotencyKey)
 	}
@@ -357,12 +327,9 @@ func (s *DomesticStandingOrder) Create(ctx context.Context, xFAPIFinancialID str
 // CreateSigned is Create with the raw response body and ResponseMetadata
 // preserved alongside the typed payload. Use it when you need to verify
 // the detached x-jws-signature header against the untouched bytes.
-func (s *DomesticStandingOrder) CreateSigned(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteDomesticStandingOrder2) (*Signed[ObwriteDomesticStandingOrderResponse2], error) {
+func (s *DomesticStandingOrder) CreateSigned(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteDomesticStandingOrder2) (*Signed[ObwriteDomesticStandingOrderResponse2], error) {
 	if xFAPIFinancialID == "" {
 		return nil, errors.New("openbanking: x-fapi-financial-id is required")
-	}
-	if authorization == "" {
-		return nil, errors.New("openbanking: Authorization is required")
 	}
 	if xIdempotencyKey == "" {
 		return nil, errors.New("openbanking: x-idempotency-key is required")
@@ -413,9 +380,6 @@ func (s *DomesticStandingOrder) CreateSigned(ctx context.Context, xFAPIFinancial
 	if xFAPIInteractionID != "" {
 		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
 	}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if xIdempotencyKey != "" {
 		r.Headers.Set("x-idempotency-key", xIdempotencyKey)
 	}
@@ -440,15 +404,12 @@ func (s *DomesticStandingOrder) CreateSigned(ctx context.Context, xFAPIFinancial
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-domestic-standing-orders-domestic-standing-order-id
 // Required scopes: payments
-func (s *DomesticStandingOrder) GetDomesticStandingOrderID(ctx context.Context, domesticStandingOrderID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObwriteDomesticStandingOrderResponse2, ResponseMetadata, error) {
+func (s *DomesticStandingOrder) GetDomesticStandingOrderID(ctx context.Context, domesticStandingOrderID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*ObwriteDomesticStandingOrderResponse2, ResponseMetadata, error) {
 	if domesticStandingOrderID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: DomesticStandingOrderId is required")
 	}
 	if xFAPIFinancialID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
-	}
-	if authorization == "" {
-		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
@@ -463,9 +424,6 @@ func (s *DomesticStandingOrder) GetDomesticStandingOrderID(ctx context.Context, 
 	}
 	if xFAPIInteractionID != "" {
 		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
-	}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
 	}
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
@@ -484,15 +442,12 @@ func (s *DomesticStandingOrder) GetDomesticStandingOrderID(ctx context.Context, 
 // GetDomesticStandingOrderIDSigned is GetDomesticStandingOrderID with the raw response body and ResponseMetadata
 // preserved alongside the typed payload. Use it when you need to verify
 // the detached x-jws-signature header against the untouched bytes.
-func (s *DomesticStandingOrder) GetDomesticStandingOrderIDSigned(ctx context.Context, domesticStandingOrderID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*Signed[ObwriteDomesticStandingOrderResponse2], error) {
+func (s *DomesticStandingOrder) GetDomesticStandingOrderIDSigned(ctx context.Context, domesticStandingOrderID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*Signed[ObwriteDomesticStandingOrderResponse2], error) {
 	if domesticStandingOrderID == "" {
 		return nil, errors.New("openbanking: DomesticStandingOrderId is required")
 	}
 	if xFAPIFinancialID == "" {
 		return nil, errors.New("openbanking: x-fapi-financial-id is required")
-	}
-	if authorization == "" {
-		return nil, errors.New("openbanking: Authorization is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
@@ -507,9 +462,6 @@ func (s *DomesticStandingOrder) GetDomesticStandingOrderIDSigned(ctx context.Con
 	}
 	if xFAPIInteractionID != "" {
 		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
-	}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
 	}
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)

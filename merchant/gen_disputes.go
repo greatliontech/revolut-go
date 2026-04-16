@@ -21,10 +21,7 @@ type Disputes struct {
 // GetList retrieve a dispute list
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-dispute-list
-func (s *Disputes) GetList(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrieveDisputeListParams) ([]Dispute, error) {
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
+func (s *Disputes) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVersion, opts *RetrieveDisputeListParams) ([]Dispute, error) {
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
@@ -34,9 +31,6 @@ func (s *Disputes) GetList(ctx context.Context, authorization string, revolutAPI
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}
@@ -53,14 +47,14 @@ func (s *Disputes) GetList(ctx context.Context, authorization string, revolutAPI
 
 // GetListAll iterates every page of GetList, yielding one Dispute per
 // step. Break out of the loop to stop early.
-func (s *Disputes) GetListAll(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrieveDisputeListParams) iter.Seq2[Dispute, error] {
+func (s *Disputes) GetListAll(ctx context.Context, revolutAPIVersion RevolutAPIVersion, opts *RetrieveDisputeListParams) iter.Seq2[Dispute, error] {
 	return func(yield func(Dispute, error) bool) {
 		var p RetrieveDisputeListParams
 		if opts != nil {
 			p = *opts
 		}
 		for {
-			resp, err := s.GetList(ctx, authorization, revolutAPIVersion, &p)
+			resp, err := s.GetList(ctx, revolutAPIVersion, &p)
 			if err != nil {
 				var zero Dispute
 				yield(zero, err)
@@ -84,24 +78,18 @@ func (s *Disputes) GetListAll(ctx context.Context, authorization string, revolut
 // Get retrieve a dispute
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-dispute
-func (s *Disputes) Get(ctx context.Context, disputeID string, authorization string, revolutAPIVersion RevolutAPIVersion) (*Dispute, error) {
+func (s *Disputes) Get(ctx context.Context, disputeID string, revolutAPIVersion RevolutAPIVersion) (*Dispute, error) {
 	if disputeID == "" {
 		return nil, errors.New("merchant: dispute_id is required")
 	}
 	if !isUUID(disputeID) {
 		return nil, errors.New("merchant: dispute_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}
@@ -119,24 +107,18 @@ func (s *Disputes) Get(ctx context.Context, disputeID string, authorization stri
 // AcceptDispute accept a dispute
 //
 // Docs: https://developer.revolut.com/docs/merchant/accept-dispute
-func (s *Disputes) AcceptDispute(ctx context.Context, disputeID string, authorization string, revolutAPIVersion RevolutAPIVersion) error {
+func (s *Disputes) AcceptDispute(ctx context.Context, disputeID string, revolutAPIVersion RevolutAPIVersion) error {
 	if disputeID == "" {
 		return errors.New("merchant: dispute_id is required")
 	}
 	if !isUUID(disputeID) {
 		return errors.New("merchant: dispute_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return errors.New("merchant: Authorization is required")
-	}
 	if revolutAPIVersion == "" {
 		return errors.New("merchant: Revolut-Api-Version is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}
@@ -151,15 +133,12 @@ func (s *Disputes) AcceptDispute(ctx context.Context, disputeID string, authoriz
 // ChallengeDispute challenge a dispute
 //
 // Docs: https://developer.revolut.com/docs/merchant/challenge-dispute
-func (s *Disputes) ChallengeDispute(ctx context.Context, disputeID string, authorization string, revolutAPIVersion RevolutAPIVersion, req DisputeChallenge) error {
+func (s *Disputes) ChallengeDispute(ctx context.Context, disputeID string, revolutAPIVersion RevolutAPIVersion, req DisputeChallenge) error {
 	if disputeID == "" {
 		return errors.New("merchant: dispute_id is required")
 	}
 	if !isUUID(disputeID) {
 		return errors.New("merchant: dispute_id must be a valid UUID")
-	}
-	if authorization == "" {
-		return errors.New("merchant: Authorization is required")
 	}
 	if revolutAPIVersion == "" {
 		return errors.New("merchant: Revolut-Api-Version is required")
@@ -174,9 +153,6 @@ func (s *Disputes) ChallengeDispute(ctx context.Context, disputeID string, autho
 		JSONBody: req,
 	}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}
@@ -191,32 +167,20 @@ func (s *Disputes) ChallengeDispute(ctx context.Context, disputeID string, autho
 // UploadDisputeEvidence upload evidence for a dispute
 //
 // Docs: https://developer.revolut.com/docs/merchant/upload-dispute-evidence
-func (s *Disputes) UploadDisputeEvidence(ctx context.Context, disputeID string, authorization string, revolutAPIVersion RevolutAPIVersion, contentType string, req DisputeEvidenceCreation) (*DisputeEvidence, error) {
+func (s *Disputes) UploadDisputeEvidence(ctx context.Context, disputeID string, revolutAPIVersion RevolutAPIVersion, req DisputeEvidenceCreation) (*DisputeEvidence, error) {
 	if disputeID == "" {
 		return nil, errors.New("merchant: dispute_id is required")
 	}
 	if !isUUID(disputeID) {
 		return nil, errors.New("merchant: dispute_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
-	if contentType == "" {
-		return nil, errors.New("merchant: Content-Type is required")
-	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
-	}
-	if contentType != "" {
-		r.Headers.Set("Content-Type", contentType)
 	}
 	mpBody, mpCT, err := req.encodeMultipart()
 	if err != nil {

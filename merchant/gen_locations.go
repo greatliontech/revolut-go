@@ -4,7 +4,6 @@ package merchant
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/url"
@@ -20,25 +19,13 @@ type Locations struct {
 // GetList retrieve location list
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-location-list
-func (s *Locations) GetList(ctx context.Context, authorization string, opts *RetrieveLocationListParams) ([]Location, error) {
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
+func (s *Locations) GetList(ctx context.Context, opts *RetrieveLocationListParams) ([]Location, error) {
 	path := "api/locations"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
 	}
-	r := transport.RawRequest{}
-	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, path, r)
-	if err != nil {
-		return nil, err
-	}
 	var out []Location
-	if err := json.Unmarshal(body, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, path, nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -47,23 +34,9 @@ func (s *Locations) GetList(ctx context.Context, authorization string, opts *Ret
 // Create create a location
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-location
-func (s *Locations) Create(ctx context.Context, authorization string, req LocationCreation) (*Location, error) {
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
-	r := transport.RawRequest{
-		JSONBody: req,
-	}
-	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodPost, "api/locations", r)
-	if err != nil {
-		return nil, err
-	}
+func (s *Locations) Create(ctx context.Context, req LocationCreation) (*Location, error) {
 	var out Location
-	if err := json.Unmarshal(body, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodPost, "api/locations", req, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -72,27 +45,15 @@ func (s *Locations) Create(ctx context.Context, authorization string, req Locati
 // Get retrieve a location
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-location
-func (s *Locations) Get(ctx context.Context, locationID string, authorization string) (*Location, error) {
+func (s *Locations) Get(ctx context.Context, locationID string) (*Location, error) {
 	if locationID == "" {
 		return nil, errors.New("merchant: location_id is required")
 	}
 	if !isUUID(locationID) {
 		return nil, errors.New("merchant: location_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
-	r := transport.RawRequest{}
-	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "api/locations/"+url.PathEscape(locationID), r)
-	if err != nil {
-		return nil, err
-	}
 	var out Location
-	if err := json.Unmarshal(body, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, "api/locations/"+url.PathEscape(locationID), nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -101,29 +62,15 @@ func (s *Locations) Get(ctx context.Context, locationID string, authorization st
 // Update update a location
 //
 // Docs: https://developer.revolut.com/docs/merchant/update-location
-func (s *Locations) Update(ctx context.Context, locationID string, authorization string, req LocationUpdate) (*Location, error) {
+func (s *Locations) Update(ctx context.Context, locationID string, req LocationUpdate) (*Location, error) {
 	if locationID == "" {
 		return nil, errors.New("merchant: location_id is required")
 	}
 	if !isUUID(locationID) {
 		return nil, errors.New("merchant: location_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
-	r := transport.RawRequest{
-		JSONBody: req,
-	}
-	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodPatch, "api/locations/"+url.PathEscape(locationID), r)
-	if err != nil {
-		return nil, err
-	}
 	var out Location
-	if err := json.Unmarshal(body, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodPatch, "api/locations/"+url.PathEscape(locationID), req, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -132,25 +79,12 @@ func (s *Locations) Update(ctx context.Context, locationID string, authorization
 // Delete delete a location
 //
 // Docs: https://developer.revolut.com/docs/merchant/delete-location
-func (s *Locations) Delete(ctx context.Context, locationID string, authorization string) error {
+func (s *Locations) Delete(ctx context.Context, locationID string) error {
 	if locationID == "" {
 		return errors.New("merchant: location_id is required")
 	}
 	if !isUUID(locationID) {
 		return errors.New("merchant: location_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return errors.New("merchant: Authorization is required")
-	}
-	r := transport.RawRequest{}
-	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodDelete, "api/locations/"+url.PathEscape(locationID), r)
-	if err != nil {
-		return err
-	}
-	_ = body
-	return nil
+	return s.t.Do(ctx, http.MethodDelete, "api/locations/"+url.PathEscape(locationID), nil, nil)
 }

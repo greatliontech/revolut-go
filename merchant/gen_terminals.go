@@ -5,7 +5,6 @@ package merchant
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
@@ -19,19 +18,13 @@ type Terminals struct {
 // GetList retrieve terminal list
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-terminal-list
-func (s *Terminals) GetList(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersionOptional, opts *RetrieveTerminalListParams) (*TerminalsResponse, error) {
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
+func (s *Terminals) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVersionOptional, opts *RetrieveTerminalListParams) (*TerminalsResponse, error) {
 	path := "api/terminals"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}

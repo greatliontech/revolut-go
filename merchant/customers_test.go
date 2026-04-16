@@ -34,7 +34,7 @@ func TestCustomers_Create_EmitsVersionHeader(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = io.WriteString(w, `{"id":"cus-1","email":"test@example.com","created_at":"2026-01-01T00:00:00Z","updated_at":"2026-01-01T00:00:00Z"}`)
 	}))
-	_, err := client.Customers.Create(context.Background(), "Bearer sk", RevolutAPIVersion20240901Min20251204, CustomerCreationV2{
+	_, err := client.Customers.Create(context.Background(), RevolutAPIVersion20240901Min20251204, CustomerCreationV2{
 		Email: "test@example.com",
 	})
 	if err != nil {
@@ -55,7 +55,7 @@ func TestCustomers_Get_UUIDValidation(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = io.WriteString(w, `{}`)
 	}))
-	_, err := client.Customers.Get(context.Background(), "typo", "Bearer sk", RevolutAPIVersion20240901Min20251204)
+	_, err := client.Customers.Get(context.Background(), "typo", RevolutAPIVersion20240901Min20251204)
 	if err == nil || !strings.Contains(err.Error(), "valid UUID") {
 		t.Errorf("want format error, got %v", err)
 	}
@@ -73,7 +73,7 @@ func TestCustomers_List_QueryParamsEncoding(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = io.WriteString(w, `{"customers":[]}`)
 	}))
-	_, err := client.Customers.GetList(context.Background(), "Bearer sk", RevolutAPIVersion20240901Min20251204, &RetrieveCustomerListParams{
+	_, err := client.Customers.GetList(context.Background(), RevolutAPIVersion20240901Min20251204, &RetrieveCustomerListParams{
 		Limit: 25,
 	})
 	if err != nil {
@@ -91,7 +91,7 @@ func TestOrders_GetList_EmptyResponseDecodes(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = io.WriteString(w, `{"orders":[]}`)
 	}))
-	resp, err := client.Orders.GetList(context.Background(), "Bearer sk", RevolutAPIVersion20251204, nil)
+	resp, err := client.Orders.GetList(context.Background(), RevolutAPIVersion20251204, nil)
 	if err != nil {
 		t.Fatalf("GetList: %v", err)
 	}
@@ -107,7 +107,7 @@ func TestWebhooks_Delete_204(t *testing.T) {
 	client := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	}))
-	err := client.Webhooks.Delete(context.Background(), "11111111-1111-1111-1111-111111111111", "Bearer sk", RevolutAPIVersion20240901Min20251204)
+	err := client.Webhooks.Delete(context.Background(), "11111111-1111-1111-1111-111111111111", RevolutAPIVersion20240901Min20251204)
 	if err != nil {
 		t.Errorf("Delete on 204: %v", err)
 	}

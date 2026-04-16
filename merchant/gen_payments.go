@@ -20,21 +20,15 @@ type Payments struct {
 // GetDetails retrieve payment details
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payment-details
-func (s *Payments) GetDetails(ctx context.Context, paymentID string, authorization string, revolutAPIVersion RevolutAPIVersionOptional) (*PaymentRetrievalV2, error) {
+func (s *Payments) GetDetails(ctx context.Context, paymentID string, revolutAPIVersion RevolutAPIVersionOptional) (*PaymentRetrievalV2, error) {
 	if paymentID == "" {
 		return nil, errors.New("merchant: payment_id is required")
 	}
 	if !isUUID(paymentID) {
 		return nil, errors.New("merchant: payment_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}

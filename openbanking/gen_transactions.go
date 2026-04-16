@@ -21,15 +21,12 @@ type Transactions struct {
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-accounts-account-id-direct-debits
 // Required scopes: accounts
-func (s *Transactions) GetAccountsAccountIDDirectDebits(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObreadDirectDebit1, ResponseMetadata, error) {
+func (s *Transactions) GetAccountsAccountIDDirectDebits(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*ObreadDirectDebit1, ResponseMetadata, error) {
 	if accountID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: AccountId is required")
 	}
 	if xFAPIFinancialID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
-	}
-	if authorization == "" {
-		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
@@ -44,9 +41,6 @@ func (s *Transactions) GetAccountsAccountIDDirectDebits(ctx context.Context, acc
 	}
 	if xFAPIInteractionID != "" {
 		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
-	}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
 	}
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
@@ -66,15 +60,12 @@ func (s *Transactions) GetAccountsAccountIDDirectDebits(ctx context.Context, acc
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-accounts-account-id-standing-orders
 // Required scopes: accounts
-func (s *Transactions) GetAccountsAccountIDStandingOrders(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*ObreadStandingOrder4, ResponseMetadata, error) {
+func (s *Transactions) GetAccountsAccountIDStandingOrders(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*ObreadStandingOrder4, ResponseMetadata, error) {
 	if accountID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: AccountId is required")
 	}
 	if xFAPIFinancialID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
-	}
-	if authorization == "" {
-		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
@@ -89,9 +80,6 @@ func (s *Transactions) GetAccountsAccountIDStandingOrders(ctx context.Context, a
 	}
 	if xFAPIInteractionID != "" {
 		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
-	}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
 	}
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)
@@ -111,15 +99,12 @@ func (s *Transactions) GetAccountsAccountIDStandingOrders(ctx context.Context, a
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-accounts-account-id-transactions
 // Required scopes: accounts
-func (s *Transactions) GetAccountsAccountIDTransactions(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string, opts *GetAccountsAccountIDTransactionsParams) (*ObreadTransaction4, ResponseMetadata, error) {
+func (s *Transactions) GetAccountsAccountIDTransactions(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string, opts *GetAccountsAccountIDTransactionsParams) (*ObreadTransaction4, ResponseMetadata, error) {
 	if accountID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: AccountId is required")
 	}
 	if xFAPIFinancialID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
-	}
-	if authorization == "" {
-		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
 	}
 	path := "accounts/" + url.PathEscape(accountID) + "/transactions"
 	if q := opts.encode().Encode(); q != "" {
@@ -138,9 +123,6 @@ func (s *Transactions) GetAccountsAccountIDTransactions(ctx context.Context, acc
 	}
 	if xFAPIInteractionID != "" {
 		r.Headers.Set("x-fapi-interaction-id", xFAPIInteractionID)
-	}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
 	}
 	if xCustomerUserAgent != "" {
 		r.Headers.Set("x-customer-user-agent", xCustomerUserAgent)

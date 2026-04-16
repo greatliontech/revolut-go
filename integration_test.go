@@ -281,7 +281,7 @@ func TestSandbox_APIErrorOnMissingAccount(t *testing.T) {
 	if apiErr.StatusCode < 400 || apiErr.StatusCode >= 500 {
 		t.Errorf("status = %d; want 4xx", apiErr.StatusCode)
 	}
-	t.Logf("APIError ok: status=%d code=%d message=%q", apiErr.StatusCode, apiErr.Code, apiErr.Message)
+	t.Logf("APIError ok: status=%d code=%q message=%q", apiErr.StatusCode, apiErr.Code, apiErr.Message)
 }
 
 func TestSandbox_CounterpartiesGet(t *testing.T) {

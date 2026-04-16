@@ -18,35 +18,17 @@ type ApplePayMerchantRegistration struct {
 // RegisterDomainApplePay register domain for Apple Pay
 //
 // Docs: https://developer.revolut.com/docs/merchant/register-domain-apple-pay
-func (s *ApplePayMerchantRegistration) RegisterDomainApplePay(ctx context.Context, authorization string, req ApplePayMerchantRegistrationBody) error {
-	if authorization == "" {
-		return errors.New("merchant: Authorization is required")
-	}
+func (s *ApplePayMerchantRegistration) RegisterDomainApplePay(ctx context.Context, req ApplePayMerchantRegistrationBody) error {
 	if req.Domain == "" {
 		return errors.New("merchant: ApplePayMerchantRegistrationBody.domain is required")
 	}
-	r := transport.RawRequest{
-		JSONBody: req,
-	}
-	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodPost, "api/apple-pay/domains/register", r)
-	if err != nil {
-		return err
-	}
-	_ = body
-	return nil
+	return s.t.Do(ctx, http.MethodPost, "api/apple-pay/domains/register", req, nil)
 }
 
 // UnregisterDomainApplePay unregister domain for Apple Pay
 //
 // Docs: https://developer.revolut.com/docs/merchant/unregister-domain-apple-pay
-func (s *ApplePayMerchantRegistration) UnregisterDomainApplePay(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersionOptional, req ApplePayMerchantRegistrationBody) error {
-	if authorization == "" {
-		return errors.New("merchant: Authorization is required")
-	}
+func (s *ApplePayMerchantRegistration) UnregisterDomainApplePay(ctx context.Context, revolutAPIVersion RevolutAPIVersionOptional, req ApplePayMerchantRegistrationBody) error {
 	if req.Domain == "" {
 		return errors.New("merchant: ApplePayMerchantRegistrationBody.domain is required")
 	}
@@ -54,9 +36,6 @@ func (s *ApplePayMerchantRegistration) UnregisterDomainApplePay(ctx context.Cont
 		JSONBody: req,
 	}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}

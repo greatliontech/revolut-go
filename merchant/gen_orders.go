@@ -20,10 +20,7 @@ type Orders struct {
 // GetList retrieve an order list
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-order-list
-func (s *Orders) GetList(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrieveOrderListParams) (*OrdersV2, error) {
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
+func (s *Orders) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVersion, opts *RetrieveOrderListParams) (*OrdersV2, error) {
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
@@ -33,9 +30,6 @@ func (s *Orders) GetList(ctx context.Context, authorization string, revolutAPIVe
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}
@@ -53,10 +47,7 @@ func (s *Orders) GetList(ctx context.Context, authorization string, revolutAPIVe
 // Create create an order
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-order
-func (s *Orders) Create(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, req OrderCreationV6) (*OrderV6, error) {
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
+func (s *Orders) Create(ctx context.Context, revolutAPIVersion RevolutAPIVersion, req OrderCreationV6) (*OrderV6, error) {
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
@@ -70,9 +61,6 @@ func (s *Orders) Create(ctx context.Context, authorization string, revolutAPIVer
 		JSONBody: req,
 	}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}
@@ -90,24 +78,18 @@ func (s *Orders) Create(ctx context.Context, authorization string, revolutAPIVer
 // Get retrieve an order
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-order
-func (s *Orders) Get(ctx context.Context, orderID string, authorization string, revolutAPIVersion RevolutAPIVersion) (*OrderV6, error) {
+func (s *Orders) Get(ctx context.Context, orderID string, revolutAPIVersion RevolutAPIVersion) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
 	if !isUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}
@@ -125,15 +107,12 @@ func (s *Orders) Get(ctx context.Context, orderID string, authorization string, 
 // Update update an order
 //
 // Docs: https://developer.revolut.com/docs/merchant/update-order
-func (s *Orders) Update(ctx context.Context, orderID string, authorization string, revolutAPIVersion RevolutAPIVersion, req OrderUpdateV6) (*OrderV6, error) {
+func (s *Orders) Update(ctx context.Context, orderID string, revolutAPIVersion RevolutAPIVersion, req OrderUpdateV6) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
 	if !isUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
-	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
 	}
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
@@ -142,9 +121,6 @@ func (s *Orders) Update(ctx context.Context, orderID string, authorization strin
 		JSONBody: req,
 	}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}
@@ -162,21 +138,15 @@ func (s *Orders) Update(ctx context.Context, orderID string, authorization strin
 // CancelOrder cancel an order
 //
 // Docs: https://developer.revolut.com/docs/merchant/cancel-order
-func (s *Orders) CancelOrder(ctx context.Context, orderID string, authorization string, revolutAPIVersion RevolutAPIVersionOptional) (*OrderV6, error) {
+func (s *Orders) CancelOrder(ctx context.Context, orderID string, revolutAPIVersion RevolutAPIVersionOptional) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
 	if !isUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}
@@ -194,15 +164,12 @@ func (s *Orders) CancelOrder(ctx context.Context, orderID string, authorization 
 // CaptureOrder capture an order
 //
 // Docs: https://developer.revolut.com/docs/merchant/capture-order
-func (s *Orders) CaptureOrder(ctx context.Context, orderID string, authorization string, revolutAPIVersion RevolutAPIVersion, req OrderCaptureV2) (*OrderV6, error) {
+func (s *Orders) CaptureOrder(ctx context.Context, orderID string, revolutAPIVersion RevolutAPIVersion, req OrderCaptureV2) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
 	if !isUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
-	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
 	}
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
@@ -211,9 +178,6 @@ func (s *Orders) CaptureOrder(ctx context.Context, orderID string, authorization
 		JSONBody: req,
 	}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}
@@ -231,15 +195,12 @@ func (s *Orders) CaptureOrder(ctx context.Context, orderID string, authorization
 // IncrementAuthorisation increment authorisation
 //
 // Docs: https://developer.revolut.com/docs/merchant/increment-authorisation
-func (s *Orders) IncrementAuthorisation(ctx context.Context, orderID string, authorization string, revolutAPIVersion RevolutAPIVersion, req IncrementalAuthorisationRequest) (*OrderV6, error) {
+func (s *Orders) IncrementAuthorisation(ctx context.Context, orderID string, revolutAPIVersion RevolutAPIVersion, req IncrementalAuthorisationRequest) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
 	if !isUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
-	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
 	}
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
@@ -251,9 +212,6 @@ func (s *Orders) IncrementAuthorisation(ctx context.Context, orderID string, aut
 		JSONBody: req,
 	}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}
@@ -271,27 +229,15 @@ func (s *Orders) IncrementAuthorisation(ctx context.Context, orderID string, aut
 // GetPaymentList retrieve payment list of an order
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payment-list
-func (s *Orders) GetPaymentList(ctx context.Context, orderID string, authorization string) ([]PaymentRetrieval, error) {
+func (s *Orders) GetPaymentList(ctx context.Context, orderID string) ([]PaymentRetrieval, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
 	if !isUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
-	r := transport.RawRequest{}
-	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "api/orders/"+url.PathEscape(orderID)+"/payments", r)
-	if err != nil {
-		return nil, err
-	}
 	var out []PaymentRetrieval
-	if err := json.Unmarshal(body, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, "api/orders/"+url.PathEscape(orderID)+"/payments", nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -300,15 +246,12 @@ func (s *Orders) GetPaymentList(ctx context.Context, orderID string, authorizati
 // PayOrder pay for an order
 //
 // Docs: https://developer.revolut.com/docs/merchant/pay-order
-func (s *Orders) PayOrder(ctx context.Context, orderID string, authorization string, req SavedPaymentMethod) (*PaymentRetrieval, error) {
+func (s *Orders) PayOrder(ctx context.Context, orderID string, req SavedPaymentMethod) (*PaymentRetrieval, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
 	if !isUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
-	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
 	}
 	if req.SavedPaymentMethod == nil {
 		return nil, errors.New("merchant: SavedPaymentMethod.saved_payment_method is required")
@@ -325,19 +268,8 @@ func (s *Orders) PayOrder(ctx context.Context, orderID string, authorization str
 	if req.SavedPaymentMethod != nil && req.SavedPaymentMethod.Type == "" {
 		return nil, errors.New("merchant: SavedPaymentMethod.saved_payment_method.type is required")
 	}
-	r := transport.RawRequest{
-		JSONBody: req,
-	}
-	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodPost, "api/orders/"+url.PathEscape(orderID)+"/payments", r)
-	if err != nil {
-		return nil, err
-	}
 	var out PaymentRetrieval
-	if err := json.Unmarshal(body, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodPost, "api/orders/"+url.PathEscape(orderID)+"/payments", req, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -346,15 +278,12 @@ func (s *Orders) PayOrder(ctx context.Context, orderID string, authorization str
 // RefundOrder refund an order
 //
 // Docs: https://developer.revolut.com/docs/merchant/refund-order
-func (s *Orders) RefundOrder(ctx context.Context, orderID string, authorization string, revolutAPIVersion RevolutAPIVersion, idempotencyKey string, req OrderRefundV2) (*OrderV6, error) {
+func (s *Orders) RefundOrder(ctx context.Context, orderID string, revolutAPIVersion RevolutAPIVersion, idempotencyKey string, req OrderRefundV2) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
 	if !isUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
-	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
 	}
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
@@ -369,9 +298,6 @@ func (s *Orders) RefundOrder(ctx context.Context, orderID string, authorization 
 		JSONBody: req,
 	}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}

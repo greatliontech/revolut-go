@@ -170,6 +170,16 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 			}
 			queries = append(queries, q)
 		case "header":
+			// Authorization is owned by the transport: the
+			// Authenticator sets it, and the transport actively
+			// strips any caller-supplied value to prevent leaks.
+			// Emitting it as a method param forces callers to pass
+			// a placeholder string that never reaches the wire,
+			// which is confusing and also misleads users into
+			// hard-coding fake tokens. Skip at build time.
+			if isTransportOwnedHeader(p.Name) {
+				continue
+			}
 			typ := b.resolveSharedParamEnum(paramRef)
 			if typ == nil {
 				typ = b.resolveType(p.Schema, Context{Parent: m.Receiver, Field: p.Name})
@@ -803,6 +813,19 @@ func deprecationReason(op *openapi3.Operation) string {
 		return firstLine(op.Summary)
 	}
 	return "the API marks this operation deprecated"
+}
+
+// isTransportOwnedHeader reports whether a spec-declared header
+// parameter is one the transport sets on behalf of the caller. Such
+// headers must not be exposed as method parameters because the
+// transport actively strips caller-supplied values to prevent
+// credential leakage and content-type mix-ups.
+func isTransportOwnedHeader(name string) bool {
+	switch http.CanonicalHeaderKey(name) {
+	case "Authorization", "Content-Type", "Accept", "User-Agent":
+		return true
+	}
+	return false
 }
 
 func tagLooksDeprecated(tags []string) bool {

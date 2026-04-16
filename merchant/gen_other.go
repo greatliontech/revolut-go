@@ -4,7 +4,6 @@ package merchant
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/url"
@@ -20,21 +19,9 @@ type Other struct {
 // GetSynchronousWebhookList retrieve a synchronous webhook list
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-synchronous-webhook-list
-func (s *Other) GetSynchronousWebhookList(ctx context.Context, authorization string) ([]SynchronousWebhook, error) {
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
-	r := transport.RawRequest{}
-	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodGet, "api/synchronous-webhooks", r)
-	if err != nil {
-		return nil, err
-	}
+func (s *Other) GetSynchronousWebhookList(ctx context.Context) ([]SynchronousWebhook, error) {
 	var out []SynchronousWebhook
-	if err := json.Unmarshal(body, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodGet, "api/synchronous-webhooks", nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -43,29 +30,15 @@ func (s *Other) GetSynchronousWebhookList(ctx context.Context, authorization str
 // RegisterAddressValidationEndpoint register address validation endpoint for Fast checkout
 //
 // Docs: https://developer.revolut.com/docs/merchant/register-address-validation-endpoint
-func (s *Other) RegisterAddressValidationEndpoint(ctx context.Context, authorization string, req SynchronousWebhookCreation) (*SynchronousWebhook, error) {
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
+func (s *Other) RegisterAddressValidationEndpoint(ctx context.Context, req SynchronousWebhookCreation) (*SynchronousWebhook, error) {
 	if req.EventType == "" {
 		return nil, errors.New("merchant: SynchronousWebhookCreation.event_type is required")
 	}
 	if req.URL == "" {
 		return nil, errors.New("merchant: SynchronousWebhookCreation.url is required")
 	}
-	r := transport.RawRequest{
-		JSONBody: req,
-	}
-	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodPost, "api/synchronous-webhooks", r)
-	if err != nil {
-		return nil, err
-	}
 	var out SynchronousWebhook
-	if err := json.Unmarshal(body, &out); err != nil {
+	if err := s.t.Do(ctx, http.MethodPost, "api/synchronous-webhooks", req, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -74,25 +47,12 @@ func (s *Other) RegisterAddressValidationEndpoint(ctx context.Context, authoriza
 // DeleteSynchronousWebhook delete a synchronous webhook
 //
 // Docs: https://developer.revolut.com/docs/merchant/delete-synchronous-webhook
-func (s *Other) DeleteSynchronousWebhook(ctx context.Context, synchronousWebhookID string, authorization string) error {
+func (s *Other) DeleteSynchronousWebhook(ctx context.Context, synchronousWebhookID string) error {
 	if synchronousWebhookID == "" {
 		return errors.New("merchant: synchronous_webhook_id is required")
 	}
 	if !isUUID(synchronousWebhookID) {
 		return errors.New("merchant: synchronous_webhook_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return errors.New("merchant: Authorization is required")
-	}
-	r := transport.RawRequest{}
-	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
-	body, _, err := s.t.DoRaw(ctx, http.MethodDelete, "api/synchronous-webhooks/"+url.PathEscape(synchronousWebhookID), r)
-	if err != nil {
-		return err
-	}
-	_ = body
-	return nil
+	return s.t.Do(ctx, http.MethodDelete, "api/synchronous-webhooks/"+url.PathEscape(synchronousWebhookID), nil, nil)
 }

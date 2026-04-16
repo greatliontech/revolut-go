@@ -21,10 +21,7 @@ type Payouts struct {
 // GetList retrieve a payout list
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payout-list
-func (s *Payouts) GetList(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrievePayoutListParams) ([]Payout, error) {
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
+func (s *Payouts) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVersion, opts *RetrievePayoutListParams) ([]Payout, error) {
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
@@ -34,9 +31,6 @@ func (s *Payouts) GetList(ctx context.Context, authorization string, revolutAPIV
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}
@@ -53,14 +47,14 @@ func (s *Payouts) GetList(ctx context.Context, authorization string, revolutAPIV
 
 // GetListAll iterates every page of GetList, yielding one Payout per
 // step. Break out of the loop to stop early.
-func (s *Payouts) GetListAll(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrievePayoutListParams) iter.Seq2[Payout, error] {
+func (s *Payouts) GetListAll(ctx context.Context, revolutAPIVersion RevolutAPIVersion, opts *RetrievePayoutListParams) iter.Seq2[Payout, error] {
 	return func(yield func(Payout, error) bool) {
 		var p RetrievePayoutListParams
 		if opts != nil {
 			p = *opts
 		}
 		for {
-			resp, err := s.GetList(ctx, authorization, revolutAPIVersion, &p)
+			resp, err := s.GetList(ctx, revolutAPIVersion, &p)
 			if err != nil {
 				var zero Payout
 				yield(zero, err)
@@ -84,24 +78,18 @@ func (s *Payouts) GetListAll(ctx context.Context, authorization string, revolutA
 // Get retrieve a payout
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payout
-func (s *Payouts) Get(ctx context.Context, payoutID string, authorization string, revolutAPIVersion RevolutAPIVersion) (*Payout, error) {
+func (s *Payouts) Get(ctx context.Context, payoutID string, revolutAPIVersion RevolutAPIVersion) (*Payout, error) {
 	if payoutID == "" {
 		return nil, errors.New("merchant: payout_id is required")
 	}
 	if !isUUID(payoutID) {
 		return nil, errors.New("merchant: payout_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}

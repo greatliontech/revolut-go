@@ -20,15 +20,12 @@ type PaymentIntents struct {
 // Create create a payment intent
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-payment-intent
-func (s *PaymentIntents) Create(ctx context.Context, orderID string, authorization string, revolutAPIVersion RevolutAPIVersionOptional, req PaymentIntentCreation) (*PaymentIntent, error) {
+func (s *PaymentIntents) Create(ctx context.Context, orderID string, revolutAPIVersion RevolutAPIVersionOptional, req PaymentIntentCreation) (*PaymentIntent, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
 	if !isUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
-	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
 	}
 	if req.Amount == 0 {
 		return nil, errors.New("merchant: PaymentIntentCreation.amount is required")
@@ -40,9 +37,6 @@ func (s *PaymentIntents) Create(ctx context.Context, orderID string, authorizati
 		JSONBody: req,
 	}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}
@@ -60,21 +54,15 @@ func (s *PaymentIntents) Create(ctx context.Context, orderID string, authorizati
 // Get retrieve a payment intent
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payment-intent
-func (s *PaymentIntents) Get(ctx context.Context, paymentIntentID string, authorization string, revolutAPIVersion RevolutAPIVersionOptional) (*PaymentIntent, error) {
+func (s *PaymentIntents) Get(ctx context.Context, paymentIntentID string, revolutAPIVersion RevolutAPIVersionOptional) (*PaymentIntent, error) {
 	if paymentIntentID == "" {
 		return nil, errors.New("merchant: payment_intent_id is required")
 	}
 	if !isUUID(paymentIntentID) {
 		return nil, errors.New("merchant: payment_intent_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}
@@ -92,21 +80,15 @@ func (s *PaymentIntents) Get(ctx context.Context, paymentIntentID string, author
 // CancelPaymentIntent cancel a payment intent
 //
 // Docs: https://developer.revolut.com/docs/merchant/cancel-payment-intent
-func (s *PaymentIntents) CancelPaymentIntent(ctx context.Context, paymentIntentID string, authorization string, revolutAPIVersion RevolutAPIVersionOptional) (*PaymentIntent, error) {
+func (s *PaymentIntents) CancelPaymentIntent(ctx context.Context, paymentIntentID string, revolutAPIVersion RevolutAPIVersionOptional) (*PaymentIntent, error) {
 	if paymentIntentID == "" {
 		return nil, errors.New("merchant: payment_intent_id is required")
 	}
 	if !isUUID(paymentIntentID) {
 		return nil, errors.New("merchant: payment_intent_id must be a valid UUID")
 	}
-	if authorization == "" {
-		return nil, errors.New("merchant: Authorization is required")
-	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
-	if authorization != "" {
-		r.Headers.Set("Authorization", authorization)
-	}
 	if revolutAPIVersion != "" {
 		r.Headers.Set("Revolut-Api-Version", string(revolutAPIVersion))
 	}

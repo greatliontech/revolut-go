@@ -39,7 +39,7 @@ func TestResponseMetadata_CapturesHeaders(t *testing.T) {
 	_, meta, err := client.Accounts.List(
 		context.Background(),
 		"fin-id", "Mon, 10 Sep 2017 19:43:31 UTC", "1.2.3.4",
-		"our-interaction-id", "Bearer tok", "test/1.0",
+		"our-interaction-id", "test/1.0",
 	)
 	if err != nil {
 		t.Fatalf("List: %v", err)
@@ -63,7 +63,7 @@ func TestResponseMetadata_EmptyHeadersStillDecode(t *testing.T) {
 	result, meta, err := client.Accounts.List(
 		context.Background(),
 		"fin", "Mon, 10 Sep 2017 19:43:31 UTC", "1.2.3.4",
-		"", "Bearer tok", "test/1.0",
+		"", "test/1.0",
 	)
 	if err != nil {
 		t.Fatalf("List: %v", err)
@@ -95,7 +95,7 @@ func TestSignedVariant_PreservesRawBytes(t *testing.T) {
 		context.Background(),
 		"consent-7",
 		"fin", "Mon, 10 Sep 2017 19:43:31 UTC", "1.2.3.4",
-		"our-interaction", "Bearer tok", "test/1.0",
+		"our-interaction", "test/1.0",
 	)
 	if err != nil {
 		t.Fatalf("GetConsentsConsentIDSigned: %v", err)
@@ -150,7 +150,7 @@ func TestTransactions_GetAccountsAccountIDTransactions(t *testing.T) {
 		context.Background(),
 		"11111111-1111-1111-1111-111111111111",
 		"fin-id", "Mon, 10 Sep 2017 19:43:31 UTC", "1.2.3.4",
-		"interaction-42", "Bearer tok", "test/1.0",
+		"interaction-42", "test/1.0",
 		nil,
 	)
 	if err != nil {
@@ -159,14 +159,16 @@ func TestTransactions_GetAccountsAccountIDTransactions(t *testing.T) {
 	if meta.InteractionID != "txn-corr" {
 		t.Errorf("InteractionID=%q", meta.InteractionID)
 	}
-	for _, want := range []string{"x-fapi-financial-id", "x-fapi-interaction-id", "Authorization"} {
+	for _, want := range []string{"x-fapi-financial-id", "x-fapi-interaction-id"} {
 		if gotHeaders.Get(want) == "" {
-			// Authorization is transport-owned; caller's literal
-			// value is stripped. The other two must be populated.
-			if want != "Authorization" {
-				t.Errorf("wire header %q missing", want)
-			}
+			t.Errorf("wire header %q missing", want)
 		}
+	}
+	// Authorization is transport-owned: the SDK does not emit it
+	// as a method parameter. Callers wire auth via the Authenticator;
+	// this test uses no auth, so the header must be absent on the wire.
+	if got := gotHeaders.Get("Authorization"); got != "" {
+		t.Errorf("unexpected Authorization header on the wire: %q", got)
 	}
 }
 
@@ -184,7 +186,7 @@ func TestAccounts_EmptyPath_RejectedLocally(t *testing.T) {
 		context.Background(),
 		"",
 		"fin", "Mon, 10 Sep 2017 19:43:31 UTC", "1.2.3.4",
-		"", "Bearer", "test/1.0",
+		"", "test/1.0",
 	)
 	if err == nil || !strings.Contains(err.Error(), "is required") {
 		t.Errorf("want required-path error, got %v", err)
@@ -209,7 +211,7 @@ func TestSignedVariant_RawBytesAreVerbatim(t *testing.T) {
 		context.Background(),
 		"c",
 		"fin", "Mon, 10 Sep 2017 19:43:31 UTC", "1.2.3.4",
-		"", "Bearer", "test/1.0",
+		"", "test/1.0",
 	)
 	if err != nil {
 		t.Fatalf("GetConsentsConsentIDSigned: %v", err)
