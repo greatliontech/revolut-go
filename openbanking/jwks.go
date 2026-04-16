@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"sort"
 )
 
 // JWK represents one key in a JWKS document. Fields are RFC 7517
@@ -18,14 +17,14 @@ import (
 // verifiers expect; the SDK builds JWKs via [JWKFromRSA] rather
 // than callers populating them by hand.
 type JWK struct {
-	Kty            string   `json:"kty"`
-	Use            string   `json:"use,omitempty"`
-	Alg            string   `json:"alg,omitempty"`
-	Kid            string   `json:"kid"`
-	N              string   `json:"n"`
-	E              string   `json:"e"`
-	X5C            []string `json:"x5c,omitempty"`
-	X5TSHA256      string   `json:"x5t#S256,omitempty"`
+	Kty       string   `json:"kty"`
+	Use       string   `json:"use,omitempty"`
+	Alg       string   `json:"alg,omitempty"`
+	Kid       string   `json:"kid"`
+	N         string   `json:"n"`
+	E         string   `json:"e"`
+	X5C       []string `json:"x5c,omitempty"`
+	X5TSHA256 string   `json:"x5t#S256,omitempty"`
 }
 
 // JWKS is the JSON wire form of a key set.
@@ -158,13 +157,3 @@ func rsaThumbprint(pub *rsa.PublicKey) string {
 	return base64.RawURLEncoding.EncodeToString(sum[:])
 }
 
-// sorted returns a stably-sorted copy of in. Used for caller-
-// supplied sets where iteration order would otherwise depend on
-// map traversal.
-func sorted(in []string) []string {
-	out := append([]string(nil), in...)
-	sort.Strings(out)
-	return out
-}
-
-var _ = sorted // reserved for upcoming sets that need stable order
