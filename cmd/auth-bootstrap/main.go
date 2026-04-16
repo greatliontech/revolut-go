@@ -12,7 +12,10 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/subtle"
 	"crypto/tls"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -145,7 +148,15 @@ func run(cfg config) error {
 	}
 	defer ln.Close()
 
-	consentURL := buildConsentURL(cfg)
+	// RFC 6749 §10.12: the client MUST generate a random state value
+	// and verify it on callback to prevent CSRF. 128 bits of crypto
+	// randomness is plenty.
+	stateRaw := make([]byte, 16)
+	if _, err := rand.Read(stateRaw); err != nil {
+		return fmt.Errorf("generate state: %w", err)
+	}
+	expectedState := base64.RawURLEncoding.EncodeToString(stateRaw)
+	consentURL := buildConsentURL(cfg, expectedState)
 	fmt.Printf("Listening on https://%s\n", cfg.addr)
 	fmt.Println()
 	fmt.Println("Open this URL in your browser to authorise the app:")
@@ -174,6 +185,12 @@ func run(cfg config) error {
 		if code == "" {
 			http.Error(w, "missing code", http.StatusBadRequest)
 			errCh <- errors.New("callback had no ?code=")
+			return
+		}
+		gotState := q.Get("state")
+		if subtle.ConstantTimeCompare([]byte(gotState), []byte(expectedState)) != 1 {
+			http.Error(w, "state mismatch", http.StatusBadRequest)
+			errCh <- errors.New("callback ?state= did not match the locally-generated value; CSRF possible")
 			return
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -246,11 +263,12 @@ func run(cfg config) error {
 	return nil
 }
 
-func buildConsentURL(cfg config) string {
+func buildConsentURL(cfg config, state string) string {
 	q := url.Values{
 		"client_id":     {cfg.clientID},
 		"redirect_uri":  {cfg.redirect},
 		"response_type": {"code"},
+		"state":         {state},
 	}
 	return consentHost(cfg.env) + "/app-confirm?" + q.Encode()
 }
