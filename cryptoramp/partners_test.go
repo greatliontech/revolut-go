@@ -48,12 +48,12 @@ func newTestClient(t *testing.T, h http.Handler) *Client {
 	return New(tr)
 }
 
-// TestPartners_ListConfig pins the decode path on a resource
+// TestPartners_GetConfig pins the decode path on a resource
 // that takes no body — a GET whose only variable is the API key
 // header. The response shape is complex (nested slices of
 // supported countries / crypto / fiat) so a regression in the
 // types file would surface here.
-func TestPartners_ListConfig(t *testing.T) {
+func TestPartners_GetConfig(t *testing.T) {
 	client := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/config" {
 			t.Errorf("path=%q; want /config", r.URL.Path)
@@ -66,9 +66,9 @@ func TestPartners_ListConfig(t *testing.T) {
 			"payments":[{"payment":"card","countries":["GB"]}]
 		}`)
 	}))
-	cfg, err := client.Partners.ListConfig(context.Background(), "sandbox-key")
+	cfg, err := client.Partners.GetConfig(context.Background(), "sandbox-key")
 	if err != nil {
-		t.Fatalf("ListConfig: %v", err)
+		t.Fatalf("GetConfig: %v", err)
 	}
 	if len(cfg.Countries) != 2 || cfg.Countries[0] != "GB" {
 		t.Errorf("Countries: %+v", cfg.Countries)

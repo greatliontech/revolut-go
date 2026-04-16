@@ -18,8 +18,8 @@ type Partners struct {
 	t *transport.Transport
 }
 
-// ListBuy retrieve a redirect URL
-func (s *Partners) ListBuy(ctx context.Context, xAPIKey string, opts *GetBuyParams) (*RampRedirectURL, error) {
+// GetBuy retrieve a redirect URL
+func (s *Partners) GetBuy(ctx context.Context, xAPIKey string, opts *GetBuyParams) (*RampRedirectURL, error) {
 	if opts == nil {
 		return nil, errors.New("cryptoramp: GetBuyParams is required")
 	}
@@ -61,8 +61,8 @@ func (s *Partners) ListBuy(ctx context.Context, xAPIKey string, opts *GetBuyPara
 	return &out, nil
 }
 
-// ListConfig retrieve configuration
-func (s *Partners) ListConfig(ctx context.Context, xAPIKey string) (*Config, error) {
+// GetConfig retrieve configuration
+func (s *Partners) GetConfig(ctx context.Context, xAPIKey string) (*Config, error) {
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if xAPIKey != "" {
@@ -171,8 +171,8 @@ func (s *Partners) GetOrder(ctx context.Context, orderID string, xAPIKey string,
 	return &out, nil
 }
 
-// ListQuote retrieve an order quote
-func (s *Partners) ListQuote(ctx context.Context, opts *GetQuoteParams) (*Quote, error) {
+// GetQuote retrieve an order quote
+func (s *Partners) GetQuote(ctx context.Context, opts *GetQuoteParams) (*Quote, error) {
 	if opts == nil {
 		return nil, errors.New("cryptoramp: GetQuoteParams is required")
 	}

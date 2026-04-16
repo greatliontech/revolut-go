@@ -56,12 +56,12 @@ const PartnersPaymentCard PartnersPayment = "card"
 const PartnersPaymentGooglePay PartnersPayment = "google-pay"
 const PartnersPaymentRevolut PartnersPayment = "revolut"
 func (*GetOrdersParams) ApplyDefaults
+func (*Partners) GetBuy
+func (*Partners) GetConfig
 func (*Partners) GetOrder
-func (*Partners) ListBuy
-func (*Partners) ListConfig
+func (*Partners) GetQuote
 func (*Partners) ListOrders
 func (*Partners) ListOrdersAll
-func (*Partners) ListQuote
 func (*Webhooks) Create
 func (*Webhooks) Delete
 func (*Webhooks) Get

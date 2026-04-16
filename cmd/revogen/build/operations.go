@@ -433,7 +433,32 @@ func (b *Builder) deriveMethodName(verb, path string, op *openapi3.Operation, ta
 	if id := op.OperationID; id != "" {
 		return stripOperationIDPrefixes(id, verb, tag)
 	}
-	return fallbackPathName(verb, path, tag)
+	return fallbackPathName(verb, path, tag, responseIsList(op))
+}
+
+// responseIsList reports whether the operation's 2xx response is
+// an array/list shape. Used by the fallback name picker to choose
+// Get vs List on a GET whose path doesn't end in a param: crypto-
+// ramp's GET /config, /buy, /quote return single objects and
+// would otherwise be misnamed List*.
+func responseIsList(op *openapi3.Operation) bool {
+	if op == nil || op.Responses == nil {
+		return false
+	}
+	for _, code := range []string{"200", "201", "202"} {
+		resp := op.Responses.Value(code)
+		if resp == nil || resp.Value == nil {
+			continue
+		}
+		mt := resp.Value.Content["application/json"]
+		if mt == nil || mt.Schema == nil {
+			continue
+		}
+		if s := mt.Schema.Value; s != nil && schemaTypeIs(s, "array") {
+			return true
+		}
+	}
+	return false
 }
 
 // stripOperationIDPrefixes takes the spec's operationId and drops
@@ -567,8 +592,12 @@ func verbSafe(v string) string { return strings.ToUpper(v) }
 
 // fallbackPathName derives a method name for operations that lack
 // an operationId. The path's last non-parameter segment plus the
-// HTTP verb's word produces a readable default.
-func fallbackPathName(verb, path, tag string) string {
+// HTTP verb's word produces a readable default. respIsList lets
+// the picker distinguish Get-single from List-many on a GET whose
+// path doesn't end in a param — a spec like crypto-ramp's
+// GET /config (returns a single Config object) becomes GetConfig,
+// not ListConfig.
+func fallbackPathName(verb, path, tag string, respIsList bool) string {
 	segs := nonParamSegments(path)
 	segs = stripTagSegmentPrefix(segs, tag)
 	endsInParam := strings.HasSuffix(strings.TrimRight(path, "/"), "}")
@@ -585,6 +614,12 @@ func fallbackPathName(verb, path, tag string) string {
 	switch verb {
 	case http.MethodGet:
 		if endsInParam {
+			return "Get" + suffix
+		}
+		if !respIsList {
+			if suffix == "" {
+				return "Get"
+			}
 			return "Get" + suffix
 		}
 		if suffix == "" {
