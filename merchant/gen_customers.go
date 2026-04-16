@@ -71,10 +71,10 @@ func (s *Customers) GetListAll(ctx context.Context, authorization string, revolu
 					return
 				}
 			}
-			if resp.NextPageToken == "" {
+			if resp.NextPageToken == nil || *resp.NextPageToken == "" {
 				return
 			}
-			p.PageToken = string(resp.NextPageToken)
+			p.PageToken = string(*resp.NextPageToken)
 		}
 	}
 }

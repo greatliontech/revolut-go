@@ -95,7 +95,18 @@ func (b *Builder) resolveNamedRef(specName string) *ir.Type {
 		}
 		return ir.Slice(elem)
 	}
-	return b.maybePointerForSelfRef(specName, ir.Named(b.resolvedName(specName)))
+	t := b.maybePointerForSelfRef(specName, ir.Named(b.resolvedName(specName)))
+	// A component schema declared with `nullable: true` propagates
+	// to every reference site. Without this wrap, a nullable string
+	// alias like merchant's NextPageToken (`type: string,
+	// nullable: true`) used in a response struct can't distinguish
+	// "omitted"/"null" from "present empty string". Arrays already
+	// carry nil-slice semantics so the wrap applies only to the
+	// non-array branch.
+	if v.Nullable && t != nil && !t.IsPointer() && t.Kind != ir.KindSlice && t.Kind != ir.KindMap {
+		t = ir.Pointer(t)
+	}
+	return t
 }
 
 // maybePointerForSelfRef wraps t in a pointer when specName is the

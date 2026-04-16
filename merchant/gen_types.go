@@ -1082,7 +1082,7 @@ type CustomersResponse struct {
 	Customers []CustomerSimplified `json:"customers"`
 
 	// Token for retrieving the next page of results. Use this token as the value of the `page_token` query parameter in your next request to retrieve the next page.
-	NextPageToken NextPageToken `json:"next_page_token,omitempty"`
+	NextPageToken *NextPageToken `json:"next_page_token,omitempty"`
 }
 
 // CycleCount number of billing cycles for this phase before moving to the next phase.
@@ -4093,7 +4093,7 @@ type Subscription struct {
 	SetupOrderID SetupOrderID `json:"setup_order_id,omitempty"`
 
 	// The date and time the subscription started in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
-	StartDate SubscriptionStartDate `json:"start_date,omitempty"`
+	StartDate *SubscriptionStartDate `json:"start_date,omitempty"`
 
 	// The state of the subscription.
 	State SubscriptionState `json:"state"`
@@ -4102,7 +4102,7 @@ type Subscription struct {
 	TrialDuration SubscriptionTrialDuration `json:"trial_duration,omitempty"`
 
 	// The date and time when the subscription's trial period ends in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
-	TrialEndDate SubscriptionTrialEndDate `json:"trial_end_date,omitempty"`
+	TrialEndDate *SubscriptionTrialEndDate `json:"trial_end_date,omitempty"`
 
 	// The date and time the subscription was last updated in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
 	UpdatedAt SubscriptionUpdated `json:"updated_at"`
@@ -4157,7 +4157,7 @@ type SubscriptionCycle struct {
 	PlanVariationPhaseID SubscriptionPlanPhaseID `json:"plan_variation_phase_id,omitempty"`
 
 	// The unique identifier of the previous billing cycle.
-	PreviousCycleID PreviousCycleID `json:"previous_cycle_id,omitempty"`
+	PreviousCycleID *PreviousCycleID `json:"previous_cycle_id,omitempty"`
 
 	// The date and time the subscription cycle starts in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
 	StartDate SubscriptionCycleStartDate `json:"start_date,omitempty"`
@@ -4296,7 +4296,7 @@ type SubscriptionPlanPhase struct {
 	Currency Currency `json:"currency,omitempty"`
 
 	// Number of billing cycles for this phase before moving to the next phase.
-	CycleCount CycleCount `json:"cycle_count,omitempty"`
+	CycleCount *CycleCount `json:"cycle_count,omitempty"`
 
 	// The length of each billing cycle for this phase in [ISO 8601 duration format](https://en.wikipedia.org/wiki/ISO_8601#Durations).
 	CycleDuration CycleDuration `json:"cycle_duration"`
@@ -4316,7 +4316,7 @@ type SubscriptionPlanPhaseCreation struct {
 	Currency Currency `json:"currency"`
 
 	// Number of billing cycles for this phase before moving to the next phase.
-	CycleCount CycleCount `json:"cycle_count,omitempty"`
+	CycleCount *CycleCount `json:"cycle_count,omitempty"`
 
 	// The length of each billing cycle for this phase in [ISO 8601 duration format](https://en.wikipedia.org/wiki/ISO_8601#Durations).
 	CycleDuration CycleDuration `json:"cycle_duration"`
@@ -4441,7 +4441,7 @@ type SubscriptionUpdated = time.Time
 
 type SubscriptionsResponse struct {
 	// Token for retrieving the next page of results. Use this token as the value of the `page_token` query parameter in your next request to retrieve the next page.
-	NextPageToken NextPageToken `json:"next_page_token,omitempty"`
+	NextPageToken *NextPageToken `json:"next_page_token,omitempty"`
 
 	// List of subscriptions.
 	Subscriptions []Subscription `json:"subscriptions"`

@@ -204,10 +204,10 @@ func (s *Subscriptions) GetListAll(ctx context.Context, authorization string, re
 					return
 				}
 			}
-			if resp.NextPageToken == "" {
+			if resp.NextPageToken == nil || *resp.NextPageToken == "" {
 				return
 			}
-			p.PageToken = string(resp.NextPageToken)
+			p.PageToken = string(*resp.NextPageToken)
 		}
 	}
 }

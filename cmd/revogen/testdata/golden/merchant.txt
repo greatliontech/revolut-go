@@ -527,7 +527,7 @@ type CustomerUpdateV2 struct { DateOfBirth DateOfBirth `json:"date_of_birth,omit
 type CustomerV2 struct { DateOfBirth DateOfBirth `json:"date_of_birth,omitempty"` Email Email `json:"email,omitempty"` FullName FullName `json:"full_name,omitempty"` ID string `json:"id,omitempty"` Phone Phone `json:"phone,omitempty"` }
 type CustomerV3 struct { CreatedAt time.Time `json:"created_at"` Email Email `json:"email"` FullName FullName `json:"full_name,omitempty"` ID CustomerID `json:"id"` PaymentMethods []PaymentMethodV4 `json:"payment_methods"` Phone Phone `json:"phone,omitempty"` UpdatedAt time.Time `json:"updated_at"` }
 type Customers struct { t *transport.Transport }
-type CustomersResponse struct { Customers []CustomerSimplified `json:"customers"` NextPageToken NextPageToken `json:"next_page_token,omitempty"` }
+type CustomersResponse struct { Customers []CustomerSimplified `json:"customers"` NextPageToken *NextPageToken `json:"next_page_token,omitempty"` }
 type CustomersRevolutAPIVersion string
 type CycleCount int
 type CycleDuration string
@@ -745,11 +745,11 @@ type SetupOrderRedirectURL string
 type Shipment struct { EstimatedDeliveryDate *time.Time `json:"estimated_delivery_date,omitempty"` ShippingCompanyName string `json:"shipping_company_name"` TrackingNumber string `json:"tracking_number"` TrackingURL string `json:"tracking_url,omitempty"` }
 type Shipping struct { Address AddressV3 `json:"address,omitempty"` Contact Contact `json:"contact,omitempty"` Shipments []Shipment `json:"shipments,omitempty"` }
 type StatementDescriptorSuffix string
-type Subscription struct { CreatedAt SubscriptionCreated `json:"created_at"` CurrentCycleID SubscriptionCycleID `json:"current_cycle_id"` CustomerID CustomerID `json:"customer_id"` ExternalReference SubscriptionExternalReference `json:"external_reference,omitempty"` ID SubscriptionID `json:"id"` PaymentMethodID PaymentMethodID `json:"payment_method_id,omitempty"` PaymentMethodType SubscriptionPaymentMethodType `json:"payment_method_type"` PlanID SubscriptionPlanID `json:"plan_id"` PlanVariationID SubscriptionPlanVariationID `json:"plan_variation_id"` SetupOrderID SetupOrderID `json:"setup_order_id,omitempty"` StartDate SubscriptionStartDate `json:"start_date,omitempty"` State SubscriptionState `json:"state"` TrialDuration SubscriptionTrialDuration `json:"trial_duration,omitempty"` TrialEndDate SubscriptionTrialEndDate `json:"trial_end_date,omitempty"` UpdatedAt SubscriptionUpdated `json:"updated_at"` }
+type Subscription struct { CreatedAt SubscriptionCreated `json:"created_at"` CurrentCycleID SubscriptionCycleID `json:"current_cycle_id"` CustomerID CustomerID `json:"customer_id"` ExternalReference SubscriptionExternalReference `json:"external_reference,omitempty"` ID SubscriptionID `json:"id"` PaymentMethodID PaymentMethodID `json:"payment_method_id,omitempty"` PaymentMethodType SubscriptionPaymentMethodType `json:"payment_method_type"` PlanID SubscriptionPlanID `json:"plan_id"` PlanVariationID SubscriptionPlanVariationID `json:"plan_variation_id"` SetupOrderID SetupOrderID `json:"setup_order_id,omitempty"` StartDate *SubscriptionStartDate `json:"start_date,omitempty"` State SubscriptionState `json:"state"` TrialDuration SubscriptionTrialDuration `json:"trial_duration,omitempty"` TrialEndDate *SubscriptionTrialEndDate `json:"trial_end_date,omitempty"` UpdatedAt SubscriptionUpdated `json:"updated_at"` }
 type SubscriptionAmount int
 type SubscriptionCreated time.Time
 type SubscriptionCreation struct { CustomerID CustomerID `json:"customer_id"` ExternalReference SubscriptionExternalReference `json:"external_reference,omitempty"` PlanVariationID SubscriptionPlanVariationID `json:"plan_variation_id"` SetupOrderRedirectURL SetupOrderRedirectURL `json:"setup_order_redirect_url,omitempty"` TrialDuration SubscriptionTrialDuration `json:"trial_duration,omitempty"` }
-type SubscriptionCycle struct { EndDate SubscriptionCycleEndDate `json:"end_date,omitempty"` ID SubscriptionCycleID `json:"id"` Number CycleNumber `json:"number"` OrderID OrderID `json:"order_id,omitempty"` PlanVariationID SubscriptionPlanVariationID `json:"plan_variation_id"` PlanVariationPhaseID SubscriptionPlanPhaseID `json:"plan_variation_phase_id,omitempty"` PreviousCycleID PreviousCycleID `json:"previous_cycle_id,omitempty"` StartDate SubscriptionCycleStartDate `json:"start_date,omitempty"` State SubscriptionCycleState `json:"state"` SubscriptionID SubscriptionID `json:"subscription_id"` Trial SubscriptionCycleTrial `json:"trial,omitempty"` }
+type SubscriptionCycle struct { EndDate SubscriptionCycleEndDate `json:"end_date,omitempty"` ID SubscriptionCycleID `json:"id"` Number CycleNumber `json:"number"` OrderID OrderID `json:"order_id,omitempty"` PlanVariationID SubscriptionPlanVariationID `json:"plan_variation_id"` PlanVariationPhaseID SubscriptionPlanPhaseID `json:"plan_variation_phase_id,omitempty"` PreviousCycleID *PreviousCycleID `json:"previous_cycle_id,omitempty"` StartDate SubscriptionCycleStartDate `json:"start_date,omitempty"` State SubscriptionCycleState `json:"state"` SubscriptionID SubscriptionID `json:"subscription_id"` Trial SubscriptionCycleTrial `json:"trial,omitempty"` }
 type SubscriptionCycleEndDate time.Time
 type SubscriptionCycleID string
 type SubscriptionCycleStartDate time.Time
@@ -765,8 +765,8 @@ type SubscriptionPlanCreation struct { Name SubscriptionPlanName `json:"name"` T
 type SubscriptionPlanID string
 type SubscriptionPlanName string
 type SubscriptionPlanOrdinal int
-type SubscriptionPlanPhase struct { Amount SubscriptionAmount `json:"amount,omitempty"` Currency Currency `json:"currency,omitempty"` CycleCount CycleCount `json:"cycle_count,omitempty"` CycleDuration CycleDuration `json:"cycle_duration"` ID SubscriptionPlanPhaseID `json:"id"` Ordinal SubscriptionPlanOrdinal `json:"ordinal"` }
-type SubscriptionPlanPhaseCreation struct { Amount SubscriptionAmount `json:"amount"` Currency Currency `json:"currency"` CycleCount CycleCount `json:"cycle_count,omitempty"` CycleDuration CycleDuration `json:"cycle_duration"` Ordinal SubscriptionPlanOrdinal `json:"ordinal"` }
+type SubscriptionPlanPhase struct { Amount SubscriptionAmount `json:"amount,omitempty"` Currency Currency `json:"currency,omitempty"` CycleCount *CycleCount `json:"cycle_count,omitempty"` CycleDuration CycleDuration `json:"cycle_duration"` ID SubscriptionPlanPhaseID `json:"id"` Ordinal SubscriptionPlanOrdinal `json:"ordinal"` }
+type SubscriptionPlanPhaseCreation struct { Amount SubscriptionAmount `json:"amount"` Currency Currency `json:"currency"` CycleCount *CycleCount `json:"cycle_count,omitempty"` CycleDuration CycleDuration `json:"cycle_duration"` Ordinal SubscriptionPlanOrdinal `json:"ordinal"` }
 type SubscriptionPlanPhaseID string
 type SubscriptionPlanState string
 type SubscriptionPlanTrialDuration string
@@ -782,7 +782,7 @@ type SubscriptionTrialEndDate time.Time
 type SubscriptionUpdate struct { ExternalReference SubscriptionExternalReference `json:"external_reference,omitempty"` }
 type SubscriptionUpdated time.Time
 type Subscriptions struct { t *transport.Transport }
-type SubscriptionsResponse struct { NextPageToken NextPageToken `json:"next_page_token,omitempty"` Subscriptions []Subscription `json:"subscriptions"` }
+type SubscriptionsResponse struct { NextPageToken *NextPageToken `json:"next_page_token,omitempty"` Subscriptions []Subscription `json:"subscriptions"` }
 type SubscriptionsRevolutAPIVersion string
 type SupplierPaymentDate time.Time
 type SynchronousWebhook struct { EventType SynchronousWebhookEventType `json:"event_type"` ID string `json:"id"` LocationID LocationID `json:"location_id,omitempty"` SigningKey string `json:"signing_key"` URL string `json:"url"` }
