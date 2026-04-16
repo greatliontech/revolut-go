@@ -19,6 +19,17 @@ type Cards struct {
 
 // List retrieve a list of cards
 //
+// Get the list of all cards in your organisation.
+//
+// The results are paginated and sorted by the `created_at` date in reverse chronological order.
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// For more information, see the guides: [Manage cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards).
+//
 // Docs: https://developer.revolut.com/docs/business/get-cards
 // Required scopes: READ
 func (s *Cards) List(ctx context.Context, opts *GetCardsParams) ([]CardResponse, error) {
@@ -72,6 +83,18 @@ func (s *Cards) ListAll(ctx context.Context, opts *GetCardsParams) iter.Seq2[Car
 
 // Create create a card
 //
+// Create a new [team member card](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards), [company card](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards), or [auto-issued card](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards).
+//
+// When using the API, you can create only virtual cards.
+// To create a physical card, use the [Revolut Business app](https://business.revolut.com).
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// For more information, see the guides: [Manage cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards).
+//
 // Docs: https://developer.revolut.com/docs/business/create-card
 // Required scopes: WRITE
 func (s *Cards) Create(ctx context.Context, req CardsBody) (*CardCreatedResponse, error) {
@@ -105,6 +128,15 @@ func (s *Cards) Create(ctx context.Context, req CardsBody) (*CardCreatedResponse
 
 // Get retrieve card details
 //
+// Get the details of a specific card, based on its ID.
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// For more information, see the guides: [Manage cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards).
+//
 // Docs: https://developer.revolut.com/docs/business/get-card
 // Required scopes: READ
 func (s *Cards) Get(ctx context.Context, cardID string) (*CardResponse, error) {
@@ -122,6 +154,20 @@ func (s *Cards) Get(ctx context.Context, cardID string) (*CardResponse, error) {
 }
 
 // Update update card settings
+//
+// Update settings for a specific card, based on its ID.
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// :::caution
+// Some spend control parameters can affect one another.
+// When updating spend controls, review the resulting settings in the response to ensure they reflect the configuration you intended.
+// :::
+//
+// For more information, see the guides: [Manage cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards).
 //
 // Docs: https://developer.revolut.com/docs/business/update-card
 // Required scopes: WRITE
@@ -162,6 +208,19 @@ func (s *Cards) Update(ctx context.Context, cardID string, req CardsBody) (*Card
 
 // Delete terminate a card
 //
+// Terminate a specific card, based on its ID.
+//
+// Once the card is terminated, it will not be returned by the API.
+//
+// A successful response does not get any content in return.
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// For more information, see the guides: [Manage cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards).
+//
 // Docs: https://developer.revolut.com/docs/business/delete-card
 // Required scopes: WRITE
 func (s *Cards) Delete(ctx context.Context, cardID string) error {
@@ -175,6 +234,27 @@ func (s *Cards) Delete(ctx context.Context, cardID string) error {
 }
 
 // UpdateContacts update card contacts
+//
+// Update the list of card contacts (`contact_ids`) for a [company card](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards).
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// You can only update cards with existing contacts.
+// If a card does not have any contacts assigned, this operation is not allowed.
+//
+// On success, the updated list of contacts is returned.
+//
+// :::caution
+// This operation **overrides** the existing contacts.
+// This means that it removes the current list completely, and replaces it with the new one provided in this request.
+//
+// If you want to add new contacts for the card instead of replacing the existing ones, make sure that you [fetch](https://developer.revolut.com/docs/business/get-card) the existing contacts first, and include them in your request.
+// :::
+//
+// For more information, see the guides: [Manage cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards).
 //
 // Docs: https://developer.revolut.com/docs/business/update-card-contacts
 // Required scopes: WRITE
@@ -194,6 +274,18 @@ func (s *Cards) UpdateContacts(ctx context.Context, cardID string, req []CardCon
 
 // FreezeCard freeze a card
 //
+// Freeze a card to make it temporarily unavailable for spending.
+// You can only freeze a card that is in the state `active`.
+//
+// A successful freeze changes the card's state to `frozen`, and no content is returned in the response.
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// For more information, see the guides: [Manage cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards).
+//
 // Docs: https://developer.revolut.com/docs/business/freeze-card
 // Required scopes: WRITE
 func (s *Cards) FreezeCard(ctx context.Context, cardID string) error {
@@ -208,6 +300,17 @@ func (s *Cards) FreezeCard(ctx context.Context, cardID string) error {
 
 // LockCard lock a card
 //
+// Apply an admin lock to a card to make it temporarily unavailable for spending.
+//
+// A successful lock changes the card's state to `locked`, and no content is returned in the response.
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// For more information, see the guides: [Manage cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards).
+//
 // Docs: https://developer.revolut.com/docs/business/lock-card
 // Required scopes: WRITE
 func (s *Cards) LockCard(ctx context.Context, cardID string) error {
@@ -221,6 +324,36 @@ func (s *Cards) LockCard(ctx context.Context, cardID string) error {
 }
 
 // UpdateReferences update card references
+//
+// Update the list of [references (`references`)](https://developer.revolut.com/docs/business/get-card#response) for a [company](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards) or [auto-issued card](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards).
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// References can be amended up to 10 times.
+// Reference names must be unique.
+//
+// References are only supported for cards owned by the business (i.e. [company](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards) or [auto-issued cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards)).
+// They can't be added to [team member cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards) (i.e. with `holder_id` present).
+//
+// The references recorded on a transaction are those assigned to the card at the time the transaction took place.
+// If the references are amended, they will only be applied to future transactions.
+// Existing transaction are not affected.
+//
+// On success, the updated list of references is returned.
+//
+// :::caution
+// This operation **overrides** the existing references.
+// This means that it removes the current list completely, and replaces it with the new one provided in this request.
+//
+// If you want to add references to the card instead of replacing the existing ones, make sure that you [fetch](https://developer.revolut.com/docs/business/get-card) the existing references first, and include them in your request.
+//
+// To delete existing references without adding new ones, simply provide an empty list.
+// :::
+//
+// For more information, see the guides: [Manage cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards).
 //
 // Docs: https://developer.revolut.com/docs/business/update-card-references
 // Required scopes: WRITE
@@ -240,6 +373,17 @@ func (s *Cards) UpdateReferences(ctx context.Context, cardID string, req []CardR
 
 // GetSensitiveCardDetails retrieve sensitive card details
 //
+// Get sensitive details of a specific card, based on its ID.
+//
+// Requires the `READ_SENSITIVE_CARD_DATA` token scope. For more information, see the **Authorization** section.
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// For more information, see the guides: [Manage cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards).
+//
 // Docs: https://developer.revolut.com/docs/business/get-sensitive-card-details
 // Required scopes: READ_SENSITIVE_CARD_DATA
 func (s *Cards) GetSensitiveCardDetails(ctx context.Context, cardID string) (*GetSensitiveCardDetailsResponse, error) {
@@ -258,6 +402,18 @@ func (s *Cards) GetSensitiveCardDetails(ctx context.Context, cardID string) (*Ge
 
 // UnfreezeCard unfreeze a card
 //
+// Unfreeze a card to re-enable spending for that card.
+// You can only unfreeze a card that is in the state `frozen`.
+//
+// A successful unfreeze changes the card's state back to `active`, and no content is returned in the response.
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// For more information, see the guides: [Manage cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards).
+//
 // Docs: https://developer.revolut.com/docs/business/unfreeze-card
 // Required scopes: WRITE
 func (s *Cards) UnfreezeCard(ctx context.Context, cardID string) error {
@@ -271,6 +427,31 @@ func (s *Cards) UnfreezeCard(ctx context.Context, cardID string) error {
 }
 
 // UnlockCard unlock a card
+//
+// Unlock a card locked with an admin lock or spending period settings to make it available for spending again.
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Cards API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// ::::::caution
+// If a card has a `spending_period` set and is locked due to being outside of that period, unlocking the card removes this spending period completely, including the end date.
+//
+// If you want to unlock such a card but keep its spending period end date:
+// 1. [Fetch](https://developer.revolut.com/docs/business/get-card) the card's details.
+// 2. Save the `spending_period.end_date` and `spending_period.end_date_action` settings.
+// 3. [Unlock](https://developer.revolut.com/docs/business/unlock-card) the card.
+// 4. [Update](https://developer.revolut.com/docs/business/update-card) the card's `spending_period` by re-adding the saved settings.
+//
+// :::tip
+// If both start and end dates for the spending period are provided, and the card is locked due to those dates, to unlock such a card, [update](https://developer.revolut.com/docs/business/update-card) its `spending_period` settings instead.
+// :::
+// ::::::
+//
+// A successful unlock changes the card's state to `active`, and no content is returned in the response.
+//
+// For more information, see the guides: [Manage cards](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards).
 //
 // Docs: https://developer.revolut.com/docs/business/unlock-card
 // Required scopes: WRITE

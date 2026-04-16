@@ -19,6 +19,15 @@ type Partners struct {
 }
 
 // GetBuy retrieve a redirect URL
+//
+// Retrieve a redirect URL to the Ramp app widget for provided buy parameters. Use it to redirect the customer to Revolut Ramp to make the purchase.
+//
+// :::note
+// The `amount` in the Redirect URL is provided in minor currency units.
+// For example, GBP 12.00 is represented as `1200`.
+// :::
+//
+// For more information, see the guides: [Leverage the Crypto Ramp API -> Get a Revolut Ramp Redirect URL](https://developer.revolut.com/docs/guides/crypto-ramp/guides/buy-crypto/tutorials/use-the-api#get-a-revolut-ramp-redirect-url).
 func (s *Partners) GetBuy(ctx context.Context, xAPIKey string, opts *GetBuyParams) (*RampRedirectURL, error) {
 	if xAPIKey == "" {
 		return nil, errors.New("cryptoramp: X-API-KEY is required")
@@ -70,6 +79,10 @@ func (s *Partners) GetBuy(ctx context.Context, xAPIKey string, opts *GetBuyParam
 }
 
 // GetConfig retrieve configuration
+//
+// Retrieve Revolut Ramp configuration, such as available fiat currencies and crypto tokens with corresponding limits and supported countries.
+//
+// For more information, see the guides: [Leverage the Crypto Ramp API -> Get your configuration details](https://developer.revolut.com/docs/guides/crypto-ramp/guides/buy-crypto/tutorials/use-the-api#get-your-configuration-details).
 func (s *Partners) GetConfig(ctx context.Context, xAPIKey string) (*Config, error) {
 	if xAPIKey == "" {
 		return nil, errors.New("cryptoramp: X-API-KEY is required")
@@ -93,6 +106,12 @@ func (s *Partners) GetConfig(ctx context.Context, xAPIKey string) (*Config, erro
 }
 
 // ListOrders retrieve all orders
+//
+// Retrieve all orders by date range.
+//
+// The results are sorted chronologically by the `created_at` date (i.e. oldest first).
+//
+// For more information, see the guides: [Leverage the Crypto Ramp API -> Get all orders](https://developer.revolut.com/docs/guides/crypto-ramp/guides/buy-crypto/tutorials/use-the-api#get-all-orders).
 func (s *Partners) ListOrders(ctx context.Context, xAPIKey string, opts *GetOrdersParams) ([]Order, error) {
 	if xAPIKey == "" {
 		return nil, errors.New("cryptoramp: X-API-KEY is required")
@@ -170,6 +189,10 @@ func (s *Partners) ListOrdersAll(ctx context.Context, xAPIKey string, opts *GetO
 }
 
 // GetOrder retrieve an order
+//
+// Retrieve an order by `order_id` provided in the path and the `wallet` address provided as a query parameter.
+//
+// For more information, see the guides: [Leverage the Crypto Ramp API -> Get an order](https://developer.revolut.com/docs/guides/crypto-ramp/guides/buy-crypto/tutorials/use-the-api#get-an-order).
 func (s *Partners) GetOrder(ctx context.Context, orderID string, xAPIKey string, opts *GetOrdersParams2) (*Order, error) {
 	if orderID == "" {
 		return nil, errors.New("cryptoramp: order_id is required")
@@ -206,6 +229,11 @@ func (s *Partners) GetOrder(ctx context.Context, orderID string, xAPIKey string,
 }
 
 // GetQuote retrieve an order quote
+//
+// Retrieve an order quote representing current exchange rate, total crypto amount and fees.
+// Use it to display potential exchange rate to your customer.
+//
+// For more information, see the guides: [Leverage the Crypto Ramp API -> Get an order quote](https://developer.revolut.com/docs/guides/crypto-ramp/guides/buy-crypto/tutorials/use-the-api#get-an-order-quote).
 func (s *Partners) GetQuote(ctx context.Context, opts *GetQuoteParams) (*Quote, error) {
 	if opts == nil {
 		return nil, errors.New("cryptoramp: GetQuoteParams is required")

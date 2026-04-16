@@ -18,6 +18,10 @@ type Webhooks struct {
 }
 
 // List retrieve a list of webhooks
+//
+// Get a list of webhooks that the partner is currently subscribed to.
+//
+// For more information, see the guides: [Work with webhooks -> Track order and payment lifecycle](https://developer.revolut.com/docs/guides/crypto-ramp/guides/buy-crypto/tutorials/work-with-webhooks/use-webhooks).
 func (s *Webhooks) List(ctx context.Context, xAPIKey string) ([]Webhook, error) {
 	if xAPIKey == "" {
 		return nil, errors.New("cryptoramp: X-API-KEY is required")
@@ -41,6 +45,10 @@ func (s *Webhooks) List(ctx context.Context, xAPIKey string) ([]Webhook, error) 
 }
 
 // Create create a webhook
+//
+// Create a webhook so that Ramp can push event notifications to the specified URL.
+//
+// For more information, see the guides: [Work with webhooks -> Track order and payment lifecycle](https://developer.revolut.com/docs/guides/crypto-ramp/guides/buy-crypto/tutorials/work-with-webhooks/use-webhooks).
 func (s *Webhooks) Create(ctx context.Context, xAPIKey string, req WebhookCreateRequest) (*Webhook, error) {
 	if xAPIKey == "" {
 		return nil, errors.New("cryptoramp: X-API-KEY is required")
@@ -72,6 +80,10 @@ func (s *Webhooks) Create(ctx context.Context, xAPIKey string, req WebhookCreate
 }
 
 // Get retrieve a webhook
+//
+// Get the details of a specific webhook.
+//
+// For more information, see the guides: [Work with webhooks -> Track order and payment lifecycle](https://developer.revolut.com/docs/guides/crypto-ramp/guides/buy-crypto/tutorials/work-with-webhooks/use-webhooks).
 func (s *Webhooks) Get(ctx context.Context, webhookID string, xAPIKey string) (*Webhook, error) {
 	if webhookID == "" {
 		return nil, errors.New("cryptoramp: webhook_id is required")
@@ -101,6 +113,10 @@ func (s *Webhooks) Get(ctx context.Context, webhookID string, xAPIKey string) (*
 }
 
 // Update update a webhook
+//
+// Update the details of a specific webhook.
+//
+// For more information, see the guides: [Work with webhooks -> Track order and payment lifecycle](https://developer.revolut.com/docs/guides/crypto-ramp/guides/buy-crypto/tutorials/work-with-webhooks/use-webhooks).
 func (s *Webhooks) Update(ctx context.Context, webhookID string, xAPIKey string, req WebhookUpdateRequest) (*Webhook, error) {
 	if webhookID == "" {
 		return nil, errors.New("cryptoramp: webhook_id is required")
@@ -132,6 +148,10 @@ func (s *Webhooks) Update(ctx context.Context, webhookID string, xAPIKey string,
 }
 
 // Delete delete a webhook
+//
+// Delete a webhook so that events are not sent to the specified URL any more.
+//
+// For more information, see the guides: [Work with webhooks -> Track order and payment lifecycle](https://developer.revolut.com/docs/guides/crypto-ramp/guides/buy-crypto/tutorials/work-with-webhooks/use-webhooks).
 func (s *Webhooks) Delete(ctx context.Context, webhookID string, xAPIKey string) error {
 	if webhookID == "" {
 		return errors.New("cryptoramp: webhook_id is required")

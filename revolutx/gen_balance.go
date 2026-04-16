@@ -19,6 +19,9 @@ type Balance struct {
 
 // GetAllBalances get all balances
 //
+// Get crypto exchange account balances for the requesting user.
+// The user is resolved by the provided API key.
+//
 // Docs: https://developer.revolut.com/docs/revolutx/get-all-balances
 func (s *Balance) GetAllBalances(ctx context.Context, xRevxTimestamp int, xRevxSignature string) ([]AccountBalanceEntry, error) {
 	if xRevxSignature == "" {

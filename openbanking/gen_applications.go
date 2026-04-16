@@ -20,6 +20,10 @@ type Applications struct {
 
 // GetDistinguishedName get a distinguished name (DN)
 //
+// Get the distinguished name (DN) of your transport certificate which is used to identify your requests.
+//
+// This parameter is needed in order to [register or update your application via DCR](https://developer.revolut.com/docs/guides/build-banking-apps/register-your-application-using-dcr/).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/get-distinguished-name
 func (s *Applications) GetDistinguishedName(ctx context.Context) (*GetDistinguishedNameResponse, error) {
 	var out GetDistinguishedNameResponse
@@ -30,6 +34,11 @@ func (s *Applications) GetDistinguishedName(ctx context.Context) (*GetDistinguis
 }
 
 // RegisterApplication register an application
+//
+// Register an application via DCR.
+// This endpoint accepts only JWT, which needs to be precalculated.
+//
+// For more information, see [Register your application using DCR: Create a JWT](https://developer.revolut.com/docs/guides/build-banking-apps/register-your-application-using-dcr/create-a-jwt).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/register-application
 // Required scopes: openid
@@ -53,6 +62,8 @@ func (s *Applications) RegisterApplication(ctx context.Context, body io.Reader) 
 
 // Get get an application
 //
+// Retrieve an already registered application.
+//
 // Docs: https://developer.revolut.com/docs/openbanking/get-application
 // Required scopes: openid
 func (s *Applications) Get(ctx context.Context, clientID string) (*GetApplicationResponse, error) {
@@ -67,6 +78,10 @@ func (s *Applications) Get(ctx context.Context, clientID string) (*GetApplicatio
 }
 
 // Update update an application
+//
+// Update an existing application.
+//
+// This endpoint only accepts JWT, which must be precalculated as described in [Create a JWT](https://developer.revolut.com/docs/guides/build-banking-apps/register-your-application-using-dcr/create-a-jwt).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/update-application
 // Required scopes: openid
@@ -92,6 +107,8 @@ func (s *Applications) Update(ctx context.Context, clientID string, body io.Read
 }
 
 // Delete delete an application
+//
+// Delete an existing application.
 //
 // Docs: https://developer.revolut.com/docs/openbanking/delete-application
 // Required scopes: openid

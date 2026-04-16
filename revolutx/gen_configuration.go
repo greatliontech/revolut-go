@@ -19,6 +19,8 @@ type Configuration struct {
 
 // GetAllCurrencies get all currencies
 //
+// Get configuration for all currencies used on the exchange.
+//
 // Docs: https://developer.revolut.com/docs/revolutx/get-all-currencies
 func (s *Configuration) GetAllCurrencies(ctx context.Context, xRevxTimestamp int, xRevxSignature string) (*CurrenciesResponse, error) {
 	if xRevxSignature == "" {
@@ -44,6 +46,8 @@ func (s *Configuration) GetAllCurrencies(ctx context.Context, xRevxTimestamp int
 }
 
 // GetAllCurrencyPairs get all currency pairs
+//
+// Get configuration for all traded currency pairs.
 //
 // Docs: https://developer.revolut.com/docs/revolutx/get-all-currency-pairs
 func (s *Configuration) GetAllCurrencyPairs(ctx context.Context, xRevxTimestamp int, xRevxSignature string) (*CurrencyPairsResponse, error) {

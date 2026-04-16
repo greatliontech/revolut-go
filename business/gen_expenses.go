@@ -20,6 +20,21 @@ type Expenses struct {
 
 // List retrieve a list of expenses
 //
+// Get all your expenses, or use the query parameters to filter the results.
+//
+// The expenses are sorted by the `expense_date` value in reverse chronological order, and they're **paginated**.
+// The maximum number of expenses returned per page is specified by the `count` parameter.
+// To get the next page of results, make a new request and use the `expense_date` value from the last item of the previous page as the value for the `to` parameter.
+//
+// The data enriched by the user, for example, VAT and cost centre, is returned under `splits[].tax_rate` and `labels`, respectively.
+//
+// :::note
+// - The API returns a maximum of 500 expenses per request.
+// - This feature is not available in Sandbox.
+// :::
+//
+// For more information, see the guides: [Retrieve expenses and receipts](https://developer.revolut.com/docs/guides/manage-accounts/accounts-and-transactions/retrieve-expenses).
+//
 // Docs: https://developer.revolut.com/docs/business/get-expenses
 // Required scopes: READ
 func (s *Expenses) List(ctx context.Context, opts *GetExpensesParams) ([]Expense, error) {
@@ -73,6 +88,16 @@ func (s *Expenses) ListAll(ctx context.Context, opts *GetExpensesParams) iter.Se
 
 // GetExpense retrieve an expense
 //
+// Get the information about a specific expense by ID.
+//
+// The data enriched by the user, for example, VAT and cost centre, is returned under `splits[].tax_rate` and `labels`, respectively.
+//
+// :::note
+// This feature is not available in Sandbox.
+// :::
+//
+// For more information, see the guides: [Retrieve expenses and receipts](https://developer.revolut.com/docs/guides/manage-accounts/accounts-and-transactions/retrieve-expenses).
+//
 // Docs: https://developer.revolut.com/docs/business/get-expense
 // Required scopes: READ
 func (s *Expenses) GetExpense(ctx context.Context, expenseID string) (*Expense, error) {
@@ -90,6 +115,14 @@ func (s *Expenses) GetExpense(ctx context.Context, expenseID string) (*Expense, 
 }
 
 // GetExpenseReceipt retrieve a receipt related to an expense
+//
+// Get the receipt related to an expense by providing the receipt's ID.
+//
+// :::note
+// This feature is not available in Sandbox.
+// :::
+//
+// For more information, see the guides: [Retrieve expenses and receipts](https://developer.revolut.com/docs/guides/manage-accounts/accounts-and-transactions/retrieve-expenses).
 //
 // Docs: https://developer.revolut.com/docs/business/get-expense-receipt
 // Required scopes: READ

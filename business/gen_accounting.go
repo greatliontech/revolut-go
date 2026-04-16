@@ -19,6 +19,21 @@ type Accounting struct {
 
 // GetCategories retrieve a list of accounting categories
 //
+// Get available accounting categories based on the provided query criteria.
+//
+// :::note
+// The API returns a maximum of 500 accounting categories per request.
+// The default page size is 100.
+// :::
+//
+// The accounting categories are sorted by the `created_at` date in reverse chronological order, and they're **paginated**.
+// The page size, that is, the maximum number of accounting categories returned per page is specified by the `limit` parameter.
+//   - If the number of results exceeds the page size, the response also returns a cursor for the next page under `next_page_token`.
+//     To get the next page of results, make a new request using that `next_page_token` value in `page_token`.
+//   - If the number of results is smaller than the page size, `next_page_token` is not returned.
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage accounting categories](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-categories).
+//
 // Docs: https://developer.revolut.com/docs/business/get-accounting-categories
 // Required scopes: READ
 func (s *Accounting) GetCategories(ctx context.Context, opts *GetAccountingCategoriesParams) (*GetAccountingCategoriesResponse, error) {
@@ -72,6 +87,14 @@ func (s *Accounting) GetCategoriesAll(ctx context.Context, opts *GetAccountingCa
 
 // CreateCategory create an accounting category
 //
+// Add a new accounting category to the list of accounting categories that can be assigned to your financial records, such as expenses.
+//
+// :::note
+// This operation is not supported for [externally managed accounting categories](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-categories#externally-managed-settings).
+// :::
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage accounting categories](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-categories).
+//
 // Docs: https://developer.revolut.com/docs/business/create-accounting-category
 // Required scopes: WRITE
 func (s *Accounting) CreateCategory(ctx context.Context, req CreateAccountingCategoryRequest) (*ResourceCreatedResponse, error) {
@@ -102,6 +125,12 @@ func (s *Accounting) CreateCategory(ctx context.Context, req CreateAccountingCat
 
 // GetCategory retrieve accounting category details
 //
+// Get the details of a specific accounting category based on its ID.
+//
+// The details include the accounting category name, code, and default tax rate, as well as when the accounting category was added to your settings, and when it was last updated.
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage accounting categories](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-categories).
+//
 // Docs: https://developer.revolut.com/docs/business/get-accounting-category
 // Required scopes: READ
 func (s *Accounting) GetCategory(ctx context.Context, accountingCategoryID string) (*AccountingCategoryResponse, error) {
@@ -119,6 +148,14 @@ func (s *Accounting) GetCategory(ctx context.Context, accountingCategoryID strin
 }
 
 // UpdateCategory update accounting category settings
+//
+// Update settings for a specific accounting category, based on its ID.
+//
+// :::note
+// This operation is not supported for [externally managed accounting categories](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-categories#externally-managed-settings).
+// :::
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage accounting categories](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-categories).
 //
 // Docs: https://developer.revolut.com/docs/business/update-accounting-category
 // Required scopes: WRITE
@@ -146,6 +183,21 @@ func (s *Accounting) UpdateCategory(ctx context.Context, accountingCategoryID st
 
 // DeleteCategory delete an accounting category
 //
+// Delete a specific accounting category, based on its ID.
+//
+// :::note
+// This operation is not supported for [externally managed accounting categories](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-categories#externally-managed-settings).
+// :::
+//
+// Once the accounting category is deleted, it will not be returned by the API or in the Revolut Business app, and:
+// - You will not be able to assign it to new financial records (e.g. expenses).
+// - Existing records assigned to this category that have not been completed will be marked as invalid, and you'll need to reassign them to another category.
+// - Completed records will not be affected by the change.
+//
+// A successful response does not get any content in return.
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage accounting categories](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-categories).
+//
 // Docs: https://developer.revolut.com/docs/business/delete-accounting-category
 // Required scopes: WRITE
 func (s *Accounting) DeleteCategory(ctx context.Context, accountingCategoryID string) error {
@@ -159,6 +211,12 @@ func (s *Accounting) DeleteCategory(ctx context.Context, accountingCategoryID st
 }
 
 // GetLabelGroups retrieve a list of label groups
+//
+// Get available label groups based on the provided query criteria.
+//
+// The label groups are sorted by the `created_at` date in reverse chronological order, and they're **paginated**.
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage labels and label groups](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups).
 //
 // Docs: https://developer.revolut.com/docs/business/get-label-groups
 // Required scopes: READ
@@ -213,6 +271,15 @@ func (s *Accounting) GetLabelGroupsAll(ctx context.Context, opts *GetLabelGroups
 
 // CreateLabelGroup create a new label group
 //
+// Add a new group of labels that can be applied to your financial records, such as expenses.
+//
+// :::note
+// - This operation is not supported for [externally managed label groups](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups#externally-managed-settings).
+// - You can have up to 5 label groups at a time per business.
+// :::
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage labels and label groups](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups).
+//
 // Docs: https://developer.revolut.com/docs/business/create-label-group
 // Required scopes: WRITE
 func (s *Accounting) CreateLabelGroup(ctx context.Context, req CreateLabelGroupRequest) (*ResourceCreatedResponse, error) {
@@ -246,6 +313,12 @@ func (s *Accounting) CreateLabelGroup(ctx context.Context, req CreateLabelGroupR
 
 // GetLabelGroup retrieve label group details
 //
+// Get the details of a specific label group based on the label group ID.
+//
+// The details include the label group name, as well as when the label group was added to your settings, and when it was last updated.
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage labels and label groups](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups).
+//
 // Docs: https://developer.revolut.com/docs/business/get-label-group
 // Required scopes: READ
 func (s *Accounting) GetLabelGroup(ctx context.Context, groupID string) (*LabelGroupResponse, error) {
@@ -263,6 +336,14 @@ func (s *Accounting) GetLabelGroup(ctx context.Context, groupID string) (*LabelG
 }
 
 // UpdateLabelGroup update label group settings
+//
+// Update the name for a specific label group, based on its ID.
+//
+// :::note
+// This operation is not supported for [externally managed label groups](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups#externally-managed-settings).
+// :::
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage labels and label groups](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups).
 //
 // Docs: https://developer.revolut.com/docs/business/update-label-group
 // Required scopes: WRITE
@@ -287,6 +368,21 @@ func (s *Accounting) UpdateLabelGroup(ctx context.Context, groupID string, req U
 
 // DeleteLabelGroup delete a label group
 //
+// Delete a specific label group, based on its ID.
+//
+// :::note
+// This operation is not supported for [externally managed label groups](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups#externally-managed-settings).
+// :::
+//
+// Once the label group is deleted, it will not be returned by the API or in the Revolut Business app, and:
+// - You will not be able to apply labels from the group to new financial records (e.g. expenses).
+// - Existing records that have not been completed and that contain labels from this group will be marked as invalid, and you'll need to update them to use different labels.
+// - Completed records will not be affected by the change.
+//
+// A successful response does not get any content in return.
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage labels and label groups](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups).
+//
 // Docs: https://developer.revolut.com/docs/business/delete-label-group
 // Required scopes: WRITE
 func (s *Accounting) DeleteLabelGroup(ctx context.Context, groupID string) error {
@@ -300,6 +396,21 @@ func (s *Accounting) DeleteLabelGroup(ctx context.Context, groupID string) error
 }
 
 // GetLabels retrieve a list of labels from a label group
+//
+// Get labels from a specific label group based on the provided query criteria.
+//
+// :::note
+// The API returns a maximum of 500 labels per request.
+// The default page size is 100.
+// :::
+//
+// The labels are sorted by the `created_at` date in reverse chronological order, and they're **paginated**.
+// The page size, that is, the maximum number of labels returned per page is specified by the `limit` parameter.
+//   - If the number of results exceeds the page size, the response also returns a cursor for the next page under `next_page_token`.
+//     To get the next page of results, make a new request using that `next_page_token` value in `page_token`.
+//   - If the number of results is smaller than the page size, `next_page_token` is not returned.
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage labels and label groups](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups).
 //
 // Docs: https://developer.revolut.com/docs/business/get-labels
 // Required scopes: READ
@@ -365,6 +476,16 @@ func (s *Accounting) GetLabelsAll(ctx context.Context, groupID string, opts *Get
 
 // CreateLabel create a new label
 //
+// Add a new label to a label group.
+//
+// :::note
+// This operation is not supported for [externally managed labels](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups#externally-managed-settings).
+// :::
+//
+// The labels are used for accounting and can be applied to your financial records, such as expenses.
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage labels and label groups](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups).
+//
 // Docs: https://developer.revolut.com/docs/business/create-label
 // Required scopes: WRITE
 func (s *Accounting) CreateLabel(ctx context.Context, groupID string, req CreateLabelRequest) (*ResourceCreatedResponse, error) {
@@ -391,6 +512,14 @@ func (s *Accounting) CreateLabel(ctx context.Context, groupID string, req Create
 }
 
 // UpdateLabel update a label
+//
+// Update the name for a specific label, based on the IDs of the label and its label group.
+//
+// :::note
+// This operation is not supported for [externally managed labels]/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups(#externally-managed-settings).
+// :::
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage labels and label groups](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups).
 //
 // Docs: https://developer.revolut.com/docs/business/update-label
 // Required scopes: WRITE
@@ -421,6 +550,21 @@ func (s *Accounting) UpdateLabel(ctx context.Context, groupID string, labelID st
 
 // DeleteLabel delete a label
 //
+// Delete a specific label, based on the IDs of the label and its label group.
+//
+// :::note
+// This operation is not supported for [externally managed labels](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups#externally-managed-settings).
+// :::
+//
+// Once the label is deleted, it will not be returned by the API or in the Revolut Business app, and:
+// - You will not be able to apply it to new financial records (e.g. expenses).
+// - Existing records with this label that have not been completed will be marked as invalid, and you'll need to update them to use a different label.
+// - Completed records will not be affected by the change.
+//
+// A successful response does not get any content in return.
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage labels and label groups](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-labels-and-label-groups).
+//
 // Docs: https://developer.revolut.com/docs/business/delete-label
 // Required scopes: WRITE
 func (s *Accounting) DeleteLabel(ctx context.Context, groupID string, labelID string) error {
@@ -440,6 +584,21 @@ func (s *Accounting) DeleteLabel(ctx context.Context, groupID string, labelID st
 }
 
 // GetTaxRates retrieve a list of tax rates
+//
+// Get available tax rates based on the provided query criteria.
+//
+// :::note
+// The API returns a maximum of 500 tax rates per request.
+// The default page size is 100.
+// :::
+//
+// The tax rates are sorted by the `created_at` date in reverse chronological order, and they're **paginated**.
+// The page size, that is, the maximum number of tax rates returned per page is specified by the `limit` parameter.
+//   - If the number of results exceeds the page size, the response also returns a cursor for the next page under `next_page_token`.
+//     To get the next page of results, make a new request using that `next_page_token` value in `page_token`.
+//   - If the number of results is smaller than the page size, `next_page_token` is not returned.
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage tax rates](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-tax-rates).
 //
 // Docs: https://developer.revolut.com/docs/business/get-tax-rates
 // Required scopes: READ
@@ -494,6 +653,14 @@ func (s *Accounting) GetTaxRatesAll(ctx context.Context, opts *GetTaxRatesParams
 
 // CreateTaxRate create a new tax rate
 //
+// Add a new tax rate to the list of tax rates that can be applied to your financial records, such as expenses.
+//
+// :::note
+// This operation is not supported for [externally managed tax rates](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-tax-rates#externally-managed-settings).
+// :::
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage tax rates](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-tax-rates).
+//
 // Docs: https://developer.revolut.com/docs/business/create-tax-rate
 // Required scopes: WRITE
 func (s *Accounting) CreateTaxRate(ctx context.Context, req CreateTaxRateRequest) (*ResourceCreatedResponse, error) {
@@ -518,6 +685,12 @@ func (s *Accounting) CreateTaxRate(ctx context.Context, req CreateTaxRateRequest
 
 // GetTaxRate retrieve tax rate details
 //
+// Get the details of a specific tax rate based on the tax rate ID.
+//
+// The details include the tax rate name and percentage, as well as when the tax rate was added to your settings, and when it was last updated.
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage tax rates](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-tax-rates).
+//
 // Docs: https://developer.revolut.com/docs/business/get-tax-rate
 // Required scopes: READ
 func (s *Accounting) GetTaxRate(ctx context.Context, taxRateID string) (*TaxRateResponse, error) {
@@ -535,6 +708,14 @@ func (s *Accounting) GetTaxRate(ctx context.Context, taxRateID string) (*TaxRate
 }
 
 // UpdateTaxRate update tax rate settings
+//
+// Update settings for a specific tax rate, based on its ID.
+//
+// :::note
+// This operation is not supported for [externally managed tax rates](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-tax-rates#externally-managed-settings).
+// :::
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage tax rates](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-tax-rates).
 //
 // Docs: https://developer.revolut.com/docs/business/update-tax-rate
 // Required scopes: WRITE
@@ -555,6 +736,21 @@ func (s *Accounting) UpdateTaxRate(ctx context.Context, taxRateID string, req Up
 }
 
 // DeleteTaxRate delete a tax rate
+//
+// Delete a specific tax rate, based on its ID.
+//
+// :::note
+// This operation is not supported for [externally managed tax rates](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-tax-rates#externally-managed-settings).
+// :::
+//
+// Once the tax rate is deleted, it will not be returned by the API or in the Revolut Business app, and:
+// - You will not be able to apply it to new financial records (e.g. expenses).
+// - Existing records with this tax rate that have not been completed will be marked as invalid, and you'll need to update them to use a different tax rate.
+// - Completed records will not be affected by the change.
+//
+// A successful response does not get any content in return.
+//
+// For more details, see the guides: [Manage accounting settings](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-accounting-settings) and [Manage tax rates](https://developer.revolut.com/docs/guides/manage-accounts/accounting/manage-tax-rates).
 //
 // Docs: https://developer.revolut.com/docs/business/delete-tax-rate
 // Required scopes: WRITE

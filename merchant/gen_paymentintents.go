@@ -19,6 +19,25 @@ type PaymentIntents struct {
 
 // Create create a payment intent
 //
+// Create a payment intent to push a payment request to a specific Revolut Terminal device.
+//
+// This endpoint is used in push payments to Revolut Terminal integration, where a POS system sends payment requests to physical terminal devices. The terminal must be in Pay at Counter mode and assigned to the same location as the order.
+//
+// **Requirements:**
+// - Order must be created with `channel: "pos"` and include a `location_id`
+// - Terminal must be online, in `pos` operation mode, and assigned to the same location
+// - Amount must match the order amount
+//
+// **What happens next:**
+// - The payment request appears on the Revolut Terminal screen
+// - Customer presents their card or device to complete payment
+// - You should poll the payment intent status until it reaches a final state (`completed`, `cancelled`, or `failed`)
+// - When the payment intent reaches `completed` state, use the returned `payment_id` to retrieve the final payment status
+//
+// :::info
+// For the complete push payments flow, see: [Push payments to Revolut Terminal](https://developer.revolut.com/docs/guides/in-person-payments/revolut-terminal/push-payments).
+// :::
+//
 // Docs: https://developer.revolut.com/docs/merchant/create-payment-intent
 func (s *PaymentIntents) Create(ctx context.Context, orderID string, revolutAPIVersion RevolutAPIVersionOptional, req PaymentIntentCreation) (*PaymentIntent, error) {
 	if orderID == "" {
@@ -55,6 +74,29 @@ func (s *PaymentIntents) Create(ctx context.Context, orderID string, revolutAPIV
 
 // Get retrieve a payment intent
 //
+// Retrieve the current state and details of a payment intent.
+//
+// This endpoint is used to poll the payment intent status after pushing a payment request to a Revolut Terminal. You should poll this endpoint repeatedly until the payment intent reaches a final state.
+//
+// **Payment intent states:**
+//
+// | State | Description |
+// |-------|-------------|
+// | `pending` | Payment intent created and sent to terminal, customer has not yet started interacting |
+// | `processing` | Customer is actively interacting with the terminal (e.g., inserting card, entering PIN) |
+// | `completed` | Payment authorisation is complete, response includes a `payment_id` that you should use to [retrieve the final payment status](https://developer.revolut.com/docs/merchant/retrieve-payment-details) |
+// | `cancelled` | Payment intent was cancelled (by your system or by the customer on the terminal) |
+// | `failed` | Payment intent failed due to technical issues (e.g., timeout, terminal became unavailable) |
+//
+// :::tip Polling strategy
+// - Poll every second while the state is `pending` or `processing`
+// - Set a reasonable timeout (e.g., 60 seconds) to handle cases where the customer abandons the payment
+// :::
+//
+// :::info
+// For the complete push payments flow, see: [Push payments to Revolut Terminal](https://developer.revolut.com/docs/guides/in-person-payments/revolut-terminal/push-payments).
+// :::
+//
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payment-intent
 func (s *PaymentIntents) Get(ctx context.Context, paymentIntentID string, revolutAPIVersion RevolutAPIVersionOptional) (*PaymentIntent, error) {
 	if paymentIntentID == "" {
@@ -82,6 +124,20 @@ func (s *PaymentIntents) Get(ctx context.Context, paymentIntentID string, revolu
 }
 
 // CancelPaymentIntent cancel a payment intent
+//
+// Cancel a payment intent while it's still in `pending` state, before the customer has completed the payment.
+//
+// This is useful if the customer changes their mind or if there's an issue with the order before payment is completed.
+//
+// :::caution
+// **Requirements:**
+// - Payment intent must be in `pending` state
+// - Cannot cancel payment intents that are already `completed`, `cancelled`, or `failed`
+// :::
+//
+// :::info
+// For the complete push payments flow, see: [Push payments to Revolut Terminal](https://developer.revolut.com/docs/guides/in-person-payments/revolut-terminal/push-payments).
+// :::
 //
 // Docs: https://developer.revolut.com/docs/merchant/cancel-payment-intent
 func (s *PaymentIntents) CancelPaymentIntent(ctx context.Context, paymentIntentID string, revolutAPIVersion RevolutAPIVersionOptional) (*PaymentIntent, error) {

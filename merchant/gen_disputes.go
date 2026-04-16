@@ -20,6 +20,18 @@ type Disputes struct {
 
 // GetList retrieve a dispute list
 //
+// Retrieve a list of disputes associated with your merchant account.
+//
+// :::note
+// This endpoint is only available in **Production** environment.
+// :::
+//
+// You can also use the query parameters for:
+//
+//	| Filtering | Pagination |
+//	| --------- | ---------- |
+//	| Filter the diputes that you want to retrieve, for example, only retrieve the disputes that have a specific state. <br/><br/>Parameters used for filtering:<br/><ul><li>`from_created_date`</li><li>`to_created_date`</li><li>`payment_id`</li><li>`state`</li></ul> | View the disputes without loading all of them at once, for example, return a specified number of disputes per page. <br/><br/>Parameters used for pagination: <br/><ul><li>`limit`</li><li>`from_created_date` or `to_created_date`</li></ul> |
+//
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-dispute-list
 func (s *Disputes) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVersion, opts *RetrieveDisputeListParams) ([]Dispute, error) {
 	if revolutAPIVersion == "" {
@@ -84,6 +96,12 @@ func (s *Disputes) GetListAll(ctx context.Context, revolutAPIVersion RevolutAPIV
 
 // Get retrieve a dispute
 //
+// Retrieve the details of a specific dispute by its ID.
+//
+// :::note
+// This endpoint is only available in **Production** environment.
+// :::
+//
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-dispute
 func (s *Disputes) Get(ctx context.Context, disputeID string, revolutAPIVersion RevolutAPIVersion) (*Dispute, error) {
 	if disputeID == "" {
@@ -115,6 +133,14 @@ func (s *Disputes) Get(ctx context.Context, disputeID string, revolutAPIVersion 
 
 // AcceptDispute accept a dispute
 //
+// Marks a specific dispute as accepted.
+//
+// After accepting a dispute, you cannot challenge it.
+//
+// :::note
+// This endpoint is only available in **Production** environment.
+// :::
+//
 // Docs: https://developer.revolut.com/docs/merchant/accept-dispute
 func (s *Disputes) AcceptDispute(ctx context.Context, disputeID string, revolutAPIVersion RevolutAPIVersion) error {
 	if disputeID == "" {
@@ -140,6 +166,16 @@ func (s *Disputes) AcceptDispute(ctx context.Context, disputeID string, revolutA
 }
 
 // ChallengeDispute challenge a dispute
+//
+// Allows challenging a dispute with a reason, comment and associated evidences.
+//
+// Use the uploaded evidences to provide proof for the challenge.
+//
+// A dispute previously accepted, cannot be challenged.
+//
+// :::note
+// This endpoint is only available in **Production** environment.
+// :::
 //
 // Docs: https://developer.revolut.com/docs/merchant/challenge-dispute
 func (s *Disputes) ChallengeDispute(ctx context.Context, disputeID string, revolutAPIVersion RevolutAPIVersion, req DisputeChallenge) error {
@@ -186,6 +222,22 @@ func (s *Disputes) ChallengeDispute(ctx context.Context, disputeID string, revol
 }
 
 // UploadDisputeEvidence upload evidence for a dispute
+//
+// Allows uploading a single evidence file for a specific dispute.
+//
+// Use these evidences to provide proof for claims when challenging a dispute.
+//
+// :::caution
+// **Limitations:**
+//   - Maximum `100` uploaded files are allowed per dispute.
+//   - Maximum file size: `10MB`.
+//   - Allowed file types: `PDF`, `PNG`, `JPEG`.
+//
+// :::
+//
+// :::note
+// This endpoint is only available in **Production** environment.
+// :::
 //
 // Docs: https://developer.revolut.com/docs/merchant/upload-dispute-evidence
 func (s *Disputes) UploadDisputeEvidence(ctx context.Context, disputeID string, revolutAPIVersion RevolutAPIVersion, req DisputeEvidenceCreation) (*DisputeEvidence, error) {

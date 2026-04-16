@@ -20,6 +20,12 @@ type Subscriptions struct {
 
 // GetPlanList retrieve a subscription plan list
 //
+// Retrieve all subscription plans configured for your merchant account. You can use the query parameters for:
+//
+//	| Filtering | Pagination |
+//	| --------- | ---------- |
+//	| Filter the subscription plans that you want to retrieve, for example, only retrieve plans created within a specific date range. <br/><br/>Parameters used for filtering:<br/><ul><li>`from`</li><li>`to`</li></ul> | View the subscription plans without loading all of them at once, for example, return a specified number of plans per page. <br/><br/>Parameters used for pagination: <br/><ul><li>`limit`</li><li>`page_token`</li></ul> |
+//
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-subscription-plan-list
 func (s *Subscriptions) GetPlanList(ctx context.Context, revolutAPIVersion RevolutAPIVersion, opts *RetrieveSubscriptionPlanListParams) (*SubscriptionPlans, error) {
 	if revolutAPIVersion == "" {
@@ -86,6 +92,39 @@ func (s *Subscriptions) GetPlanListAll(ctx context.Context, revolutAPIVersion Re
 
 // CreatePlan create a subscription plan
 //
+// Create a new subscription plan with one or more pricing variations.
+//
+// A subscription plan defines the billing structure for subscriptions. Each plan can have multiple variations (e.g., monthly vs. yearly), and each variation can have multiple billing phases (e.g., trial period followed by regular billing).
+//
+// ## How subscription plans work
+//
+// A subscription plan consists of three hierarchical levels:
+//
+// 1. **Plan**: The top-level container with a name (e.g., "Pro Plan", "Enterprise Plan")
+// 1. **Variations**: Different pricing options within the same plan (e.g., monthly vs. yearly)
+// 1. **Phases**: Sequential billing stages within each variation
+//
+// ### Understanding phases
+//
+// Phases execute in sequence based on their `ordinal` value (1, 2, 3, etc.):
+// - Each phase has a `cycle_duration` (e.g., `P1M` for monthly)
+// - Each phase has a `cycle_count` that determines how many cycles before moving to the next phase
+// - If `cycle_count` is `null` or omitted, the phase continues indefinitely
+// - When a phase completes its cycles, the subscription moves to the phase with the next `ordinal`
+// - If the last phase completes its cycles and no next phase exists, the subscription is automatically stopped
+//
+// :::note
+// If a `trial_duration` is defined, phases begin immediately after the trial ends.
+// :::
+//
+// :::tip Example
+// A plan with a 7-day trial followed by monthly billing:
+//
+// Set `trial_duration: "P7D"` at the plan level. Then define a variation with a single phase that has `ordinal: 1`, `cycle_duration: "P1M"`, and `amount: 9900`.
+//
+// After the 7-day trial ends, phase 1 begins automatically and charges monthly indefinitely (since `cycle_count` is not specified).
+// :::
+//
 // Docs: https://developer.revolut.com/docs/merchant/create-subscription-plan
 func (s *Subscriptions) CreatePlan(ctx context.Context, revolutAPIVersion RevolutAPIVersion, req SubscriptionPlanCreation) (*SubscriptionPlan, error) {
 	if revolutAPIVersion == "" {
@@ -134,6 +173,16 @@ func (s *Subscriptions) CreatePlan(ctx context.Context, revolutAPIVersion Revolu
 
 // GetPlan retrieve a subscription plan
 //
+// Retrieve a specific subscription plan by its unique identifier.
+//
+// A subscription plan contains **variations** (different pricing options like monthly vs. yearly), and each variation contains **phases** (sequential billing stages).
+//
+// Phases execute based on their `ordinal` value. When a phase completes its `cycle_count`, the subscription moves to the next phase. If `cycle_count` is `null` or omitted, the phase continues indefinitely.
+//
+// :::note
+// If a `trial_duration` is defined, phases begin immediately after the trial ends.
+// :::
+//
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-subscription-plan
 func (s *Subscriptions) GetPlan(ctx context.Context, subscriptionPlanID string, revolutAPIVersion RevolutAPIVersion) (*SubscriptionPlan, error) {
 	if subscriptionPlanID == "" {
@@ -164,6 +213,12 @@ func (s *Subscriptions) GetPlan(ctx context.Context, subscriptionPlanID string, 
 }
 
 // GetList retrieve a subscription list
+//
+// Retrieve all subscriptions for the merchant account. You can use the query parameters for:
+//
+//	| Filtering | Pagination |
+//	| --------- | ---------- |
+//	| Filter the subscriptions that you want to retrieve, for example, only retrieve subscriptions created within a specific date range or with a specific external reference. <br/><br/>Parameters used for filtering:<br/><ul><li>`from`</li><li>`to`</li><li>`external_reference`</li></ul> | View the subscriptions without loading all of them at once, for example, return a specified number of subscriptions per page. <br/><br/>Parameters used for pagination: <br/><ul><li>`limit`</li><li>`page_token`</li></ul> |
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-subscription-list
 func (s *Subscriptions) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVersion, opts *RetrieveSubscriptionListParams) (*SubscriptionsResponse, error) {
@@ -231,6 +286,75 @@ func (s *Subscriptions) GetListAll(ctx context.Context, revolutAPIVersion Revolu
 
 // Create create a subscription
 //
+// Create a new subscription for a customer using a subscription plan variation.
+//
+// There are several supported flows for creating and activating subscriptions, depending on your integration needs.
+//
+// :::note
+// The customer must already exist in the API. The `customer_id` is required for all subscription flows.
+// :::
+//
+// <details>
+// <summary>
+//
+// #### Flow 1: Hosted Payment Page (HPP)
+//
+// </summary>
+//
+// Use this flow to redirect the customer to Revolut's Hosted Payment Page to complete the first payment and save their payment method.
+//
+// **Backend flow:**
+// 1. Create a subscription with optional `setup_order_redirect_url`:
+//   - If provided: The setup order's `redirect_url` field will be set to this value.
+//   - If omitted: The setup order will use Revolut's default redirect behavior.
+//
+// 1. The subscription is created in a `pending` state with a `setup_order_id` in the response.
+// 1. [Retrieve the order](https://developer.revolut.com/docs/merchant/retrieve-order) using `setup_order_id` as the `order_id` in the path to get the `checkout_url`.
+// 1. Redirect the customer to the `checkout_url` for the Hosted Payment Page.
+//
+// **Customer flow:**
+// 1. Customer is redirected to Revolut's Hosted Payment Page.
+// 1. Customer completes payment on the HPP, and their payment method is saved.
+// 1. Customer redirect after payment depends on your setup:
+//   - **With `setup_order_redirect_url`**: Customer is redirected to your custom URL.
+//   - **Without `setup_order_redirect_url`**: Customer sees the default Revolut completion screen.
+//
+// **Key characteristics:**
+// - Customer completes payment on Revolut's hosted page
+// - Payment method is automatically saved for future billing cycles
+// - Optional custom redirect after payment
+// - Best for web-based integrations
+//
+// </details>
+//
+// <details>
+//
+// <summary>
+//
+// #### Flow 2: Widget or card-not-present (CNP) payment
+//
+// </summary>
+//
+// Use this flow when you want to embed the payment experience directly on your website using one of Revolut's payment widgets or handle card-not-present payments.
+//
+// **Backend flow:**
+// 1. Create a subscription with minimal required parameters.
+// 1. The subscription is created in a `pending` state with a `setup_order_id` in the response.
+// 1. [Retrieve the order](https://developer.revolut.com/docs/merchant/retrieve-order) using `setup_order_id` as the `order_id` in the path to get order details for your integration.
+// 1. Integrate your payment solution (widget, SDK, or CNP method) on your frontend, ensuring it's configured to save the customer's payment method for recurring billing.
+//
+// **Customer flow:**
+// 1. Customer stays on your website/application.
+// 1. Customer completes payment, and their payment method is saved for future billing cycles.
+//
+// **Key characteristics:**
+// - Payment experience embedded directly in your application
+// - Customer never leaves your website
+// - Payment method is saved for future billing cycles
+// - Best for native mobile apps or fully custom web experiences
+//
+// </details>
+//
 // Docs: https://developer.revolut.com/docs/merchant/create-subscription
 func (s *Subscriptions) Create(ctx context.Context, revolutAPIVersion RevolutAPIVersion, idempotencyKey string, req SubscriptionCreation) (*Subscription, error) {
 	if revolutAPIVersion == "" {
@@ -279,6 +403,10 @@ func (s *Subscriptions) Create(ctx context.Context, revolutAPIVersion RevolutAPI
 
 // Get retrieve a subscription
 //
+// Retrieve a subscription by its unique identifier.
+//
+// Use this endpoint to get the current state and details of a specific subscription.
+//
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-subscription
 func (s *Subscriptions) Get(ctx context.Context, subscriptionID string, revolutAPIVersion RevolutAPIVersion) (*Subscription, error) {
 	if subscriptionID == "" {
@@ -309,6 +437,18 @@ func (s *Subscriptions) Get(ctx context.Context, subscriptionID string, revolutA
 }
 
 // Update update a subscription
+//
+// Update a subscription's details.
+//
+// You can update a subscription and specific parameters based on the value of the `state` parameter:
+//
+// | State parameter value | Modifiable parameters |
+// | --------------------- | --------------------- |
+// | `pending`, `active`, `overdue`, `paused` | You can modify all listed parameters. |
+// | `cancelled`, `finished` | You cannot modify parameters. These are final states. |
+//
+// **Common use cases:**
+// - **Update external reference**: When you need to sync with updated customer records in your system, correct an initial reference value, or re-map the subscription to a different internal tracking ID to maintain consistency with your database.
 //
 // Docs: https://developer.revolut.com/docs/merchant/update-subscription
 func (s *Subscriptions) Update(ctx context.Context, subscriptionID string, revolutAPIVersion RevolutAPIVersion, req SubscriptionUpdate) (*Subscription, error) {
@@ -346,6 +486,10 @@ func (s *Subscriptions) Update(ctx context.Context, subscriptionID string, revol
 
 // CancelSubscription cancel a subscription
 //
+// Cancel a subscription.
+//
+// You can cancel a subscription in any state except `cancelled` or `finished`. When you cancel a subscription, it will be marked as `cancelled` and no further billing cycles will be created. Any pending orders will be cancelled.
+//
 // Docs: https://developer.revolut.com/docs/merchant/cancel-subscription
 func (s *Subscriptions) CancelSubscription(ctx context.Context, subscriptionID string, revolutAPIVersion RevolutAPIVersion) error {
 	if subscriptionID == "" {
@@ -371,6 +515,14 @@ func (s *Subscriptions) CancelSubscription(ctx context.Context, subscriptionID s
 }
 
 // GetCycleList retrieve a subscription cycle list
+//
+// Retrieve all billing cycles for a specific subscription.
+//
+// You can use the query parameters for:
+//
+//	| Filtering | Pagination |
+//	| --------- | ---------- |
+//	| Filter the subscription cycles that you want to retrieve, for example, only retrieve cycles that started within a specific date range. <br/><br/>Parameters used for filtering:<br/><ul><li>`from`</li><li>`to`</li></ul> | View the subscription cycles without loading all of them at once, for example, return a specified number of cycles per page. <br/><br/>Parameters used for pagination: <br/><ul><li>`limit`</li><li>`page_token`</li></ul> |
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-subscription-cycle-list
 func (s *Subscriptions) GetCycleList(ctx context.Context, subscriptionID string, revolutAPIVersion RevolutAPIVersion, opts *RetrieveSubscriptionCycleListParams) (*SubscriptionCycles, error) {
@@ -448,6 +600,10 @@ func (s *Subscriptions) GetCycleListAll(ctx context.Context, subscriptionID stri
 }
 
 // GetCycle retrieve a subscription cycle
+//
+// Retrieve a specific billing cycle for a subscription by its unique identifier.
+//
+// Use this endpoint to get the details and current state of a particular billing cycle.
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-subscription-cycle
 func (s *Subscriptions) GetCycle(ctx context.Context, subscriptionID string, cycleID string, revolutAPIVersion RevolutAPIVersion) (*SubscriptionCycle, error) {

@@ -20,6 +20,21 @@ type FilePayment struct {
 
 // CreateConsents create a file payment consent
 //
+// Create a file payment consent described in the [Open Banking API documentation: Account and Transaction API Specification](https://openbanking.atlassian.net/wiki/spaces/DZ/pages/999622968/Account+and+Transaction+API+Specification+-+v3.1.1).
+//
+// :::note
+// File Payments are available only for Revolut Business users.
+// Currently only the `text/csv` file type is supported for File Payments.
+// :::
+//
+// When you make the API call, ensure that you pass the corresponding JSON Web Signature (JWS) in the `x-jws-signature` request header. Note:
+// - The JWS is generated from the request body with the [TPP](https://developer.revolut.com/docs/guides/build-banking-apps/glossary) signing key that is specified in the JWS header.
+// - The JWS consists of a header and a signature in the `<jws_header>..<jws_signature>` format.
+//
+// To see how to create a JWS, see the guide: [Work with JSON Web Signatures](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/work-with-json-web-signatures).
+//
+// For more information, see [Tutorials: Create a file payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/create-a-file-payment#4-create-a-file-payment-consent).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/create-file-payment-consents
 // Required scopes: payments
 func (s *FilePayment) CreateConsents(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteFileConsent2) (*ObwriteFileConsentResponse2, ResponseMetadata, error) {
@@ -171,6 +186,10 @@ func (s *FilePayment) CreateConsentsSigned(ctx context.Context, xFAPIFinancialID
 
 // GetConsentsConsentID retrieve a file payment consent
 //
+// Get the details of a file payment consent.
+//
+// See also [Tutorials: Create a file payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/create-a-file-payment).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/get-file-payment-consents-consent-id
 // Required scopes: payments
 func (s *FilePayment) GetConsentsConsentID(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*ObwriteFileConsentResponse2, ResponseMetadata, error) {
@@ -252,6 +271,10 @@ func (s *FilePayment) GetConsentsConsentIDSigned(ctx context.Context, consentID 
 
 // GetConsentsConsentIDFile retrieve an uploaded payment file
 //
+// Get the payment file that was uploaded with the given consent.
+//
+// See also [Tutorials: Create a file payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/create-a-file-payment).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/get-file-payment-consents-consent-id-file
 // Required scopes: payments
 func (s *FilePayment) GetConsentsConsentIDFile(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (io.ReadCloser, ResponseMetadata, error) {
@@ -288,6 +311,16 @@ func (s *FilePayment) GetConsentsConsentIDFile(ctx context.Context, consentID st
 }
 
 // CreateConsentsConsentIDFile upload a payment file
+//
+// Use this endpoint to upload a file for the given file payment consent.
+//
+// For the format of the CSV file, check the request body details.
+//
+// :::note
+// Download an [example CSV file](https://assets.revolut.com/api-docs/oba-api/file-payment-file.csv).
+// :::
+//
+// For more information, see [Tutorials: Create a file payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/create-a-file-payment#5-upload-the-csv-file).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-file-payment-consents-consent-id-file
 // Required scopes: payments
@@ -344,6 +377,14 @@ func (s *FilePayment) CreateConsentsConsentIDFile(ctx context.Context, consentID
 }
 
 // Create create a file payment
+//
+// Create a file payment.
+//
+// :::note
+// As is defined in the Open Banking Specifications, the `/Data/Initiation` and the `/Data/Risk` sections of the request must be an exact match for the related consent passed in `ConsentId`.
+// :::
+//
+// For more information, see [Tutorials: Create a file payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/create-a-file-payment).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-file-payments
 // Required scopes: payments
@@ -514,6 +555,10 @@ func (s *FilePayment) CreateSigned(ctx context.Context, xFAPIFinancialID string,
 
 // GetFilePaymentID retrieve a file payment
 //
+// Get the state of a file payment.
+//
+// For more information, see [Tutorials: Create a file payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/create-a-file-payment#10-check-the-file-payment-status).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/get-file-payments-file-payment-id
 // Required scopes: payments
 func (s *FilePayment) GetFilePaymentID(ctx context.Context, filePaymentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*ObwriteFileResponse2, ResponseMetadata, error) {
@@ -594,6 +639,14 @@ func (s *FilePayment) GetFilePaymentIDSigned(ctx context.Context, filePaymentID 
 }
 
 // GetFilePaymentIDReportFile retrieve all payments of a file payment
+//
+// Get the state of all individual payments for the given file payment.
+//
+// :::note
+// Currently only the `JSON` format is supported.
+// :::
+//
+// For more information, see [Tutorials: Create a file payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/create-a-file-payment#11-check-the-status-of-all-payments).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-file-payments-file-payment-id-report-file
 // Required scopes: payments

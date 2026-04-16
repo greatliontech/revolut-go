@@ -18,6 +18,16 @@ type PaymentDrafts struct {
 
 // List retrieve a list of payment drafts
 //
+// Get the list of payment drafts created with the API that haven't been [sent for processing](https://developer.revolut.com/docs/guides/manage-accounts/transfers/payment-drafts#send-drafts-for-processing).
+//
+// :::note
+// Payment drafts created through the [Revolut Business app](https://business.revolut.com/) are not retrieved by the API.
+// :::
+//
+// The response lists the drafts with their details, such as the number of payments included in the draft, but not the payment details.
+//
+// For more information, see the guides: [Payment drafts](https://developer.revolut.com/docs/guides/manage-accounts/transfers/payment-drafts).
+//
 // Docs: https://developer.revolut.com/docs/business/get-payment-drafts
 // Required scopes: READ
 func (s *PaymentDrafts) List(ctx context.Context) (*PaymentDraftsResponse, error) {
@@ -29,6 +39,19 @@ func (s *PaymentDrafts) List(ctx context.Context) (*PaymentDraftsResponse, error
 }
 
 // Create create a payment draft
+//
+// Create a payment draft.
+//
+// When you create a payment draft, it stays a draft until you [send it for processing as payment](https://developer.revolut.com/docs/guides/manage-accounts/transfers/payment-drafts#send-drafts-for-processing) in the [Revolut Business app](https://business.revolut.com/).
+//
+// Until then, you can [delete](https://developer.revolut.com/docs/business/delete-payment-draft) the draft if you no longer wish to proceed with it.
+//
+// :::note
+// If you or the payment you're making is subject to an [approval process](https://help.revolut.com/business/help/managing-my-business/users-and-employees/how-can-i-set-payment-approval-rules/), when you send the draft for processing, the payment goes into the `Pending review` state.
+// Before it can be processed, the business owner, administrator, or another team member designated as an approver must approve it in the Revolut Business app.
+// :::
+//
+// For more information on use cases and other details, see the guides: [Payment drafts](https://developer.revolut.com/docs/guides/manage-accounts/transfers/payment-drafts).
 //
 // Docs: https://developer.revolut.com/docs/business/create-payment-draft
 // Required scopes: READ, WRITE
@@ -44,6 +67,12 @@ func (s *PaymentDrafts) Create(ctx context.Context, req CreatePaymentDraftReques
 }
 
 // Get retrieve a payment draft
+//
+// Get the information about a specific payment draft by ID.
+//
+// The response lists the details of the payment(s) included in the draft, as well as the draft details.
+//
+// For more information, see the guides: [Payment drafts](https://developer.revolut.com/docs/guides/manage-accounts/transfers/payment-drafts).
 //
 // Docs: https://developer.revolut.com/docs/business/get-payment-draft
 // Required scopes: READ
@@ -62,6 +91,12 @@ func (s *PaymentDrafts) Get(ctx context.Context, paymentDraftID string) (*Paymen
 }
 
 // Delete delete a payment draft
+//
+// Delete a payment draft with the given ID.
+//
+// You can delete a payment draft only if it hasn't been [sent for processing](https://developer.revolut.com/docs/guides/manage-accounts/transfers/payment-drafts#send-drafts-for-processing).
+//
+// For more information, see the guides: [Payment drafts](https://developer.revolut.com/docs/guides/manage-accounts/transfers/payment-drafts).
 //
 // Docs: https://developer.revolut.com/docs/business/delete-payment-draft
 // Required scopes: READ, WRITE

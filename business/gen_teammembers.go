@@ -19,6 +19,12 @@ type TeamMembers struct {
 
 // GetRoles retrieve team roles
 //
+// Get the list of roles for your business.
+//
+// The results are paginated and sorted by the `created_at` date in reverse chronological order.
+//
+// For more information, see the guides: [Manage team members](https://developer.revolut.com/docs/guides/manage-accounts/teams/manage-team-members).
+//
 // Docs: https://developer.revolut.com/docs/business/get-roles
 // Required scopes: READ
 func (s *TeamMembers) GetRoles(ctx context.Context, opts *GetRolesParams) ([]Role, error) {
@@ -71,6 +77,12 @@ func (s *TeamMembers) GetRolesAll(ctx context.Context, opts *GetRolesParams) ite
 }
 
 // List retrieve a list of team members
+//
+// Get information about all the team members of your business.
+//
+// The results are paginated and sorted by the `created_at` date in reverse chronological order.
+//
+// For more information, see the guides: [Manage team members](https://developer.revolut.com/docs/guides/manage-accounts/teams/manage-team-members).
 //
 // Docs: https://developer.revolut.com/docs/business/get-team-members
 // Required scopes: READ
@@ -125,6 +137,13 @@ func (s *TeamMembers) ListAll(ctx context.Context, opts *GetTeamMembersParams) i
 
 // InviteTeamMember invite a new member to your business
 //
+// Invite a new member to your business account.
+//
+// When you invite a new team member to your business account, an invitation is sent to their email address that you provided in this request.
+// To join your business account, the new team member has to accept this invitation.
+//
+// For more information, see the guides: [Manage team members](https://developer.revolut.com/docs/guides/manage-accounts/teams/manage-team-members).
+//
 // Docs: https://developer.revolut.com/docs/business/invite-team-member
 // Required scopes: WRITE
 func (s *TeamMembers) InviteTeamMember(ctx context.Context, req TeamMembersBody) (*InviteTeamMemberResponse, error) {
@@ -142,6 +161,16 @@ func (s *TeamMembers) InviteTeamMember(ctx context.Context, req TeamMembersBody)
 }
 
 // Delete delete a team member
+//
+// Delete a specific member of your team.
+//
+// :::note
+// This action does not delete the person’s Revolut Business user account – it only removes them from your team.
+// They will lose access to your Revolut Business account and team but can still log in to Revolut Business.
+// Their user account will remain linked to any other teams and accounts it’s associated with.
+// :::
+//
+// For more information, see the guides: [Manage team members](https://developer.revolut.com/docs/guides/manage-accounts/teams/manage-team-members).
 //
 // Docs: https://developer.revolut.com/docs/business/delete-team-member
 // Required scopes: WRITE

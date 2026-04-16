@@ -20,6 +20,19 @@ type Customers struct {
 
 // GetList retrieve a customer list
 //
+// Get a paginated list of your customer profiles.
+//
+// | Filtering | Pagination |
+// | --------- | ---------- |
+// | Filter the customers that you want to retrieve, for example, only retrieve customers created within a specific date range. <br/><br/>Parameters used for filtering:<br/><ul><li>`from`</li><li>`to`</li></ul> | View customers without loading all of them at once, for example, return a specified number of customers per page. <br/><br/>Parameters used for pagination:<br/><ul><li>`limit`</li><li>`page_token`</li></ul> |
+//
+// To paginate through all results:
+//
+// 1. Make an initial request with the desired `limit` and any filter parameters.
+// 1. If more results are available, the response includes a `next_page_token`.
+// 1. Pass `next_page_token` as `page_token` in your next request, keeping all other parameters unchanged.
+// 1. Repeat until `next_page_token` is no longer present in the response.
+//
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-customer-list
 func (s *Customers) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVersion20240901Min, opts *RetrieveCustomerListParams) (*CustomersResponse, error) {
 	if revolutAPIVersion == "" {
@@ -86,6 +99,25 @@ func (s *Customers) GetListAll(ctx context.Context, revolutAPIVersion RevolutAPI
 
 // Create create a customer
 //
+// Create a `customer` object.
+//
+// :::note No automatic deduplication
+// The API does not prevent creating multiple customers with the same email address or phone number.
+//
+// This can be intentional, for example, to maintain separate customer records per storefront or brand under the same account.
+//
+// To avoid unintentional duplicates, search for existing customers by email or phone using the [List customers](https://developer.revolut.com/docs/merchant/retrieve-customer-list) endpoint before creating a new one.
+// :::
+//
+// ### Save payment methods
+//
+// If you wish to save a customer's payment details using any of the available payment methods on the Revolut Checkout Widget ([Revolut Pay](https://developer.revolut.com/docs/guides/accept-payments/online-payments/revolut-pay/introduction), [Card payments](https://developer.revolut.com/docs/guides/accept-payments/online-payments/card-payments/introduction)), you need to meet one of the following requirements:
+//
+//   - [ ] Have a customer object with `email` and assign it to the order by providing `customer.id`
+//   - [ ] Create a new customer with, at least, `customer.email` during [order creation](https://developer.revolut.com/docs/merchant/create-order)
+//
+// For more information, see: [Charge a customer's saved payment method](https://developer.revolut.com/docs/guides/accept-payments/tutorials/save-and-charge-payment-methods/charge-saved-payment-method).
+//
 // Docs: https://developer.revolut.com/docs/merchant/create-customer
 func (s *Customers) Create(ctx context.Context, revolutAPIVersion RevolutAPIVersion20240901Min, req CustomerCreationV2) (*CustomerCreated, error) {
 	if revolutAPIVersion == "" {
@@ -115,6 +147,8 @@ func (s *Customers) Create(ctx context.Context, revolutAPIVersion RevolutAPIVers
 }
 
 // Get retrieve a customer
+//
+// Get the information about a specific customer, including their saved payment methods.
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-customer
 func (s *Customers) Get(ctx context.Context, customerID string, revolutAPIVersion RevolutAPIVersion20240901Min) (*CustomerV3, error) {
@@ -146,6 +180,10 @@ func (s *Customers) Get(ctx context.Context, customerID string, revolutAPIVersio
 }
 
 // Update update a customer
+//
+// Update the attributes of a specific customer.
+//
+// All request body fields are optional. Only the fields provided will be updated.
 //
 // Docs: https://developer.revolut.com/docs/merchant/update-customer
 func (s *Customers) Update(ctx context.Context, customerID string, revolutAPIVersion RevolutAPIVersion20240901Min, req CustomerUpdateV2) (*CustomerV3, error) {
@@ -180,6 +218,8 @@ func (s *Customers) Update(ctx context.Context, customerID string, revolutAPIVer
 
 // Delete delete a customer
 //
+// Delete the profile of a specific customer.
+//
 // Docs: https://developer.revolut.com/docs/merchant/delete-customer
 func (s *Customers) Delete(ctx context.Context, customerID string, revolutAPIVersion RevolutAPIVersion20240901Min) error {
 	if customerID == "" {
@@ -205,6 +245,12 @@ func (s *Customers) Delete(ctx context.Context, customerID string, revolutAPIVer
 }
 
 // GetPaymentMethodList retrieve payment method list of a customer
+//
+// Retrieve all the saved payment methods for a specific customer.
+// This can be useful in the following example cases:
+//
+// - To show what payment information is stored for the customer.
+// - To try a different payment method if the first payment method fails when a recurring transaction occurs.
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payment-method-list
 func (s *Customers) GetPaymentMethodList(ctx context.Context, customerID string, revolutAPIVersion RevolutAPIVersion20240901Min, opts *RetrievePaymentMethodListParams) (*CustomerPaymentMethodsV2, error) {
@@ -240,6 +286,8 @@ func (s *Customers) GetPaymentMethodList(ctx context.Context, customerID string,
 }
 
 // GetPaymentMethod retrieve a customer's payment method
+//
+// Retrieve the information of a specific saved payment method for a customer.
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payment-method
 func (s *Customers) GetPaymentMethod(ctx context.Context, customerID string, paymentMethodID string, revolutAPIVersion RevolutAPIVersion20240901Min) (*PaymentMethodV4, error) {
@@ -277,6 +325,18 @@ func (s *Customers) GetPaymentMethod(ctx context.Context, customerID string, pay
 }
 
 // UpdatePaymentMethod update a customer's payment method
+//
+// Update the attributes of a specific saved payment method for a customer.
+//
+// :::note
+// Updating `saved_for` to `customer` is a one-way operation — you can't change it back to `merchant`.
+//
+// Once updated, this payment method can no longer be used for merchant-initiated transactions (MIT), for example, to charge recurring payments. It can only be used when the customer is on the checkout page.
+//
+// For more information, see:
+// - [Pay for an order](https://developer.revolut.com/docs/merchant/pay-order)
+// - [Charge a customer's saved payment method](https://developer.revolut.com/docs/guides/accept-payments/tutorials/save-and-charge-payment-methods/charge-saved-payment-method)
+// :::
 //
 // Docs: https://developer.revolut.com/docs/merchant/update-payment-method
 func (s *Customers) UpdatePaymentMethod(ctx context.Context, customerID string, paymentMethodID string, revolutAPIVersion RevolutAPIVersion20240901Min, req PaymentMethodUpdate) (*PaymentMethodV4, error) {
@@ -316,6 +376,10 @@ func (s *Customers) UpdatePaymentMethod(ctx context.Context, customerID string, 
 }
 
 // DeletePaymentMethod delete a customer's payment method
+//
+// Delete a specific saved payment method. The payment method is completely removed from the customer's saved payment methods.
+//
+// To reuse a deleted payment method, direct your customer to the checkout page to save their card details again.
 //
 // Docs: https://developer.revolut.com/docs/merchant/delete-payment-method
 func (s *Customers) DeletePaymentMethod(ctx context.Context, customerID string, paymentMethodID string, revolutAPIVersion RevolutAPIVersion20240901Min) error {

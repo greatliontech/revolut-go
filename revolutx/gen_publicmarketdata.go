@@ -18,6 +18,8 @@ type PublicMarketData struct {
 
 // GetLastTrades get last trades
 //
+// Get the list of the latest 100 trades executed on Revolut X crypto exchange.
+//
 // Docs: https://developer.revolut.com/docs/revolutx/get-last-trades
 func (s *PublicMarketData) GetLastTrades(ctx context.Context) (*LastTrades, error) {
 	var out LastTrades
@@ -28,6 +30,8 @@ func (s *PublicMarketData) GetLastTrades(ctx context.Context) (*LastTrades, erro
 }
 
 // GetOrderBook get order book
+//
+// Fetch the current order book (bids and asks) for a given trading pair (with a maximum of 5 price levels).
 //
 // Docs: https://developer.revolut.com/docs/revolutx/get-public-order-book
 func (s *PublicMarketData) GetOrderBook(ctx context.Context, symbol string) (*OrderBookPublic, error) {

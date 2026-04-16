@@ -37,27 +37,31 @@ func TestClassifyResponseHeaders_KnownSuccessHeader(t *testing.T) {
 	}
 }
 
-// TestClassifyResponseHeaders_UnknownHeaderFailsFast pins the
-// fail-fast allowlist: an undeclared response header blocks the
-// whole build, with an error pointing the maintainer at the
-// classifier to triage.
-func TestClassifyResponseHeaders_UnknownHeaderFailsFast(t *testing.T) {
+// TestClassifyResponseHeaders_UnknownHeaderPassesThrough pins the
+// fallback: an undeclared response header is surfaced on
+// ResponseMetadata with a synthesized Go name rather than blocking
+// the build. The allowlist still wins for better godoc copy when
+// the header is on it.
+func TestClassifyResponseHeaders_UnknownHeaderPassesThrough(t *testing.T) {
 	op := &openapi3.Operation{OperationID: "getY"}
 	op.Responses = openapi3.NewResponses()
 	op.Responses.Set("200", &openapi3.ResponseRef{Value: &openapi3.Response{
 		Headers: openapi3.Headers{
-			"X-Brand-New-Header": {Value: &openapi3.Header{}},
+			"X-Request-Id": {Value: &openapi3.Header{Parameter: openapi3.Parameter{Description: "Correlator for the request."}}},
 		},
 	}})
-	_, err := classifyResponseHeaders(op, "getY")
-	if err == nil {
-		t.Fatal("want fail-fast on unknown header")
+	fields, err := classifyResponseHeaders(op, "getY")
+	if err != nil {
+		t.Fatalf("classify: %v", err)
 	}
-	if !strings.Contains(err.Error(), "X-Brand-New-Header") || !strings.Contains(err.Error(), "getY") {
-		t.Errorf("error should cite header + op; got %v", err)
+	if len(fields) != 1 {
+		t.Fatalf("want 1 synthesized field; got %+v", fields)
 	}
-	if !strings.Contains(err.Error(), "responses.go") {
-		t.Errorf("error should direct maintainer to classifier: %v", err)
+	if fields[0].WireName != "X-Request-Id" {
+		t.Errorf("WireName=%q", fields[0].WireName)
+	}
+	if !strings.Contains(fields[0].GoName, "XRequestID") && !strings.Contains(fields[0].GoName, "XRequestId") {
+		t.Errorf("GoName=%q; want synthesised from wire name", fields[0].GoName)
 	}
 }
 

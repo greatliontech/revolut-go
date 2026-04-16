@@ -1,13 +1,13 @@
 package build
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 
 	"github.com/greatliontech/revolut-go/cmd/revogen/ir"
+	"github.com/greatliontech/revolut-go/cmd/revogen/names"
 )
 
 // knownSuccessHeader enumerates every response header the generator
@@ -61,10 +61,16 @@ func classifyResponseHeaders(op *openapi3.Operation, opID string) ([]ir.Metadata
 			}
 			field, ok := knownSuccessHeaders[lower]
 			if !ok {
-				return nil, fmt.Errorf(
-					"unknown response header %q on operation %q (status %s); "+
-						"add a case to cmd/revogen/build/responses.go after deciding where it lands",
-					name, opID, codeStr)
+				// Fallback: synthesize a MetadataField from the
+				// spec-declared header name so the SDK surfaces every
+				// header without the maintainer having to enumerate
+				// them. The curated allowlist above still wins when
+				// present — it supplies nicer godoc copy.
+				field = ir.MetadataField{
+					GoName:   synthHeaderFieldName(name),
+					WireName: name,
+					Doc:      firstLineOrEmpty(hdrRef.Value),
+				}
 			}
 			if !isSuccess {
 				// Allowlisted headers that happen to appear on an
@@ -109,6 +115,24 @@ func operationEmitsSignedVariant(op *openapi3.Operation) bool {
 		}
 	}
 	return false
+}
+
+// synthHeaderFieldName converts a wire header name into a Go field
+// identifier. "x-request-id" → "XRequestID" after initialism
+// normalisation.
+func synthHeaderFieldName(wire string) string {
+	return names.FieldName(wire)
+}
+
+// firstLineOrEmpty extracts the first line of the header's
+// description, or "" when absent, so the synthesized field's Doc
+// isn't a multi-paragraph blob. openapi3.Header embeds Parameter;
+// the description lives on the inner Parameter.
+func firstLineOrEmpty(h *openapi3.Header) string {
+	if h == nil {
+		return ""
+	}
+	return firstLine(h.Parameter.Description)
 }
 
 // sortedResponseCodes returns the response codes of r in stable

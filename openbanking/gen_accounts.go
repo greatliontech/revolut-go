@@ -19,6 +19,33 @@ type Accounts struct {
 
 // CreateAccessConsents create an account access consent
 //
+// Before you can access any data from a Revolut user, you must create an access consent to read data from the user's profile.
+//
+// :::note
+// When you create an account access consent, you must include a specific permission that follows the rules in the table below; otherwise, you get a `400 Bad request` error.
+// :::
+//
+// **Request Permissions**
+//
+// | PERMISSIONS | DEPENDENCIES |
+// |--|--|
+// | ReadAccountsBasic | None |
+// | ReadAccountsDetail |None|
+// | ReadBalances |None|
+// | ReadBeneficiariesBasic |None|
+// | ReadBeneficiariesDetail |None|
+// | ReadDirectDebits |None|
+// | ReadScheduledPaymentsBasic |None|
+// | ReadScheduledPaymentsDetail |None|
+// | ReadStandingOrdersBasic |None|
+// | ReadStandingOrdersDetail |None|
+// | ReadTransactionsBasic |None|
+// | ReadTransactionsCredits |ReadTransactionsBasic OR ReadTransactionsDetail|
+// |ReadTransactionsDebits |ReadTransactionsBasic OR ReadTransactionsDetail|
+// | ReadTransactionsDetail | None |
+//
+// See also [Tutorials: Get account and transaction information](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/get-account-and-transaction-information#2-create-an-account-access-consent).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/create-account-access-consents
 // Required scopes: accounts
 func (s *Accounts) CreateAccessConsents(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string, req ObreadConsent1) (*ObreadConsentResponse1, ResponseMetadata, error) {
@@ -68,6 +95,10 @@ func (s *Accounts) CreateAccessConsents(ctx context.Context, xFAPIFinancialID st
 
 // GetAccessConsentsConsentID retrieve an account access consent
 //
+// Get the details of the account access consent as described in the Open Banking [official documentation](https://openbanking.atlassian.net/wiki/spaces/DZ/pages/999622968/Account+and+Transaction+API+Specification+-+v3.1.1).
+//
+// See also [Tutorials: Get account and transaction information](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/get-account-and-transaction-information).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/get-account-access-consents-consent-id
 // Required scopes: accounts
 func (s *Accounts) GetAccessConsentsConsentID(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*ObreadConsentResponse1, ResponseMetadata, error) {
@@ -109,6 +140,13 @@ func (s *Accounts) GetAccessConsentsConsentID(ctx context.Context, consentID str
 
 // DeleteAccessConsentsConsentID delete an account access consent
 //
+// Use this endpoint to:
+//
+// - Reject a consent if it is in the `AwaitingAuthorisation` state or any error occurs while the consent is being authorised.
+// - Revoke a consent if it is in the `Authorised` state.
+//
+// See also [Tutorials: Get account and transaction information](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/get-account-and-transaction-information).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/delete-account-access-consents-consent-id
 // Required scopes: accounts
 func (s *Accounts) DeleteAccessConsentsConsentID(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (ResponseMetadata, error) {
@@ -144,6 +182,10 @@ func (s *Accounts) DeleteAccessConsentsConsentID(ctx context.Context, consentID 
 }
 
 // List retrieve all accounts
+//
+// Get a list of user accounts.
+//
+// See also [Tutorials: Get account and transaction information](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/get-account-and-transaction-information#6-get-the-list-of-accounts).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-accounts
 // Required scopes: accounts
@@ -182,6 +224,15 @@ func (s *Accounts) List(ctx context.Context, xFAPIFinancialID string, xFAPICusto
 }
 
 // GetAccountID retrieve an account
+//
+// Get the information about a specific account by ID.
+//
+// :::note
+// In compliance with PSD2 SCA regulations, access to this endpoint is only allowed within the first 5 minutes after the Revolut user has authorised the consent.
+// After those 5 minutes, access to this endpoint is denied, and an HTTP `403` error is returned.
+// :::
+//
+// See also [Tutorials: Get account and transaction information](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/get-account-and-transaction-information).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-accounts-account-id
 // Required scopes: accounts
@@ -224,6 +275,10 @@ func (s *Accounts) GetAccountID(ctx context.Context, accountID string, xFAPIFina
 
 // GetAccountIDBalances retrieve an account balance
 //
+// Get the balance of an account.
+//
+// See also [Tutorials: Get account and transaction information](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/get-account-and-transaction-information).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/get-accounts-account-id-balances
 // Required scopes: accounts
 func (s *Accounts) GetAccountIDBalances(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*ObreadBalance1, ResponseMetadata, error) {
@@ -264,6 +319,15 @@ func (s *Accounts) GetAccountIDBalances(ctx context.Context, accountID string, x
 }
 
 // GetAccountIDBeneficiaries retrieve all account's beneficiaries
+//
+// Get all the beneficiaries of a specific user account.
+//
+// :::note
+// In compliance with PSD2 SCA regulations, access to this endpoint is only allowed within the first 5 minutes after the Revolut user has authorised the consent.
+// After those 5 minutes, access to this endpoint is denied, and an HTTP `403` error is returned.
+// :::
+//
+// See also [Tutorials: Get account and transaction information](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/get-account-and-transaction-information).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-accounts-account-id-beneficiaries
 // Required scopes: accounts

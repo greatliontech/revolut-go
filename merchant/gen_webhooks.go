@@ -19,6 +19,8 @@ type Webhooks struct {
 
 // GetList retrieve a webhook list
 //
+// Get a list of webhooks that you are currently subscribed to.
+//
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-webhook-list
 func (s *Webhooks) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVersion20240901Min) (*WebhooksResponse, error) {
 	if revolutAPIVersion == "" {
@@ -43,6 +45,13 @@ func (s *Webhooks) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVers
 }
 
 // Create create a webhook
+//
+// Set up a webhook URL so that the Merchant API can push event notifications to the specified URL.
+// :::caution
+// Merchants can register a **maximum of 10 webhook URLs**. If you attempt to register more than 10, the API will return a `422 - Unprocessable Content` error.
+//
+// Ensure your webhook registrations are necessary and within the allowed limit.
+// :::
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-webhook
 func (s *Webhooks) Create(ctx context.Context, revolutAPIVersion RevolutAPIVersion20240901Min, req WebhookCreation) (*WebhookV2, error) {
@@ -89,6 +98,8 @@ func (s *Webhooks) Create(ctx context.Context, revolutAPIVersion RevolutAPIVersi
 
 // Get retrieve a webhook
 //
+// Get the details of a specific webhook, including its `signing_secret`.
+//
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-webhook
 func (s *Webhooks) Get(ctx context.Context, webhookID string, revolutAPIVersion RevolutAPIVersion20240901Min) (*WebhookV2, error) {
 	if webhookID == "" {
@@ -119,6 +130,10 @@ func (s *Webhooks) Get(ctx context.Context, webhookID string, revolutAPIVersion 
 }
 
 // Update update a webhook
+//
+// Update the URL or events for a specific webhook.
+//
+// All request body fields are optional. Only the fields provided will be updated.
 //
 // Docs: https://developer.revolut.com/docs/merchant/update-webhook
 func (s *Webhooks) Update(ctx context.Context, webhookID string, revolutAPIVersion RevolutAPIVersion20240901Min, req WebhookUpdate) (*WebhookV2, error) {
@@ -162,6 +177,8 @@ func (s *Webhooks) Update(ctx context.Context, webhookID string, revolutAPIVersi
 
 // Delete delete a webhook
 //
+// Delete a webhook so that events are no longer sent to the specified URL.
+//
 // Docs: https://developer.revolut.com/docs/merchant/delete-webhook
 func (s *Webhooks) Delete(ctx context.Context, webhookID string, revolutAPIVersion RevolutAPIVersion20240901Min) error {
 	if webhookID == "" {
@@ -187,6 +204,14 @@ func (s *Webhooks) Delete(ctx context.Context, webhookID string, revolutAPIVersi
 }
 
 // RotateWebhookSigningSecret rotate a webhook signing secret
+//
+// Rotate the `signing_secret` for a specific webhook.
+//
+// The updated signing secret is returned in the response as part of the full webhook object.
+//
+// :::info
+// For more information, see [Tutorials: Verify the payload signature](https://developer.revolut.com/docs/guides/accept-payments/tutorials/work-with-webhooks/verify-the-payload-signature).
+// :::
 //
 // Docs: https://developer.revolut.com/docs/merchant/rotate-webhook-signing-secret
 func (s *Webhooks) RotateWebhookSigningSecret(ctx context.Context, webhookID string, revolutAPIVersion RevolutAPIVersion20240901Min, req WebhooksBody) (*WebhookV2, error) {

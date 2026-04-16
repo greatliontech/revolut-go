@@ -19,6 +19,25 @@ type Transactions struct {
 
 // Get retrieve a transaction
 //
+// Retrieve the details of a specific transaction.
+// The details can include, for example, cardholder details for card payments.
+//
+// You can retrieve a transaction with its details either by its **transaction ID** or by the **request ID** that was provided for this transaction at the time of its creation, for example, when you [created a payment](https://developer.revolut.com/docs/business/create-payment).
+//
+// - To retrieve a transaction by its **transaction ID**, use:
+//
+//	`/transaction/{transaction_id}`
+//
+// - To retrieve a transaction by a **request ID** provided at transaction creation, use:
+//
+//	`/transaction/{request_id}?id_type=request_id`
+//
+//	:::caution
+//	Due to idempotency expiry, only transactions created within the last 2 weeks can be retrieved using their `request_id`.
+//	:::
+//
+// For more details, see the guides: [Retrieve transaction data](https://developer.revolut.com/docs/guides/manage-accounts/accounts-and-transactions/retrieve-transactions).
+//
 // Docs: https://developer.revolut.com/docs/business/get-transaction
 // Required scopes: READ
 func (s *Transactions) Get(ctx context.Context, id string, opts *GetTransactionParams) (*Transaction, error) {
@@ -37,6 +56,18 @@ func (s *Transactions) Get(ctx context.Context, id string, opts *GetTransactionP
 }
 
 // List retrieve a list of transactions
+//
+// Retrieve the historical transactions based on the provided query criteria.
+//
+// The transactions are sorted by the `created_at` date in reverse chronological order, and they're **paginated**.
+// The maximum number of transactions returned per page is specified by the `count` parameter.
+// To get the next page of results, make a new request and use the `created_at` date from the last item of the previous page as the value for the `to` parameter.
+//
+// :::note
+// The API returns a maximum of 1,000 transactions per request.
+// :::
+//
+// For more details, see the guides: [Retrieve transaction data](https://developer.revolut.com/docs/guides/manage-accounts/accounts-and-transactions/retrieve-transactions).
 //
 // Docs: https://developer.revolut.com/docs/business/get-transactions
 // Required scopes: READ

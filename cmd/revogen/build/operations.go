@@ -80,7 +80,7 @@ func (b *Builder) methodFromOperation(verb, path string, item *openapi3.PathItem
 		Receiver:       receiver,
 		Name:           b.deriveMethodName(verb, path, op, tag),
 		Doc:            docLines(op),
-		DocURL:         b.docURL(op.OperationID),
+		DocURL:         pickDocURL(b.docURL(op.OperationID), op.ExternalDocs),
 		Deprecated:     deprecationReason(op),
 		ServerOverride: b.pickServerOverride(op, item),
 	}
@@ -806,18 +806,26 @@ func nonParamSegments(path string) []string {
 	return out
 }
 
-// docLines returns the godoc lines for an operation. We keep only
-// the summary line — descriptions in Revolut's specs run to many
-// paragraphs of prose that bloat method godocs without adding
-// signal beyond the operation's name + URL.
+// docLines returns the godoc lines for an operation: the summary
+// as the lead, then the full description (every line) so wire-format
+// caveats and usage notes the spec documents survive into generated
+// godoc.
 func docLines(op *openapi3.Operation) []string {
+	var out []string
 	if s := firstLine(op.Summary); s != "" {
-		return []string{s}
+		out = append(out, s)
 	}
-	if d := firstLine(op.Description); d != "" {
-		return []string{d}
+	desc := strings.TrimSpace(op.Description)
+	if desc == "" {
+		return out
 	}
-	return nil
+	if len(out) > 0 {
+		out = append(out, "")
+	}
+	for _, line := range strings.Split(desc, "\n") {
+		out = append(out, strings.TrimRight(line, " \t"))
+	}
+	return out
 }
 
 func deprecationReason(op *openapi3.Operation) string {
@@ -962,4 +970,14 @@ func (b *Builder) docURL(opID string) string {
 		return ""
 	}
 	return b.cfg.DocsBase + names.CamelToKebab(opID)
+}
+
+// pickDocURL prefers the operation's explicit externalDocs URL when
+// the spec declares one; falls back to the synthesized docs-base +
+// operation-id link. An empty string when neither is available.
+func pickDocURL(fallback string, ed *openapi3.ExternalDocs) string {
+	if ed != nil && ed.URL != "" {
+		return ed.URL
+	}
+	return fallback
 }

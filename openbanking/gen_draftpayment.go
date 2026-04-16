@@ -20,6 +20,10 @@ type DraftPayment struct {
 
 // List list draft payments
 //
+// Get draft payments list sorted by creation time in descending order.
+//
+// See also [Tutorials: Work with draft payments](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/work-with-draft-payments) and [Tutorials: Create your first draft payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/create-your-first-draft-payment#6-get-list-of-draft-payments).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/list-draft-payment
 // Required scopes: draftpayments
 func (s *DraftPayment) List(ctx context.Context, opts *ListDraftPaymentParams) (*DraftPaymentListResponse, error) {
@@ -35,6 +39,25 @@ func (s *DraftPayment) List(ctx context.Context, opts *ListDraftPaymentParams) (
 }
 
 // Create create a draft payment
+//
+// Before you begin, ensure that you've got an access token.
+// For information about getting the access token, see [Tutorial: Create your first draft payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/create-your-first-draft-payment).
+// Then, you can use the `/draft_payments` endpoint to create a draft payment on behalf of a user, and the draft payment appears in the user account where they can approve or reject.
+//
+// In addition, you can use this endpoint to make multiple draft payments by creating new rows for new drafts with the supported CSV format shown in the following tables.
+//
+// For each draft payment request you make, ensure that the same currency is used.
+// Upon a successful request for multiple draft payments, you receive a `DraftPaymentID` that represents all the draft payments associated with this request.
+//
+// Please note that the maximum number of rows in a CSV file is 50 and all the payments must be in the same currency.
+//
+// :::note
+// Download an [example CSV file](https://assets.revolut.com/api-docs/oba-api/draft_payments.csv).
+// :::
+//
+// For the format of the CSV file, check the request body details.
+//
+// See also [Tutorials: Work with draft payments](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/work-with-draft-payments).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-draft-payment
 // Required scopes: draftpayments
@@ -69,6 +92,10 @@ func (s *DraftPayment) Create(ctx context.Context, xIdempotencyKey string, body 
 
 // FindDraftPayment retrieve a draft payment
 //
+// Get the details about a specific draft payment with the given draft payment ID.
+//
+// See also [Tutorials: Create your first draft payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/create-your-first-draft-payment#5-get-a-draft-payment) and [Tutorials: Work with draft payments](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/work-with-draft-payments).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/find-draft-payment
 // Required scopes: draftpayments
 func (s *DraftPayment) FindDraftPayment(ctx context.Context, draftPaymentID string) (*DraftPaymentResponse, error) {
@@ -86,6 +113,11 @@ func (s *DraftPayment) FindDraftPayment(ctx context.Context, draftPaymentID stri
 }
 
 // Delete delete a draft payment
+//
+// Delete a specific draft payment with the given draft payment ID.
+// A draft payment can be deleted only if the user hasn't taken any action upon it, for example, approved or executed the draft payment.
+//
+// See also [Tutorials: Work with draft payments](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/work-with-draft-payments) and [Tutorials: Create your first draft payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/create-your-first-draft-payment).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/delete-draft-payment
 // Required scopes: draftpayments
@@ -107,6 +139,11 @@ func (s *DraftPayment) Delete(ctx context.Context, draftPaymentID string) (io.Re
 }
 
 // DeleteTransfer delete a draft payment transfer
+//
+// Delete a specific draft payment transfer with the given draft payment transfer ID.
+// A draft payment transfer can be deleted only if the user hasn't taken any action upon it, for example, approved or executed the draft payment.
+//
+// See also [Tutorials: Work with draft payments](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/work-with-draft-payments) and [Tutorials: Create your first draft payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/create-your-first-draft-payment).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/delete-draft-payment-transfer
 // Required scopes: draftpayments

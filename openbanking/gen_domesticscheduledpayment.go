@@ -19,6 +19,28 @@ type DomesticScheduledPayment struct {
 
 // CreateConsents create a domestic scheduled payment consent
 //
+// Create a scheduled payment consent as described in the [Open Banking API documentation: Account and Transaction API Specification](https://openbanking.atlassian.net/wiki/spaces/DZ/pages/999622968/Account+and+Transaction+API+Specification+-+v3.1.1).
+//
+// Use domestic scheduled payments for local scheduled payments in the local currency of the user.
+//
+// :::note
+// Revolut supports only GBP as local in the UK and EUR in SEPA countries.
+// :::
+//
+// Because Revolut Business users can have multiple accounts in the same currency, they can select which account they want to be charged in the consent authorization UI.
+//
+// When you make the API call, ensure that you pass the corresponding JSON Web Signature (JWS) in the `x-jws-signature` request header. Note:
+// - The JWS is generated from the request body with the [TPP](https://developer.revolut.com/docs/guides/build-banking-apps/glossary) signing key that is specified in the JWS header.
+// - The JWS consists of a header and a signature in the `<jws_header>..<jws_signature>` format.
+//
+// To see how to create a JWS, see the guide: [Work with JSON Web Signatures](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/work-with-json-web-signatures).
+//
+// :::note
+// The domestic scheduled payments API is in beta.
+// :::
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment#2-create-a-domestic-payment-consent).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/create-domestic-scheduled-payment-consents
 // Required scopes: payments
 func (s *DomesticScheduledPayment) CreateConsents(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteDomesticScheduledConsent2) (*ObwriteDomesticScheduledConsentResponse2, ResponseMetadata, error) {
@@ -248,6 +270,10 @@ func (s *DomesticScheduledPayment) CreateConsentsSigned(ctx context.Context, xFA
 
 // GetConsentsConsentID retrieve a domestic scheduled payment consent
 //
+// Get the details of a domestic scheduled payment consent.
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/get-domestic-scheduled-payment-consents-consent-id
 // Required scopes: payments
 func (s *DomesticScheduledPayment) GetConsentsConsentID(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*ObwriteDomesticScheduledConsentResponse2, ResponseMetadata, error) {
@@ -328,6 +354,14 @@ func (s *DomesticScheduledPayment) GetConsentsConsentIDSigned(ctx context.Contex
 }
 
 // Create create a domestic scheduled payment
+//
+// Create a domestic scheduled payment.
+//
+// :::note
+// As is defined in the Open Banking Specifications, the `/Data/Initiation` and the `/Data/Risk` sections of the request must be an exact match for the related consent passed in `ConsentId`.
+// :::
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment#6-initiate-the-domestic-payment).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-domestic-scheduled-payments
 // Required scopes: payments
@@ -569,6 +603,10 @@ func (s *DomesticScheduledPayment) CreateSigned(ctx context.Context, xFAPIFinanc
 }
 
 // GetDomesticScheduledPaymentID retrieve a domestic scheduled payment
+//
+// Get the status of a domestic scheduled payment.
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment#7-check-the-status-of-the-payment).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-domestic-scheduled-payments-domestic-scheduled-payment-id
 // Required scopes: payments

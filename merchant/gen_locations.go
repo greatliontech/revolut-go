@@ -18,6 +18,12 @@ type Locations struct {
 
 // GetList retrieve location list
 //
+// Retrieve a list of locations registered for the merchant.
+//
+// :::note Default behavior
+// Without the `type` query parameter, this endpoint returns only **online** locations by default. To retrieve physical locations, you must explicitly specify `type=physical` in the query parameters.
+// :::
+//
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-location-list
 func (s *Locations) GetList(ctx context.Context, opts *RetrieveLocationListParams) ([]Location, error) {
 	path := "api/locations"
@@ -33,6 +39,8 @@ func (s *Locations) GetList(ctx context.Context, opts *RetrieveLocationListParam
 
 // Create create a location
 //
+// Create a `Location` object. Supports `online` and `physical` location types.
+//
 // Docs: https://developer.revolut.com/docs/merchant/create-location
 func (s *Locations) Create(ctx context.Context, req LocationCreation) (*Location, error) {
 	var out Location
@@ -43,6 +51,8 @@ func (s *Locations) Create(ctx context.Context, req LocationCreation) (*Location
 }
 
 // Get retrieve a location
+//
+// Retrieve details of a specific location, based on its ID.
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-location
 func (s *Locations) Get(ctx context.Context, locationID string) (*Location, error) {
@@ -61,6 +71,14 @@ func (s *Locations) Get(ctx context.Context, locationID string) (*Location, erro
 
 // Update update a location
 //
+// Update details of a specific location, based on its ID.
+//
+// Only the fields provided in the request will be updated. Any omitted fields will retain their current values.
+//
+// :::note
+// The value of the location's `type` parameter cannot be updated.
+// :::
+//
 // Docs: https://developer.revolut.com/docs/merchant/update-location
 func (s *Locations) Update(ctx context.Context, locationID string, req LocationUpdate) (*Location, error) {
 	if locationID == "" {
@@ -77,6 +95,8 @@ func (s *Locations) Update(ctx context.Context, locationID string, req LocationU
 }
 
 // Delete delete a location
+//
+// Delete a specific location, based on its ID.
 //
 // Docs: https://developer.revolut.com/docs/merchant/delete-location
 func (s *Locations) Delete(ctx context.Context, locationID string) error {

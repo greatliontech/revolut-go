@@ -17,6 +17,18 @@ type Terminals struct {
 
 // GetList retrieve terminal list
 //
+// Retrieve a list of Revolut Terminal devices available to the merchant.
+//
+// This endpoint is primarily used for push payments to Revolut Terminal integration, allowing POS systems to discover available terminals at a specific location and in the correct operation mode.
+//
+// :::tip
+// For push payments integration, use the `operation_mode=pos` query parameter to filter only terminals in **Pay at Counter** mode that are ready to receive payment intents.
+// :::
+//
+// :::info
+// For more information about integration, see: [Push payments to Revolut Terminal](https://developer.revolut.com/docs/guides/in-person-payments/revolut-terminal/push-payments).
+// :::
+//
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-terminal-list
 func (s *Terminals) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVersionOptional, opts *RetrieveTerminalListParams) (*TerminalsResponse, error) {
 	path := "api/terminals"

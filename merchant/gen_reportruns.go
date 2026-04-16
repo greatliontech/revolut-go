@@ -19,6 +19,20 @@ type ReportRuns struct {
 
 // Create create a new report run
 //
+// Start generating a new report of the relevant transactions, and receive `report_run_id`.
+//
+// After generation is done, use the link in `file_url` to download the report. Use the [Retrieve report run details](https://developer.revolut.com/docs/merchant/retrieve-report-run-details) operation to check the status of the report run.
+//
+// Use the table below to choose the right report type for your use case:
+//
+// | Report type | What it covers | Required filter |
+// | ----------- | -------------- | --------------- |
+// | `custom_report` | Settled and processing transactions with configurable columns | `from`, `to` |
+// | `settlement_report` | Predefined settled transaction view | `from`, `to` |
+// | `payout_statement_report` | All transactions contributing to a specific payout | `filter.payout_id` |
+// | `icpp_fee_breakdown_report` | IC++ fees per transaction for a specific IC++ charge | `filter.icpp_charge_id` |
+// | `payments_report` | All payments including failed and declined ones | `from`, `to` |
+//
 // Docs: https://developer.revolut.com/docs/merchant/create-report-run
 func (s *ReportRuns) Create(ctx context.Context) (*ReportRunDetails, error) {
 	var out ReportRunDetails
@@ -29,6 +43,12 @@ func (s *ReportRuns) Create(ctx context.Context) (*ReportRunDetails, error) {
 }
 
 // GetDetails retrieve report run details
+//
+// Retrieve details of a report run, based on the `report_run_id`.
+//
+// Use this method to check the status of a report run.
+//
+// If a report run's `status` is `completed`, the report file can be downloaded using the `file_url`.
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-report-run-details
 func (s *ReportRuns) GetDetails(ctx context.Context, reportRunID string) (*ReportRunDetails, error) {
@@ -46,6 +66,8 @@ func (s *ReportRuns) GetDetails(ctx context.Context, reportRunID string) (*Repor
 }
 
 // DownloadReportFile download report file
+//
+// Use this endpoint to download the generated report file.
 //
 // Docs: https://developer.revolut.com/docs/merchant/download-report-file
 func (s *ReportRuns) DownloadReportFile(ctx context.Context, reportRunID string) (io.ReadCloser, error) {

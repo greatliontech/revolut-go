@@ -21,6 +21,8 @@ type Trades struct {
 
 // GetAllTrades get all public trades (market history)
 //
+// Retrieve a list of all trades for a specific symbol, not limited to the current client's activity.
+//
 // Docs: https://developer.revolut.com/docs/revolutx/get-all-trades
 func (s *Trades) GetAllTrades(ctx context.Context, symbol string, xRevxTimestamp int, xRevxSignature string, opts *GetAllTradesParams) (*AllTradesPaginatedResponse, error) {
 	if symbol == "" {
@@ -98,6 +100,9 @@ func (s *Trades) GetAllTradesAll(ctx context.Context, symbol string, xRevxTimest
 }
 
 // GetPrivateTrades get client trades (associated with the provided API key)
+//
+// Retrieve the trade history (fills) for the authenticated client.
+// The user context is resolved based on the provided API key.
 //
 // Docs: https://developer.revolut.com/docs/revolutx/get-private-trades
 func (s *Trades) GetPrivateTrades(ctx context.Context, symbol string, xRevxTimestamp int, xRevxSignature string, opts *GetPrivateTradesParams) (*PrivateTradesPaginatedResponse, error) {

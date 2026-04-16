@@ -19,6 +19,10 @@ type WebhooksV2 struct {
 
 // List retrieve a list of webhooks
 //
+// Get the list of all your existing webhooks and their details.
+//
+// For more information, see the guides: [About webhooks](https://developer.revolut.com/docs/guides/manage-accounts/webhooks/about-webhooks) and [Manage webhooks](https://developer.revolut.com/docs/guides/manage-accounts/webhooks/manage-webhooks#retrieve-a-list-of-webhooks).
+//
 // Docs: https://developer.revolut.com/docs/business/get-webhooks
 // Required scopes: READ
 func (s *WebhooksV2) List(ctx context.Context) ([]WebhookV2Basic, error) {
@@ -30,6 +34,11 @@ func (s *WebhooksV2) List(ctx context.Context) ([]WebhookV2Basic, error) {
 }
 
 // Create create a new webhook
+//
+// Create a new webhook to receive event notifications to the specified URL. Provide a list of event types that you want to subscribe to and a URL for the webhook.
+// Only HTTPS URLs are supported.
+//
+// For more information, see the guides: [About webhooks](https://developer.revolut.com/docs/guides/manage-accounts/webhooks/about-webhooks) and [Manage webhooks](https://developer.revolut.com/docs/guides/manage-accounts/webhooks/manage-webhooks#create-a-webhook).
 //
 // Docs: https://developer.revolut.com/docs/business/create-webhook
 // Required scopes: WRITE
@@ -45,6 +54,10 @@ func (s *WebhooksV2) Create(ctx context.Context, req CreateWebhookRequest) (*Web
 }
 
 // Get retrieve a webhook
+//
+// Get the information about a specific webhook by ID.
+//
+// For more information, see the guides: [About webhooks](https://developer.revolut.com/docs/guides/manage-accounts/webhooks/about-webhooks) and [Manage webhooks](https://developer.revolut.com/docs/guides/manage-accounts/webhooks/manage-webhooks#retrieve-a-specific-webhook).
 //
 // Docs: https://developer.revolut.com/docs/business/get-webhook
 // Required scopes: READ
@@ -64,6 +77,12 @@ func (s *WebhooksV2) Get(ctx context.Context, webhookID string) (*WebhookV2, err
 
 // Update update a webhook
 //
+// Update an existing webhook. Change the URL to which event notifications are sent or the list of event types to be notified about.
+//
+// You must specify at least one of these two. The fields that you don't specify are not updated.
+//
+// For more information, see the guides: [About webhooks](https://developer.revolut.com/docs/guides/manage-accounts/webhooks/about-webhooks) and [Manage webhooks](https://developer.revolut.com/docs/guides/manage-accounts/webhooks/manage-webhooks#update-a-webhook).
+//
 // Docs: https://developer.revolut.com/docs/business/update-webhook
 // Required scopes: WRITE
 func (s *WebhooksV2) Update(ctx context.Context, webhookID string, req UpdateWebhookRequest) (*WebhookV2Basic, error) {
@@ -82,6 +101,12 @@ func (s *WebhooksV2) Update(ctx context.Context, webhookID string, req UpdateWeb
 
 // Delete delete a webhook
 //
+// Delete a specific webhook.
+//
+// A successful response does not get any content in return.
+//
+// For more information, see the guides: [About webhooks](https://developer.revolut.com/docs/guides/manage-accounts/webhooks/about-webhooks) and [Manage webhooks](https://developer.revolut.com/docs/guides/manage-accounts/webhooks/manage-webhooks#delete-a-webhook).
+//
 // Docs: https://developer.revolut.com/docs/business/delete-webhook
 // Required scopes: WRITE
 func (s *WebhooksV2) Delete(ctx context.Context, webhookID string) error {
@@ -95,6 +120,16 @@ func (s *WebhooksV2) Delete(ctx context.Context, webhookID string) error {
 }
 
 // GetFailedWebhookEvents retrieve a list of failed webhook events
+//
+// Get the list of all your failed webhook events, or use the query parameters to filter the results.
+//
+// The events are sorted by the `created_at` date in reverse chronological order.
+//
+// The returned failed events are **paginated**.
+// The maximum number of events returned per page is specified by the `limit` parameter.
+// To get to the next page, make a new request and use the `created_at` date of the last event returned in the previous response.
+//
+// For more information, see the guides: [About webhooks](https://developer.revolut.com/docs/guides/manage-accounts/webhooks/about-webhooks) and [Manage webhooks](https://developer.revolut.com/docs/guides/manage-accounts/webhooks/manage-webhooks#retrieve-a-list-of-failed-webhook-events).
 //
 // Docs: https://developer.revolut.com/docs/business/get-failed-webhook-events
 // Required scopes: READ
@@ -159,6 +194,10 @@ func (s *WebhooksV2) GetFailedWebhookEventsAll(ctx context.Context, webhookID st
 }
 
 // RotateWebhookSigningSecret rotate a webhook signing secret
+//
+// Rotate a signing secret for a specific webhook.
+//
+// For more information, see the guides: [About webhooks](https://developer.revolut.com/docs/guides/manage-accounts/webhooks/about-webhooks) and [Manage webhooks](https://developer.revolut.com/docs/guides/manage-accounts/webhooks/manage-webhooks#rotate-a-webhook-signing-secret).
 //
 // Docs: https://developer.revolut.com/docs/business/rotate-webhook-signing-secret
 // Required scopes: WRITE

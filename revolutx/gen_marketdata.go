@@ -20,6 +20,10 @@ type MarketData struct {
 
 // GetCandles get historical OHLCV candles
 //
+// Retrieve historical market data (Open, High, Low, Close, Volume) for a specific symbol.
+// If there is trading volume, the view is based on recent trades.
+// If there is no volume, the view is based on the Mid Price (Bid/Ask average).
+//
 // Docs: https://developer.revolut.com/docs/revolutx/get-candles
 func (s *MarketData) GetCandles(ctx context.Context, symbol string, xRevxTimestamp int, xRevxSignature string, opts *GetCandlesParams) (*GetCandlesResponse, error) {
 	if symbol == "" {
@@ -53,6 +57,8 @@ func (s *MarketData) GetCandles(ctx context.Context, symbol string, xRevxTimesta
 
 // GetOrderBook get order book snapshot
 //
+// Retrieve the current order book snapshot (bids and asks) for a specific trading pair.
+//
 // Docs: https://developer.revolut.com/docs/revolutx/get-order-book
 func (s *MarketData) GetOrderBook(ctx context.Context, symbol string, xRevxTimestamp int, xRevxSignature string, opts *GetOrderBookParams) (*OrderBook, error) {
 	if symbol == "" {
@@ -85,6 +91,9 @@ func (s *MarketData) GetOrderBook(ctx context.Context, symbol string, xRevxTimes
 }
 
 // GetTicker get all tickers
+//
+// Retrieves the latest market data snapshots for all supported currency pairs.
+// The response includes the current best bid and ask prices, the calculated mid-price, and the last traded price for each active symbol.
 //
 // Docs: https://developer.revolut.com/docs/revolutx/get-ticker
 func (s *MarketData) GetTicker(ctx context.Context, xRevxTimestamp int, xRevxSignature string, opts *GetTickerParams) (*TickersResponse, error) {

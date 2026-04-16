@@ -18,6 +18,14 @@ type Other struct {
 
 // GetSynchronousWebhookList retrieve a synchronous webhook list
 //
+// Retrieve a list of synchronous webhook objects.
+//
+// You can use this endpoint to see your different address validation endpoints registered to different locations.
+//
+// :::info
+// For more information about locations, see: [Merchant API: Locations](https://developer.revolut.com/docs/merchant/locations).
+// :::
+//
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-synchronous-webhook-list
 func (s *Other) GetSynchronousWebhookList(ctx context.Context) ([]SynchronousWebhook, error) {
 	var out []SynchronousWebhook
@@ -28,6 +36,25 @@ func (s *Other) GetSynchronousWebhookList(ctx context.Context) ([]SynchronousWeb
 }
 
 // RegisterAddressValidationEndpoint register address validation endpoint for Fast checkout
+//
+// Use this endpoint to register a URL where Revolut can send shipping address(es) from a Revolut Pay customer for validation during the [Fast checkout
+// process](https://developer.revolut.com/docs/guides/accept-payments/online-payments/revolut-pay/fast-checkout).
+//
+// Revolut Pay can support Fast checkout for delivering goods. Once your customer selects a shipping address, Revolut needs to validate if the merchant (or their shipping partner) delivers to the address provided. This is done by contacting the merchant's backend and asking for such validation and information.
+//
+// In order for your backend to support Fast checkout, you need to:
+//
+// 1. Register an URL to handle address validation
+// 1. Validate the shipping address sent to your backend
+// 1. Respond with a JSON object containing the result of the validation
+//
+// Additionally, Revolut Pay can support multiple webhooks if you have multiple stores. For more information, see:
+//   - [Manage multiple stores with Fast checkout](https://developer.revolut.com/docs/guides/accept-payments/online-payments/revolut-pay/fast-checkout#manage-multiple-stores-with-fast-checkout)
+//   - [Merchant API: Locations](https://developer.revolut.com/docs/merchant/locations)
+//
+// :::note
+// To set up a webhook for tracking order completion, failure, error, etc. events, use the [Webhooks endpoints](https://developer.revolut.com/docs/merchant/webhooks).
+// :::
 //
 // Docs: https://developer.revolut.com/docs/merchant/register-address-validation-endpoint
 func (s *Other) RegisterAddressValidationEndpoint(ctx context.Context, req SynchronousWebhookCreation) (*SynchronousWebhook, error) {
@@ -51,6 +78,8 @@ func (s *Other) RegisterAddressValidationEndpoint(ctx context.Context, req Synch
 }
 
 // DeleteSynchronousWebhook delete a synchronous webhook
+//
+// Delete a specific synchronous webhook registration, based on its ID.
 //
 // Docs: https://developer.revolut.com/docs/merchant/delete-synchronous-webhook
 func (s *Other) DeleteSynchronousWebhook(ctx context.Context, synchronousWebhookID string) error {

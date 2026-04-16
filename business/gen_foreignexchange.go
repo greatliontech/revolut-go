@@ -17,6 +17,27 @@ type ForeignExchange struct {
 
 // ExchangeMoney exchange money
 //
+// Exchange money using one of these methods:
+//
+//   - **Sell currency**: You know the amount of currency to sell.
+//     For example, you want to exchange 135.5 USD to some EUR.
+//
+//     Specify the amount in the `from` object.
+//
+//   - **Buy currency**: You know the amount of currency to buy.
+//     For example, you want to exchange some USD to 200 EUR.
+//
+//     Specify the amount in the `to` object.
+//
+// :::note
+// You must specify the `amount` field only once, either in the `from` object or in the `to` object.
+// :::
+//
+// You can check the [currencies supported in Production](https://help.revolut.com/business/help/receiving-payments/currency-exchanges/which-currencies-can-i-exchange-and-keep-in-my-account/) in the Revolut Help Centre.
+// Some of these currencies might not be available in Sandbox.
+//
+// For more information, see the guides: [Exchange money](https://developer.revolut.com/docs/guides/manage-accounts/exchange-money).
+//
 // Docs: https://developer.revolut.com/docs/business/exchange-money
 // Required scopes: PAY, READ
 func (s *ForeignExchange) ExchangeMoney(ctx context.Context, req ExchangeRequest) (*ExchangeResponse, error) {
@@ -53,6 +74,11 @@ func (s *ForeignExchange) ExchangeMoney(ctx context.Context, req ExchangeRequest
 
 // GetExchangeReasons get exchange reasons
 //
+// Depending on the country and the amount of funds to be exchanged, you might be required to provide an exchange reason.
+// With this endpoint, you can retrieve all exchange reasons available to your business account.
+//
+// After you retrieve the results, use the appropriate reason code in the `exchange_reason_code` field when [exchanging money](https://developer.revolut.com/docs/business/exchange-money) or [making a payment](https://developer.revolut.com/docs/business/create-payment) that involves foreign currency exchange.
+//
 // Docs: https://developer.revolut.com/docs/business/get-exchange-reasons
 // Required scopes: READ
 func (s *ForeignExchange) GetExchangeReasons(ctx context.Context) ([]ExchangeReason, error) {
@@ -64,6 +90,13 @@ func (s *ForeignExchange) GetExchangeReasons(ctx context.Context) ([]ExchangeRea
 }
 
 // GetRate get an exchange rate
+//
+// Get the sell exchange rate between two currencies.
+//
+// You can check the [currencies supported in Production](https://help.revolut.com/business/help/receiving-payments/currency-exchanges/which-currencies-can-i-exchange-and-keep-in-my-account/) in the Revolut Help Centre.
+// Some of these currencies might not be available in Sandbox.
+//
+// For more information, see the guides: [Exchange money](https://developer.revolut.com/docs/guides/manage-accounts/exchange-money).
 //
 // Docs: https://developer.revolut.com/docs/business/get-rate
 // Required scopes: READ

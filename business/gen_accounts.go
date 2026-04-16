@@ -18,6 +18,10 @@ type Accounts struct {
 
 // List retrieve all accounts
 //
+// Get a list of all your accounts.
+//
+// For more information, see the guides: [Get your account details](https://developer.revolut.com/docs/guides/manage-accounts/accounts-and-transactions/manage-your-accounts).
+//
 // Docs: https://developer.revolut.com/docs/business/get-accounts
 // Required scopes: READ
 func (s *Accounts) List(ctx context.Context) ([]Account, error) {
@@ -29,6 +33,11 @@ func (s *Accounts) List(ctx context.Context) ([]Account, error) {
 }
 
 // Get retrieve an account
+//
+// Get the information about one of your accounts.
+// Specify the account by its ID.
+//
+// For more information, see the guides: [Get your account details](https://developer.revolut.com/docs/guides/manage-accounts/accounts-and-transactions/manage-your-accounts).
 //
 // Docs: https://developer.revolut.com/docs/business/get-account
 // Required scopes: READ
@@ -47,6 +56,11 @@ func (s *Accounts) Get(ctx context.Context, accountID string) (*Account, error) 
 }
 
 // GetDetails retrieve account's full bank details
+//
+// Get all the bank details of one of your accounts.
+// Specify the account by its ID.
+//
+// For more information, see the guides: [Get your account details](https://developer.revolut.com/docs/guides/manage-accounts/accounts-and-transactions/manage-your-accounts).
 //
 // Docs: https://developer.revolut.com/docs/business/get-account-details
 // Required scopes: READ

@@ -19,6 +19,20 @@ type PayoutLinks struct {
 
 // List retrieve a list of payout links
 //
+// Get all the links that you have created, or use the query parameters to filter the results.
+//
+// The links are sorted by the `created_at` date in reverse chronological order.
+//
+// The returned links are **paginated**.
+// The maximum number of payout links returned per page is specified by the `limit` parameter.
+// To get to the next page, make a new request and use the `created_at` date of the last payout link returned in the previous response.
+//
+// :::note
+// This feature is available in the UK, the EEA, AU, and SG.
+// :::
+//
+// For more information, see the guides: [Send money via payout link](https://developer.revolut.com/docs/guides/manage-accounts/transfers/payout-links).
+//
 // Docs: https://developer.revolut.com/docs/business/get-payout-links
 // Required scopes: READ
 func (s *PayoutLinks) List(ctx context.Context, opts *GetPayoutLinksParams) ([]PayoutLink, error) {
@@ -72,6 +86,15 @@ func (s *PayoutLinks) ListAll(ctx context.Context, opts *GetPayoutLinksParams) i
 
 // Create create a payout link
 //
+// Create a payout link to send money even when you don't have the full banking details of the counterparty.
+// After you have created the link, send it to the recipient so that they can claim the payment.
+//
+// :::note
+// This feature is available in the UK, the EEA, AU, and SG.
+// :::
+//
+// For more information, see the guides: [Send money via payout link](https://developer.revolut.com/docs/guides/manage-accounts/transfers/payout-links).
+//
 // Docs: https://developer.revolut.com/docs/business/create-payout-link
 // Required scopes: PAY, WRITE
 func (s *PayoutLinks) Create(ctx context.Context, req CreatePayoutLinkRequest) (*PayoutLinkInitialProps, error) {
@@ -111,6 +134,14 @@ func (s *PayoutLinks) Create(ctx context.Context, req CreatePayoutLinkRequest) (
 
 // Get retrieve a payout link
 //
+// Get the information about a specific link by its ID.
+//
+// :::note
+// This feature is available in the UK, the EEA, AU, and SG.
+// :::
+//
+// For more information, see the guides: [Send money via payout link](https://developer.revolut.com/docs/guides/manage-accounts/transfers/payout-links).
+//
 // Docs: https://developer.revolut.com/docs/business/get-payout-link
 // Required scopes: READ
 func (s *PayoutLinks) Get(ctx context.Context, payoutLinkID string) (*PayoutLink, error) {
@@ -128,6 +159,15 @@ func (s *PayoutLinks) Get(ctx context.Context, payoutLinkID string) (*PayoutLink
 }
 
 // CancelPayoutLink cancel a payout link
+//
+// Cancel a payout link. You can only cancel a link that hasn't been claimed yet.
+// A successful request does not get any content in response.
+//
+// :::note
+// This feature is available in the UK, the EEA, AU, and SG.
+// :::
+//
+// For more information, see the guides: [Send money via payout link](https://developer.revolut.com/docs/guides/manage-accounts/transfers/payout-links).
 //
 // Docs: https://developer.revolut.com/docs/business/cancel-payout-link
 // Required scopes: READ, WRITE

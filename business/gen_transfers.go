@@ -17,6 +17,14 @@ type Transfers struct {
 
 // CreatePayment create a transfer to another account or card
 //
+// Make a payment to a counterparty. You can choose either a bank transfer or a card transfer. The resulting transaction has the type `transfer`.
+//
+// If you make the payment to another Revolut account, either business or personal, the transaction is executed instantly.
+//
+// If the counterparty has multiple payment methods available, for example, 2 accounts, or 1 account and 1 card, you **must specify the account or card** to which you want to transfer the money (`receiver.account_id` or `receiver.card_id` respectively) .
+//
+// For more details, see the guides: [Send money via bank transfer](https://developer.revolut.com/docs/guides/manage-accounts/transfers/bank-transfers) and [Card transfers](https://developer.revolut.com/docs/guides/manage-accounts/transfers/card-transfers).
+//
 // Docs: https://developer.revolut.com/docs/business/create-payment
 // Required scopes: PAY, READ
 func (s *Transfers) CreatePayment(ctx context.Context, req TransactionPaymentRequest) (*TransferResponse, error) {
@@ -50,6 +58,12 @@ func (s *Transfers) CreatePayment(ctx context.Context, req TransactionPaymentReq
 
 // Create move money between your accounts
 //
+// Move money between the Revolut accounts of the business in the same currency.
+//
+// The resulting transaction has the type `transfer`.
+//
+// For more information, see the guides: [Send money](https://developer.revolut.com/docs/guides/manage-accounts/transfers/send-money).
+//
 // Docs: https://developer.revolut.com/docs/business/create-transfer
 // Required scopes: PAY, READ
 func (s *Transfers) Create(ctx context.Context, req TransferRequest) (*TransferResponse, error) {
@@ -82,6 +96,11 @@ func (s *Transfers) Create(ctx context.Context, req TransferRequest) (*TransferR
 }
 
 // GetReasons get transfer reasons
+//
+// In order to initiate a transfer in certain currencies and countries, you must provide a transfer reason.
+// With this endpoint you can retrieve all transfer reasons available to your business account per country and currency.
+//
+// After you retrieve the results, use the appropriate reason code in the `transfer_reason_code` field when [making a transfer to a counterparty](https://developer.revolut.com/docs/business/create-payment) or [creating a payout link](https://developer.revolut.com/docs/business/create-payout-link).
 //
 // Docs: https://developer.revolut.com/docs/business/get-transfer-reasons
 // Required scopes: READ

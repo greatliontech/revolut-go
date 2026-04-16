@@ -19,6 +19,28 @@ type Counterparties struct {
 
 // ValidateAccountName validate an account name (CoP/VoP)
 //
+// Validate a counterparty's account name against their account details when [adding a counterparty](https://developer.revolut.com/docs/business/add-counterparty) or [making a transfer](https://developer.revolut.com/docs/business/create-payment) to a new or existing counterparty.
+//
+// :::caution
+// The CoP check is **not** a complete fraud-prevention tool, and it does **not** guarantee the person is who they claim to be.
+// It only confirms that the name and account details your provide match the bank's records.
+//
+// Even if the counterparty's details match, you should still exercise due caution when transferring funds.
+// :::
+//
+// :::note[Availability & Sandbox behaviour]
+//   - This feature is only available to businesses in the [supported regions](https://developer.revolut.com/docs/guides/manage-accounts/counterparties/confirmation-of-payee#supported-regions-and-services).
+//     Additionally, to get access to CoP in the UK, eligible businesses must contact [Revolut API Support](mailto:api-requests@revolut.com).
+//   - In Sandbox, this feature is only available for **testing**.
+//     While **incomplete or invalid requests** will return production-like error responses, **complete and valid requests** in Sandbox do **not** undergo real validation and will always return `cannot_be_checked`.
+//
+// :::
+//
+// The validation relies on different underlying services, depending on the recipient's payment scheme (region and currency).
+// These factors determine which fields you must provide and what response you get.
+// - For examples, refer to the request body samples.
+// - For more information, see the guides: [Validate an account name (CoP/VoP)](https://developer.revolut.com/docs/guides/manage-accounts/counterparties/confirmation-of-payee).
+//
 // Docs: https://developer.revolut.com/docs/business/validate-account-name
 // Required scopes: WRITE
 func (s *Counterparties) ValidateAccountName(ctx context.Context, req ValidateAccountNameRequest) (*ValidateAccountNameResponse, error) {
@@ -30,6 +52,16 @@ func (s *Counterparties) ValidateAccountName(ctx context.Context, req ValidateAc
 }
 
 // List retrieve a list of counterparties
+//
+// Get all the counterparties that you have created, or use the query parameters to filter the results.
+//
+// The counterparties are sorted by the `created_at` date in reverse chronological order.
+//
+// The returned counterparties are **paginated**.
+// The maximum number of counterparties returned per page is specified by the `limit` parameter.
+// To get to the next page, make a new request and use the `created_at` date of the last counterparty returned in the previous response.
+//
+// For more information, see the guides: [Retrieve counterparties](https://developer.revolut.com/docs/guides/manage-accounts/counterparties/retrieve-counterparties).
 //
 // Docs: https://developer.revolut.com/docs/business/get-counterparties
 // Required scopes: READ
@@ -84,6 +116,78 @@ func (s *Counterparties) ListAll(ctx context.Context, opts *GetCounterpartiesPar
 
 // Create create a counterparty
 //
+// Create a new counterparty to transact with.
+//
+// ### Revtags in Sandbox
+//
+// In the Sandbox environment, you cannot add real people and businesses as Revolut counterparties.
+// To help you simulate adding counterparties using Revtag, we created some test accounts of profile type `personal` that you can use.
+//
+// <details id='test-accounts-for-sandbox'>
+//
+//	<summary>
+//	<b>Test accounts for Sandbox</b>
+//	</summary>
+//
+//	To add a counterparty via Revtag, use one of these pairs for the `name` and `revtag` fields respectively:
+//	- `Test User 1` & `john1pvki`
+//	- `Test User 2` & `john2pvki`
+//	-    ...
+//	- `Test User 9` & `john9pvki`
+//
+// </details>
+//
+// ### Address field recommendations
+//
+// Some payment rails may have stricter requirements regarding the `address` field – for example, by also requiring the `region` field.
+// This is why we recommend that you use **all** available address fields (including `street_line1`, `region` and `city`) when creating a counterparty.
+//
+// This significantly reduces the risk of any disruption to payments made via the API.
+//
+// ### Multiple counterparties with the same details
+//
+// You cannot create multiple counterparties with the same Revtag.
+// This restriction does not apply to other details.
+// For example:
+//   - **Revtag**: If you've already added `johnsmith` as a Revolut counterparty, you can't add another counterparty with the `johnsmith` Revtag.
+//     If you try to do so, you'll get an error.
+//   - **Other details**: If you've added John Smith as an individual UK counterparty using GBP with `sort_code=54-01-05` and `account_no=12345678`, you can still use the same details to create another counterparty.
+//
+// ### Counterparty name
+//
+// When creating a counterparty, ensure that you use the correct field to define the counterparty's name.
+//
+// <table>
+//
+//	<thead>
+//	  <tr>
+//	    <th rowSpan="2"> Counterparty type</th>
+//	    <th colSpan="2">Name field to use when added with:</th>
+//	  </tr>
+//	  <tr>
+//	    <th>Revtag</th>
+//	    <th>Other details</th>
+//	  </tr>
+//	</thead>
+//	<tbody>
+//	  <tr>
+//	    <th>Individual</th>
+//	    <td><code>name</code> (string)</td>
+//	    <td><code>individual_name</code> (<b>object</b> with string subfields for first and last name)</td>
+//	  </tr>
+//	  <tr>
+//	    <th>Company</th>
+//	    <td><code>name</code> (string)</td>
+//	    <td><code>company_name</code> (string)</td>
+//	  </tr>
+//	</tbody>
+//
+// </table>
+//
+// ---
+//
+// For more information, see the guides: [Create a counterparty](https://developer.revolut.com/docs/guides/manage-accounts/counterparties/create-a-counterparty).
+//
 // Docs: https://developer.revolut.com/docs/business/add-counterparty
 // Required scopes: READ, WRITE
 func (s *Counterparties) Create(ctx context.Context, req CreateCounterpartyRequest) (*Counterparty, error) {
@@ -102,6 +206,8 @@ func (s *Counterparties) Create(ctx context.Context, req CreateCounterpartyReque
 
 // Get retrieve a counterparty
 //
+// Get the information about a specific counterparty by ID.
+//
 // Docs: https://developer.revolut.com/docs/business/get-counterparty
 // Required scopes: READ
 func (s *Counterparties) Get(ctx context.Context, counterpartyID string) (*Counterparty, error) {
@@ -119,6 +225,8 @@ func (s *Counterparties) Get(ctx context.Context, counterpartyID string) (*Count
 }
 
 // Delete delete a counterparty
+//
+// Delete a counterparty with the given ID. When a counterparty is deleted, you cannot make any payments to the counterparty.
 //
 // Docs: https://developer.revolut.com/docs/business/delete-counterparty
 // Required scopes: READ, WRITE

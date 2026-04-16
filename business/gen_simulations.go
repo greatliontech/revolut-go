@@ -18,6 +18,12 @@ type Simulations struct {
 
 // SimulateTopUp simulate an account top-up (Sandbox only)
 //
+// Simulate a top-up of your account in the Sandbox environment.
+//
+// This is useful during testing, when you run out of money in your test account and need to add more.
+//
+// For more information, see the guides: [Test your flows with simulations (Sandbox only)](https://developer.revolut.com/docs/guides/manage-accounts/api-usage-and-testing/test-flows-with-simulations).
+//
 // Docs: https://developer.revolut.com/docs/business/simulate-top-up
 // Required scopes: WRITE
 func (s *Simulations) SimulateTopUp(ctx context.Context, req SimulationsBody) (*SimulateTopUpResponse, error) {
@@ -41,6 +47,12 @@ func (s *Simulations) SimulateTopUp(ctx context.Context, req SimulationsBody) (*
 }
 
 // SimulateTransferStateUpdate simulate a transfer state update (Sandbox only)
+//
+// Simulate a transfer state change in the Sandbox environment.
+//
+// For example, after you make a transfer in Sandbox, you can change its state to `completed`. The resulting state is final and cannot be changed.
+//
+// For more information, see the guides: [Test your flows with simulations (Sandbox only)](https://developer.revolut.com/docs/guides/manage-accounts/api-usage-and-testing/test-flows-with-simulations).
 //
 // Docs: https://developer.revolut.com/docs/business/simulate-transfer-state-update
 // Required scopes: WRITE

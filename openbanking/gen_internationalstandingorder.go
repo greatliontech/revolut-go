@@ -19,6 +19,37 @@ type InternationalStandingOrder struct {
 
 // CreateConsents create an international standing order consent
 //
+// Creating an international standing order consent described in the [Open Banking API documentation: Account and Transaction API Specification](https://openbanking.atlassian.net/wiki/spaces/DZ/pages/999622968/Account+and+Transaction+API+Specification+-+v3.1.1).
+//
+// Use international standing orders for international SWIFT payments in all currencies supported by Revolut.
+//
+// :::note
+// Only the payments with `InstructedAmount` in the same currency as `CurrencyOfTransfer` are supported.
+// :::
+//
+// However, users can select which account they want to be charged in the consent authorization UI even if the selected account is in a different currency.
+//
+// In such a case, the `ExchangeRateInformation` response field contains information about the `ExchangeRate` between `SourceCurrency` and `CurrencyOfTransfer`.
+// If the user doesn't have enough funds on the selected account, the consent authorization is rejected.
+//
+// When you make the API call, ensure that you pass the corresponding JSON Web Signature (JWS) in the `x-jws-signature` request header. Note:
+// - The JWS is generated from the request body with the [TPP](https://developer.revolut.com/docs/guides/build-banking-apps/glossary) signing key that is specified in the JWS header.
+// - The JWS consists of a header and a signature in the `<jws_header>..<jws_signature>` format.
+//
+// To see how to create a JWS, see the guide: [Work with JSON Web Signatures](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/work-with-json-web-signatures).
+//
+// :::note
+// Only the following types of standing orders frequency are supported:
+//
+// |  FREQUENCY |  EXAMPLE | DETAILS  |
+// |---|---|---|
+// |  `EvryDay` | `EvryDay`  | daily, supported only for personal accounts  |
+// | `IntrvlWkDay`  | `IntrvlWkDay:01:03`  | weekly on a specified week day, only 1 week interval is supported  |
+// | `IntrvlMnthDay`  | `IntrvlMnthDay:01:03`  |  monthly on a specified day of month, only 1 month interval is supported |
+// :::
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment#2-create-a-domestic-payment-consent).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/create-international-standing-order-consents
 // Required scopes: payments
 func (s *InternationalStandingOrder) CreateConsents(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteInternationalStandingOrderConsent2) (*ObwriteInternationalStandingOrderConsentResponse2, ResponseMetadata, error) {
@@ -272,6 +303,10 @@ func (s *InternationalStandingOrder) CreateConsentsSigned(ctx context.Context, x
 
 // GetConsentsConsentID retrieve an international standing order consent
 //
+// Get the details of an international standing order consent.
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/get-international-standing-order-consents-consent-id
 // Required scopes: payments
 func (s *InternationalStandingOrder) GetConsentsConsentID(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*ObwriteInternationalStandingOrderConsentResponse2, ResponseMetadata, error) {
@@ -352,6 +387,14 @@ func (s *InternationalStandingOrder) GetConsentsConsentIDSigned(ctx context.Cont
 }
 
 // Create create an international standing order
+//
+// Create an international standing order.
+//
+// :::note
+// As is defined in the Open Banking Specifications, the `/Data/Initiation` and the `/Data/Risk` sections of the request must be an exact match for the related consent passed in `ConsentId`.
+// :::
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment#6-initiate-the-domestic-payment).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-international-standing-orders
 // Required scopes: payments
@@ -617,6 +660,10 @@ func (s *InternationalStandingOrder) CreateSigned(ctx context.Context, xFAPIFina
 }
 
 // GetInternationalStandingOrderID retrieve an international standing order
+//
+// Get the status of an international standing order.
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment#7-check-the-status-of-the-payment).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-international-standing-orders-international-standing-order-id
 // Required scopes: payments

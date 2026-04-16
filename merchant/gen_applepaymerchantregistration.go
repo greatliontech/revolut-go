@@ -17,6 +17,13 @@ type ApplePayMerchantRegistration struct {
 
 // RegisterDomainApplePay register domain for Apple Pay
 //
+// Register your website's domain to accept payments via Apple Pay.
+//
+// Before you call this endpoint, make sure that you have completed the following steps:
+//
+// 1. Download the latest [domain validation file](https://assets.revolut.com/api-docs/merchant-api/files/apple-developer-merchantid-domain-association).
+// 1. Upload the domain validation file to your website in the following folder `/.well-known/`. For example, if your website is `example.com`, the file should be available on `example.com/.well-known/apple-developer-merchantid-domain-association`, where `apple-developer-merchantid-domain-association` indicates the name of the file.
+//
 // Docs: https://developer.revolut.com/docs/merchant/register-domain-apple-pay
 func (s *ApplePayMerchantRegistration) RegisterDomainApplePay(ctx context.Context, req ApplePayMerchantRegistrationBody) error {
 	if req.Domain == "" {
@@ -26,6 +33,8 @@ func (s *ApplePayMerchantRegistration) RegisterDomainApplePay(ctx context.Contex
 }
 
 // UnregisterDomainApplePay unregister domain for Apple Pay
+//
+// Unregister your website from Apple Pay's registered domains.
 //
 // Docs: https://developer.revolut.com/docs/merchant/unregister-domain-apple-pay
 func (s *ApplePayMerchantRegistration) UnregisterDomainApplePay(ctx context.Context, revolutAPIVersion RevolutAPIVersionOptional, req ApplePayMerchantRegistrationBody) error {

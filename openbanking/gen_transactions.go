@@ -19,6 +19,15 @@ type Transactions struct {
 
 // GetAccountsAccountIDDirectDebits retrieve all account's direct debits
 //
+// Get a list of all the direct debits for a specific user account.
+//
+// :::note
+// In compliance with PSD2 SCA regulations, access to this endpoint is only allowed within the first 5 minutes after the Revolut user has authorised the consent.
+// After those 5 minutes, access to this endpoint is denied, and an HTTP `403` error is returned.
+// :::
+//
+// See also [Tutorials: Get account and transaction information](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/get-account-and-transaction-information).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/get-accounts-account-id-direct-debits
 // Required scopes: accounts
 func (s *Transactions) GetAccountsAccountIDDirectDebits(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*ObreadDirectDebit1, ResponseMetadata, error) {
@@ -60,6 +69,15 @@ func (s *Transactions) GetAccountsAccountIDDirectDebits(ctx context.Context, acc
 
 // GetAccountsAccountIDStandingOrders retrieve all account's standing orders
 //
+// Get a list of all the standing orders for a specific user account.
+//
+// :::note
+// In compliance with PSD2 SCA regulations, access to this endpoint is only allowed within the first 5 minutes after the Revolut user has authorised the consent.
+// After those 5 minutes, access to this endpoint is denied, and an HTTP `403` error is returned.
+// :::
+//
+// See also [Tutorials: Get account and transaction information](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/get-account-and-transaction-information).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/get-accounts-account-id-standing-orders
 // Required scopes: accounts
 func (s *Transactions) GetAccountsAccountIDStandingOrders(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*ObreadStandingOrder4, ResponseMetadata, error) {
@@ -100,6 +118,17 @@ func (s *Transactions) GetAccountsAccountIDStandingOrders(ctx context.Context, a
 }
 
 // GetAccountsAccountIDTransactions retrieve all transactions
+//
+// Get all the recent transactions for an account.
+//
+// :::note
+// In compliance with PSD2 SCA regulations, full transaction history can only be accessed within the first 5 minutes after the Revolut user has authorised the consent.
+// After those 5 minutes, transaction history is restricted to the last 90 days counting from the moment the API request is made, and older transactions are not returned.
+//
+// Additionally, after those 5 minutes, unless the user is present and actively requesting data, you should not retrieve transaction data of an individual account more than 4 times within a 24-hour period.
+// :::
+//
+// See also [Tutorials: Get account and transaction information](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/get-account-and-transaction-information).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-accounts-account-id-transactions
 // Required scopes: accounts

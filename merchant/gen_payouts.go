@@ -20,6 +20,12 @@ type Payouts struct {
 
 // GetList retrieve a payout list
 //
+// Retrieve all the payouts you made from your Merchant account. You can also use the query parameters for:
+//
+//	| Filtering | Pagination |
+//	| --------- | ---------- |
+//	| Filter the orders that you want to retrieve, for example, only retrieve the orders that have a specific email. <br/><br/>Parameters used for filtering:<br/><ul><li>`from_created_date`</li><li>`to_created_date`</li><li>`currency`</li><li>`state`</li></ul> | View the orders without loading all of them at once, for example, return a specified number of orders per page. <br/><br/>Parameters used for pagination: <br/><ul><li>`limit`</li></ul> |
+//
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payout-list
 func (s *Payouts) GetList(ctx context.Context, revolutAPIVersion RevolutAPIVersion, opts *RetrievePayoutListParams) ([]Payout, error) {
 	if revolutAPIVersion == "" {
@@ -83,6 +89,8 @@ func (s *Payouts) GetListAll(ctx context.Context, revolutAPIVersion RevolutAPIVe
 }
 
 // Get retrieve a payout
+//
+// Retrieve the details of a payout. Provide the unique payout ID, and the corresponding payout information is returned.
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payout
 func (s *Payouts) Get(ctx context.Context, payoutID string, revolutAPIVersion RevolutAPIVersion) (*Payout, error) {

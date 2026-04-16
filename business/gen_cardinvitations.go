@@ -19,6 +19,17 @@ type CardInvitations struct {
 
 // List retrieve a list of card invitations
 //
+// Get the list of all card invitations in your organisation.
+//
+// The results are paginated and sorted by the `created_at` date in reverse chronological order.
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Card invitations API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// For more information, see the guides: [Manage card invitations](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-card-invitations).
+//
 // Docs: https://developer.revolut.com/docs/business/get-card-invitations
 // Required scopes: READ
 func (s *CardInvitations) List(ctx context.Context, opts *GetCardInvitationsParams) ([]CardInvitationResponse, error) {
@@ -72,6 +83,16 @@ func (s *CardInvitations) ListAll(ctx context.Context, opts *GetCardInvitationsP
 
 // Create create a card invitation
 //
+// Create an invitation for a virtual [team member card](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-cards#different-types-of-cards) for a new, not-yet-onboarded team member.
+// When the team member completes onboarding before the invitation's expiry date, the invitation will automatically be claimed, and the card will then be issued for the team member immediately.
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Card invitations API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// For more information, see the guides: [Manage card invitations](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-card-invitations).
+//
 // Docs: https://developer.revolut.com/docs/business/create-card-invitation
 // Required scopes: WRITE
 func (s *CardInvitations) Create(ctx context.Context, req CardInvitationsBody) (*CardInvitationCreatedResponse, error) {
@@ -102,6 +123,21 @@ func (s *CardInvitations) Create(ctx context.Context, req CardInvitationsBody) (
 
 // CancelCardInvitation cancel a card invitation
 //
+// Cancel a specific card invitation, based on its ID.
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Card invitations API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// You can cancel successfully created invitations that have not been claimed yet (`state=created`).
+//
+// Once the card invitation is cancelled, it cannot be claimed or reactivated.
+//
+// A successful response does not get any content in return.
+//
+// For more information, see the guides: [Manage card invitations](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-card-invitations).
+//
 // Docs: https://developer.revolut.com/docs/business/cancel-card-invitation
 // Required scopes: WRITE
 func (s *CardInvitations) CancelCardInvitation(ctx context.Context, cardInvitationID string) error {
@@ -115,6 +151,15 @@ func (s *CardInvitations) CancelCardInvitation(ctx context.Context, cardInvitati
 }
 
 // Get retrieve card invitation details
+//
+// Get the details of a specific card invitation, based on its ID.
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Card invitations API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// For more information, see the guides: [Manage card invitations](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-card-invitations).
 //
 // Docs: https://developer.revolut.com/docs/business/get-card-invitation
 // Required scopes: READ
@@ -133,6 +178,21 @@ func (s *CardInvitations) Get(ctx context.Context, cardInvitationID string) (*Ca
 }
 
 // Update update card invitation settings
+//
+// Update settings for a specific card invitation, based on its ID.
+// You can update successfully created invitations that have not been claimed yet (`state=created`).
+//
+// :::note
+// - This feature is not available in Sandbox.
+// - To use the Card invitations API, please contact [Revolut API Support](mailto:api-requests@revolut.com).
+// :::
+//
+// :::caution
+// Some spend control parameters can affect one another.
+// When updating spend controls, review the resulting settings in the response to ensure they reflect the configuration you intended.
+// :::
+//
+// For more information, see the guides: [Manage card invitations](https://developer.revolut.com/docs/guides/manage-accounts/cards/manage-card-invitations).
 //
 // Docs: https://developer.revolut.com/docs/business/update-card-invitation
 // Required scopes: WRITE

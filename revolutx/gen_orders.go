@@ -21,6 +21,13 @@ type Orders struct {
 
 // PlaceOrder place order
 //
+// Place a new order.
+// The user is resolved by the provided API key.
+//
+// :::note
+// Rate limit for limit orders: 1000 requests/day.
+// :::
+//
 // Docs: https://developer.revolut.com/docs/revolutx/place-order
 func (s *Orders) PlaceOrder(ctx context.Context, xRevxTimestamp int, xRevxSignature string, req OrderPlacementRequest) (*OrderPlacementResponse, error) {
 	if xRevxSignature == "" {
@@ -61,6 +68,8 @@ func (s *Orders) PlaceOrder(ctx context.Context, xRevxTimestamp int, xRevxSignat
 
 // CancelAllOrders cancel all active orders
 //
+// Cancels all open limit, conditional, and Take Profit/Stop Loss (TPSL) orders associated with the authenticated account.
+//
 // Docs: https://developer.revolut.com/docs/revolutx/cancel-all-orders
 func (s *Orders) CancelAllOrders(ctx context.Context, xRevxTimestamp int, xRevxSignature string) error {
 	if xRevxSignature == "" {
@@ -81,6 +90,9 @@ func (s *Orders) CancelAllOrders(ctx context.Context, xRevxTimestamp int, xRevxS
 }
 
 // GetActiveOrders get active orders
+//
+// Get active crypto exchange orders for the requesting user.
+// The user is resolved by the provided API key.
 //
 // Docs: https://developer.revolut.com/docs/revolutx/get-active-orders
 func (s *Orders) GetActiveOrders(ctx context.Context, xRevxTimestamp int, xRevxSignature string, opts *GetActiveOrdersParams) (*ActiveOrdersPaginatedResponse, error) {
@@ -152,6 +164,9 @@ func (s *Orders) GetActiveOrdersAll(ctx context.Context, xRevxTimestamp int, xRe
 
 // GetFills get fills of order by ID
 //
+// Retrieves the fills (trades) associated with a specific order belonging to the client.
+// The user context is resolved based on the provided API key.
+//
 // Docs: https://developer.revolut.com/docs/revolutx/get-order-fills
 func (s *Orders) GetFills(ctx context.Context, venueOrderID string, xRevxTimestamp int, xRevxSignature string) (*GetOrderFillsResponse, error) {
 	if venueOrderID == "" {
@@ -183,6 +198,9 @@ func (s *Orders) GetFills(ctx context.Context, venueOrderID string, xRevxTimesta
 }
 
 // GetHistoricalOrders get historical orders
+//
+// Get historical crypto exchange orders for the requesting user.
+// The user is resolved by the provided API key.
 //
 // Docs: https://developer.revolut.com/docs/revolutx/get-historical-orders
 func (s *Orders) GetHistoricalOrders(ctx context.Context, xRevxTimestamp int, xRevxSignature string, opts *GetHistoricalOrdersParams) (*HistoricalOrdersPaginatedResponse, error) {
@@ -254,6 +272,9 @@ func (s *Orders) GetHistoricalOrdersAll(ctx context.Context, xRevxTimestamp int,
 
 // Get get order by ID
 //
+// Retrieve specific order details by ID.
+// The user context is resolved based on the provided API key.
+//
 // Docs: https://developer.revolut.com/docs/revolutx/get-order
 func (s *Orders) Get(ctx context.Context, venueOrderID string, xRevxTimestamp int, xRevxSignature string) (*GetOrderResponse, error) {
 	if venueOrderID == "" {
@@ -285,6 +306,8 @@ func (s *Orders) Get(ctx context.Context, venueOrderID string, xRevxTimestamp in
 }
 
 // CancelOrder cancel order by ID
+//
+// Cancel an active order by its Venue ID.
 //
 // Docs: https://developer.revolut.com/docs/revolutx/cancel-order
 func (s *Orders) CancelOrder(ctx context.Context, venueOrderID string, xRevxTimestamp int, xRevxSignature string) error {

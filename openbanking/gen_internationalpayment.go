@@ -19,6 +19,32 @@ type InternationalPayment struct {
 
 // CreateConsents create an international payment consent
 //
+// Create an international payment consent described in the [Open Banking API documentation: Account and Transaction API Specification](https://openbanking.atlassian.net/wiki/spaces/DZ/pages/999622968/Account+and+Transaction+API+Specification+-+v3.1.1).
+//
+// Use international payments for international SWIFT payments in all currencies supported by Revolut.
+//
+// :::note
+// Only the payments with `InstructedAmount` in the same currency as `CurrencyOfTransfer` are supported.
+//
+// However, users can select which account they want to be charged in the consent authorization UI even if the selected account is in a different currency.
+//
+// In such a case, the `ExchangeRateInformation` response field contains information about the `ExchangeRate` between `SourceCurrency` and `CurrencyOfTransfer`.
+// If the user doesn't have enough funds on the selected account, the consent authorization is rejected.
+// :::
+//
+// :::note
+// For international payment initiation consents, we recommend including the creditor's name and address.
+// Otherwise, the API may return the error `Address is required for this beneficiary` if the address is not provided for international payments.
+// :::
+//
+// When you make the API call, ensure that you pass the corresponding JSON Web Signature (JWS) in the `x-jws-signature` request header. Note:
+// - The JWS is generated from the request body with the [TPP](https://developer.revolut.com/docs/guides/build-banking-apps/glossary) signing key that is specified in the JWS header.
+// - The JWS consists of a header and a signature in the `<jws_header>..<jws_signature>` format.
+//
+// To see how to create a JWS, see the guide: [Work with JSON Web Signatures](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/work-with-json-web-signatures).
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment#2-create-a-domestic-payment-consent).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/create-international-payment-consents
 // Required scopes: payments
 func (s *InternationalPayment) CreateConsents(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteInternationalConsent2) (*ObwriteInternationalConsentResponse2, ResponseMetadata, error) {
@@ -254,6 +280,10 @@ func (s *InternationalPayment) CreateConsentsSigned(ctx context.Context, xFAPIFi
 
 // GetConsentsConsentID retrieve an international payment consent
 //
+// Get the details of an international payment consent.
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/get-international-payment-consents-consent-id
 // Required scopes: payments
 func (s *InternationalPayment) GetConsentsConsentID(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*ObwriteInternationalConsentResponse2, ResponseMetadata, error) {
@@ -335,6 +365,11 @@ func (s *InternationalPayment) GetConsentsConsentIDSigned(ctx context.Context, c
 
 // GetConsentsConsentIDFundsConfirmation get funds confirmation for an international payment consent
 //
+// Check the funds for an international payment with the given consent.
+// You can get the information only if the user has authorized the related consent.
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/get-international-payment-consents-consent-id-funds-confirmation
 // Required scopes: payments
 func (s *InternationalPayment) GetConsentsConsentIDFundsConfirmation(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*ObwriteFundsConfirmationResponse1, ResponseMetadata, error) {
@@ -415,6 +450,14 @@ func (s *InternationalPayment) GetConsentsConsentIDFundsConfirmationSigned(ctx c
 }
 
 // Create create an international payment
+//
+// Create an international payment.
+//
+// :::note
+// As is defined in the Open Banking Specifications, the `/Data/Initiation` and the `/Data/Risk` sections of the request must be an exact match for the related consent passed in `ConsentId`.
+// :::
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment#6-initiate-the-domestic-payment).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-international-payments
 // Required scopes: payments
@@ -668,6 +711,10 @@ func (s *InternationalPayment) CreateSigned(ctx context.Context, xFAPIFinancialI
 }
 
 // GetInternationalPaymentID retrieve an international payment
+//
+// Get the state of an international payment.
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment#7-check-the-status-of-the-payment).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-international-payments-international-payment-id
 // Required scopes: payments

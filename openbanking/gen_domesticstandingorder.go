@@ -19,6 +19,32 @@ type DomesticStandingOrder struct {
 
 // CreateConsents create a domestic standing order consent
 //
+// Create a domestic standing order consent described in the [Open Banking API documentation: Account and Transaction API Specification](https://openbanking.atlassian.net/wiki/spaces/DZ/pages/999622968/Account+and+Transaction+API+Specification+-+v3.1.1).
+//
+// Use domestic standing orders for local recurring payments in the local currency of the user.
+//
+// :::note
+// Revolut supports only GBP as local in the UK and EUR in Single Euro Payments Area (SEPA) countries.
+// :::
+//
+// Because Revolut Business users can have multiple accounts in the same currency, they can choose which account they want to be charged in the consent authorization UI.
+//
+// When you make the API call, ensure that you pass the corresponding JSON Web Signature (JWS) in the `x-jws-signature` request header. Note:
+// - The JWS is generated from the request body with the [TPP](https://developer.revolut.com/docs/guides/build-banking-apps/glossary) signing key that is specified in the JWS header.
+// - The JWS consists of a header and a signature in the `<jws_header>..<jws_signature>` format.
+//
+// To see how to create a JWS, see the guide: [Work with JSON Web Signatures](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/work-with-json-web-signatures).
+//
+// The following types of standing orders frequency are supported:
+//
+// |  FREQUENCY |  EXAMPLE | DETAILS  |
+// |---|---|---|
+// |  `EvryDay` | EvryDay  | daily, supported only for personal accounts  |
+// | `IntrvlWkDay`  | IntrvlWkDay:01:03  | weekly on a specified week day, only 1 week interval is supported  |
+// | `IntrvlMnthDay`  | IntrvlMnthDay:01:03  |  monthly on a specified day of month, only 1 month interval is supported |
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment#2-create-a-domestic-payment-consent).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/create-domestic-standing-order-consents
 // Required scopes: payments
 func (s *DomesticStandingOrder) CreateConsents(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteDomesticStandingOrderConsent2) (*ObwriteDomesticStandingOrderConsentResponse2, ResponseMetadata, error) {
@@ -260,6 +286,10 @@ func (s *DomesticStandingOrder) CreateConsentsSigned(ctx context.Context, xFAPIF
 
 // GetConsentsConsentID retrieve a domestic standing order consent
 //
+// Get the details of a domestic standing order consent.
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment).
+//
 // Docs: https://developer.revolut.com/docs/openbanking/get-domestic-standing-order-consents-consent-id
 // Required scopes: payments
 func (s *DomesticStandingOrder) GetConsentsConsentID(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, xCustomerUserAgent string) (*ObwriteDomesticStandingOrderConsentResponse2, ResponseMetadata, error) {
@@ -340,6 +370,14 @@ func (s *DomesticStandingOrder) GetConsentsConsentIDSigned(ctx context.Context, 
 }
 
 // Create create a domestic standing order
+//
+// Create a domestic standing order.
+//
+// :::note
+// As is defined in the Open Banking Specifications, the `/Data/Initiation` and the `/Data/Risk` sections of the request must be an exact match for the related consent passed in `ConsentId`.
+// :::
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment#6-initiate-the-domestic-payment).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/create-domestic-standing-orders
 // Required scopes: payments
@@ -593,6 +631,10 @@ func (s *DomesticStandingOrder) CreateSigned(ctx context.Context, xFAPIFinancial
 }
 
 // GetDomesticStandingOrderID retrieve a domestic standing order
+//
+// Get the status of a domestic standing order.
+//
+// See also [Tutorials: Initiate your first payment](https://developer.revolut.com/docs/guides/build-banking-apps/tutorials/initiate-your-first-payment#7-check-the-status-of-the-payment).
 //
 // Docs: https://developer.revolut.com/docs/openbanking/get-domestic-standing-orders-domestic-standing-order-id
 // Required scopes: payments
