@@ -20,6 +20,9 @@ type Partners struct {
 
 // GetBuy retrieve a redirect URL
 func (s *Partners) GetBuy(ctx context.Context, xAPIKey string, opts *GetBuyParams) (*RampRedirectURL, error) {
+	if xAPIKey == "" {
+		return nil, errors.New("cryptoramp: X-API-KEY is required")
+	}
 	if opts == nil {
 		return nil, errors.New("cryptoramp: GetBuyParams is required")
 	}
@@ -63,6 +66,9 @@ func (s *Partners) GetBuy(ctx context.Context, xAPIKey string, opts *GetBuyParam
 
 // GetConfig retrieve configuration
 func (s *Partners) GetConfig(ctx context.Context, xAPIKey string) (*Config, error) {
+	if xAPIKey == "" {
+		return nil, errors.New("cryptoramp: X-API-KEY is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if xAPIKey != "" {
@@ -81,6 +87,9 @@ func (s *Partners) GetConfig(ctx context.Context, xAPIKey string) (*Config, erro
 
 // ListOrders retrieve all orders
 func (s *Partners) ListOrders(ctx context.Context, xAPIKey string, opts *GetOrdersParams) ([]Order, error) {
+	if xAPIKey == "" {
+		return nil, errors.New("cryptoramp: X-API-KEY is required")
+	}
 	if opts == nil {
 		return nil, errors.New("cryptoramp: GetOrdersParams is required")
 	}
@@ -144,6 +153,9 @@ func (s *Partners) ListOrdersAll(ctx context.Context, xAPIKey string, opts *GetO
 func (s *Partners) GetOrder(ctx context.Context, orderID string, xAPIKey string, opts *GetOrdersParams2) (*Order, error) {
 	if orderID == "" {
 		return nil, errors.New("cryptoramp: order_id is required")
+	}
+	if xAPIKey == "" {
+		return nil, errors.New("cryptoramp: X-API-KEY is required")
 	}
 	if opts == nil {
 		return nil, errors.New("cryptoramp: GetOrdersParams2 is required")

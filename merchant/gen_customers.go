@@ -22,6 +22,12 @@ type Customers struct {
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-customer-list
 func (s *Customers) GetList(ctx context.Context, authorization string, revolutAPIVersion CustomersRevolutAPIVersion, opts *RetrieveCustomerListParams) (*CustomersResponse, error) {
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	path := "api/customers"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
@@ -77,6 +83,12 @@ func (s *Customers) GetListAll(ctx context.Context, authorization string, revolu
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-customer
 func (s *Customers) Create(ctx context.Context, authorization string, revolutAPIVersion CustomersRevolutAPIVersion, req CustomerCreationV2) (*CustomerCreated, error) {
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	if req.Email == "" {
 		return nil, errors.New("merchant: CustomerCreationV2.email is required")
 	}
@@ -111,6 +123,12 @@ func (s *Customers) Get(ctx context.Context, customerID string, authorization st
 	if !isUUID(customerID) {
 		return nil, errors.New("merchant: customer_id must be a valid UUID")
 	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -139,6 +157,12 @@ func (s *Customers) Update(ctx context.Context, customerID string, authorization
 	}
 	if !isUUID(customerID) {
 		return nil, errors.New("merchant: customer_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -171,6 +195,12 @@ func (s *Customers) Delete(ctx context.Context, customerID string, authorization
 	if !isUUID(customerID) {
 		return errors.New("merchant: customer_id must be a valid UUID")
 	}
+	if authorization == "" {
+		return errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return errors.New("merchant: Revolut-Api-Version is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -196,6 +226,12 @@ func (s *Customers) GetPaymentMethodList(ctx context.Context, customerID string,
 	}
 	if !isUUID(customerID) {
 		return nil, errors.New("merchant: customer_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
 	path := "api/customers/" + url.PathEscape(customerID) + "/payment-methods"
 	if q := opts.encode().Encode(); q != "" {
@@ -236,6 +272,12 @@ func (s *Customers) GetPaymentMethod(ctx context.Context, customerID string, pay
 	if !isUUID(paymentMethodID) {
 		return nil, errors.New("merchant: payment_method_id must be a valid UUID")
 	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -270,6 +312,12 @@ func (s *Customers) UpdatePaymentMethod(ctx context.Context, customerID string, 
 	}
 	if !isUUID(paymentMethodID) {
 		return nil, errors.New("merchant: payment_method_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -307,6 +355,12 @@ func (s *Customers) DeletePaymentMethod(ctx context.Context, customerID string, 
 	}
 	if !isUUID(paymentMethodID) {
 		return errors.New("merchant: payment_method_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return errors.New("merchant: Revolut-Api-Version is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

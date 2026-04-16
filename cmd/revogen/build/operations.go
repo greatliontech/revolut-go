@@ -179,6 +179,7 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 				Type:     typ,
 				Doc:      firstLine(p.Description),
 				WireName: p.Name,
+				Required: p.Required,
 			})
 		}
 		// cookie params are ignored; no vendored spec uses them.

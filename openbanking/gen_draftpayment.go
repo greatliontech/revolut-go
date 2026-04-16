@@ -38,6 +38,9 @@ func (s *DraftPayment) List(ctx context.Context, opts *ListDraftPaymentParams) (
 // Docs: https://developer.revolut.com/docs/openbanking/create-draft-payment
 // Required scopes: draftpayments
 func (s *DraftPayment) Create(ctx context.Context, xIdempotencyKey string, opts *CreateDraftPaymentParams) (*DraftPaymentResponse, error) {
+	if xIdempotencyKey == "" {
+		return nil, errors.New("openbanking: x-idempotency-key is required")
+	}
 	path := "https://apis.revolut.com/" + "draft-payments"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q

@@ -22,6 +22,18 @@ type DomesticScheduledPayment struct {
 // Docs: https://developer.revolut.com/docs/openbanking/create-domestic-scheduled-payment-consents
 // Required scopes: payments
 func (s *DomesticScheduledPayment) CreateConsents(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteDomesticScheduledConsent2) (*ObwriteDomesticScheduledConsentResponse2, ResponseMetadata, error) {
+	if xFAPIFinancialID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
+	}
+	if xIdempotencyKey == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-idempotency-key is required")
+	}
+	if xJWSSignature == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-jws-signature is required")
+	}
 	if req.Data.Initiation.CreditorAccount.Identification == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticScheduledConsent2.Data.Initiation.CreditorAccount.Identification is required")
 	}
@@ -92,6 +104,18 @@ func (s *DomesticScheduledPayment) CreateConsents(ctx context.Context, xFAPIFina
 // preserved alongside the typed payload. Use it when you need to verify
 // the detached x-jws-signature header against the untouched bytes.
 func (s *DomesticScheduledPayment) CreateConsentsSigned(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteDomesticScheduledConsent2) (*Signed[ObwriteDomesticScheduledConsentResponse2], error) {
+	if xFAPIFinancialID == "" {
+		return nil, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, errors.New("openbanking: Authorization is required")
+	}
+	if xIdempotencyKey == "" {
+		return nil, errors.New("openbanking: x-idempotency-key is required")
+	}
+	if xJWSSignature == "" {
+		return nil, errors.New("openbanking: x-jws-signature is required")
+	}
 	if req.Data.Initiation.CreditorAccount.Identification == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticScheduledConsent2.Data.Initiation.CreditorAccount.Identification is required")
 	}
@@ -166,6 +190,12 @@ func (s *DomesticScheduledPayment) GetConsentsConsentID(ctx context.Context, con
 	if consentID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ConsentId is required")
 	}
+	if xFAPIFinancialID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if xFAPIFinancialID != "" {
@@ -204,6 +234,12 @@ func (s *DomesticScheduledPayment) GetConsentsConsentIDSigned(ctx context.Contex
 	if consentID == "" {
 		return nil, errors.New("openbanking: ConsentId is required")
 	}
+	if xFAPIFinancialID == "" {
+		return nil, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, errors.New("openbanking: Authorization is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if xFAPIFinancialID != "" {
@@ -240,6 +276,18 @@ func (s *DomesticScheduledPayment) GetConsentsConsentIDSigned(ctx context.Contex
 // Docs: https://developer.revolut.com/docs/openbanking/create-domestic-scheduled-payments
 // Required scopes: payments
 func (s *DomesticScheduledPayment) Create(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteDomesticScheduled2) (*ObwriteDomesticScheduledResponse2, ResponseMetadata, error) {
+	if xFAPIFinancialID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
+	}
+	if xIdempotencyKey == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-idempotency-key is required")
+	}
+	if xJWSSignature == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-jws-signature is required")
+	}
 	if req.Data.ConsentID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticScheduled2.Data.ConsentId is required")
 	}
@@ -310,6 +358,18 @@ func (s *DomesticScheduledPayment) Create(ctx context.Context, xFAPIFinancialID 
 // preserved alongside the typed payload. Use it when you need to verify
 // the detached x-jws-signature header against the untouched bytes.
 func (s *DomesticScheduledPayment) CreateSigned(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteDomesticScheduled2) (*Signed[ObwriteDomesticScheduledResponse2], error) {
+	if xFAPIFinancialID == "" {
+		return nil, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, errors.New("openbanking: Authorization is required")
+	}
+	if xIdempotencyKey == "" {
+		return nil, errors.New("openbanking: x-idempotency-key is required")
+	}
+	if xJWSSignature == "" {
+		return nil, errors.New("openbanking: x-jws-signature is required")
+	}
 	if req.Data.ConsentID == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticScheduled2.Data.ConsentId is required")
 	}
@@ -384,6 +444,12 @@ func (s *DomesticScheduledPayment) GetDomesticScheduledPaymentID(ctx context.Con
 	if domesticScheduledPaymentID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: DomesticScheduledPaymentId is required")
 	}
+	if xFAPIFinancialID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if xFAPIFinancialID != "" {
@@ -421,6 +487,12 @@ func (s *DomesticScheduledPayment) GetDomesticScheduledPaymentID(ctx context.Con
 func (s *DomesticScheduledPayment) GetDomesticScheduledPaymentIDSigned(ctx context.Context, domesticScheduledPaymentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*Signed[ObwriteDomesticScheduledResponse2], error) {
 	if domesticScheduledPaymentID == "" {
 		return nil, errors.New("openbanking: DomesticScheduledPaymentId is required")
+	}
+	if xFAPIFinancialID == "" {
+		return nil, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, errors.New("openbanking: Authorization is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

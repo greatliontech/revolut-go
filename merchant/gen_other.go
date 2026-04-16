@@ -21,6 +21,9 @@ type Other struct {
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-synchronous-webhook-list
 func (s *Other) GetSynchronousWebhookList(ctx context.Context, authorization string) ([]SynchronousWebhook, error) {
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -41,6 +44,9 @@ func (s *Other) GetSynchronousWebhookList(ctx context.Context, authorization str
 //
 // Docs: https://developer.revolut.com/docs/merchant/register-address-validation-endpoint
 func (s *Other) RegisterAddressValidationEndpoint(ctx context.Context, authorization string, req SynchronousWebhookCreation) (*SynchronousWebhook, error) {
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
 	if req.EventType == "" {
 		return nil, errors.New("merchant: SynchronousWebhookCreation.event_type is required")
 	}
@@ -74,6 +80,9 @@ func (s *Other) DeleteSynchronousWebhook(ctx context.Context, synchronousWebhook
 	}
 	if !isUUID(synchronousWebhookID) {
 		return errors.New("merchant: synchronous_webhook_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return errors.New("merchant: Authorization is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

@@ -22,6 +22,18 @@ type InternationalPayment struct {
 // Docs: https://developer.revolut.com/docs/openbanking/create-international-payment-consents
 // Required scopes: payments
 func (s *InternationalPayment) CreateConsents(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteInternationalConsent2) (*ObwriteInternationalConsentResponse2, ResponseMetadata, error) {
+	if xFAPIFinancialID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
+	}
+	if xIdempotencyKey == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-idempotency-key is required")
+	}
+	if xJWSSignature == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-jws-signature is required")
+	}
 	if req.Data.Initiation.CreditorAccount.Identification == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.Identification is required")
 	}
@@ -92,6 +104,18 @@ func (s *InternationalPayment) CreateConsents(ctx context.Context, xFAPIFinancia
 // preserved alongside the typed payload. Use it when you need to verify
 // the detached x-jws-signature header against the untouched bytes.
 func (s *InternationalPayment) CreateConsentsSigned(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteInternationalConsent2) (*Signed[ObwriteInternationalConsentResponse2], error) {
+	if xFAPIFinancialID == "" {
+		return nil, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, errors.New("openbanking: Authorization is required")
+	}
+	if xIdempotencyKey == "" {
+		return nil, errors.New("openbanking: x-idempotency-key is required")
+	}
+	if xJWSSignature == "" {
+		return nil, errors.New("openbanking: x-jws-signature is required")
+	}
 	if req.Data.Initiation.CreditorAccount.Identification == "" {
 		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.Identification is required")
 	}
@@ -166,6 +190,12 @@ func (s *InternationalPayment) GetConsentsConsentID(ctx context.Context, consent
 	if consentID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ConsentId is required")
 	}
+	if xFAPIFinancialID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if xFAPIFinancialID != "" {
@@ -203,6 +233,12 @@ func (s *InternationalPayment) GetConsentsConsentID(ctx context.Context, consent
 func (s *InternationalPayment) GetConsentsConsentIDSigned(ctx context.Context, consentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*Signed[ObwriteInternationalConsentResponse2], error) {
 	if consentID == "" {
 		return nil, errors.New("openbanking: ConsentId is required")
+	}
+	if xFAPIFinancialID == "" {
+		return nil, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, errors.New("openbanking: Authorization is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
@@ -243,6 +279,12 @@ func (s *InternationalPayment) GetConsentsConsentIDFundsConfirmation(ctx context
 	if consentID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ConsentId is required")
 	}
+	if xFAPIFinancialID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if xFAPIFinancialID != "" {
@@ -281,6 +323,12 @@ func (s *InternationalPayment) GetConsentsConsentIDFundsConfirmationSigned(ctx c
 	if consentID == "" {
 		return nil, errors.New("openbanking: ConsentId is required")
 	}
+	if xFAPIFinancialID == "" {
+		return nil, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, errors.New("openbanking: Authorization is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if xFAPIFinancialID != "" {
@@ -317,6 +365,18 @@ func (s *InternationalPayment) GetConsentsConsentIDFundsConfirmationSigned(ctx c
 // Docs: https://developer.revolut.com/docs/openbanking/create-international-payments
 // Required scopes: payments
 func (s *InternationalPayment) Create(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteInternational2) (*ObwriteInternationalResponse2, ResponseMetadata, error) {
+	if xFAPIFinancialID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
+	}
+	if xIdempotencyKey == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-idempotency-key is required")
+	}
+	if xJWSSignature == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-jws-signature is required")
+	}
 	if req.Data.ConsentID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.ConsentId is required")
 	}
@@ -390,6 +450,18 @@ func (s *InternationalPayment) Create(ctx context.Context, xFAPIFinancialID stri
 // preserved alongside the typed payload. Use it when you need to verify
 // the detached x-jws-signature header against the untouched bytes.
 func (s *InternationalPayment) CreateSigned(ctx context.Context, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xIdempotencyKey string, xJWSSignature string, xCustomerUserAgent string, req ObwriteInternational2) (*Signed[ObwriteInternationalResponse2], error) {
+	if xFAPIFinancialID == "" {
+		return nil, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, errors.New("openbanking: Authorization is required")
+	}
+	if xIdempotencyKey == "" {
+		return nil, errors.New("openbanking: x-idempotency-key is required")
+	}
+	if xJWSSignature == "" {
+		return nil, errors.New("openbanking: x-jws-signature is required")
+	}
 	if req.Data.ConsentID == "" {
 		return nil, errors.New("openbanking: ObwriteInternational2.Data.ConsentId is required")
 	}
@@ -467,6 +539,12 @@ func (s *InternationalPayment) GetInternationalPaymentID(ctx context.Context, in
 	if internationalPaymentID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: InternationalPaymentId is required")
 	}
+	if xFAPIFinancialID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if xFAPIFinancialID != "" {
@@ -504,6 +582,12 @@ func (s *InternationalPayment) GetInternationalPaymentID(ctx context.Context, in
 func (s *InternationalPayment) GetInternationalPaymentIDSigned(ctx context.Context, internationalPaymentID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string) (*Signed[ObwriteInternationalResponse2], error) {
 	if internationalPaymentID == "" {
 		return nil, errors.New("openbanking: InternationalPaymentId is required")
+	}
+	if xFAPIFinancialID == "" {
+		return nil, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, errors.New("openbanking: Authorization is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

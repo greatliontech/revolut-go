@@ -22,6 +22,12 @@ type Disputes struct {
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-dispute-list
 func (s *Disputes) GetList(ctx context.Context, authorization string, revolutAPIVersion DisputesRevolutAPIVersion, opts *RetrieveDisputeListParams) ([]Dispute, error) {
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	path := "api/disputes"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
@@ -85,6 +91,12 @@ func (s *Disputes) Get(ctx context.Context, disputeID string, authorization stri
 	if !isUUID(disputeID) {
 		return nil, errors.New("merchant: dispute_id must be a valid UUID")
 	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -114,6 +126,12 @@ func (s *Disputes) AcceptDispute(ctx context.Context, disputeID string, authoriz
 	if !isUUID(disputeID) {
 		return errors.New("merchant: dispute_id must be a valid UUID")
 	}
+	if authorization == "" {
+		return errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return errors.New("merchant: Revolut-Api-Version is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -139,6 +157,12 @@ func (s *Disputes) ChallengeDispute(ctx context.Context, disputeID string, autho
 	}
 	if !isUUID(disputeID) {
 		return errors.New("merchant: dispute_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return errors.New("merchant: Revolut-Api-Version is required")
 	}
 	if len(req.Evidences) == 0 {
 		return errors.New("merchant: DisputeChallenge.evidences is required")
@@ -173,6 +197,15 @@ func (s *Disputes) UploadDisputeEvidence(ctx context.Context, disputeID string, 
 	}
 	if !isUUID(disputeID) {
 		return nil, errors.New("merchant: dispute_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
+	if contentType == "" {
+		return nil, errors.New("merchant: Content-Type is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

@@ -19,6 +19,9 @@ type Webhooks struct {
 
 // List retrieve a list of webhooks
 func (s *Webhooks) List(ctx context.Context, xAPIKey string) ([]Webhook, error) {
+	if xAPIKey == "" {
+		return nil, errors.New("cryptoramp: X-API-KEY is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if xAPIKey != "" {
@@ -37,6 +40,9 @@ func (s *Webhooks) List(ctx context.Context, xAPIKey string) ([]Webhook, error) 
 
 // Create create a webhook
 func (s *Webhooks) Create(ctx context.Context, xAPIKey string, req WebhookCreateRequest) (*Webhook, error) {
+	if xAPIKey == "" {
+		return nil, errors.New("cryptoramp: X-API-KEY is required")
+	}
 	if len(req.Events) == 0 {
 		return nil, errors.New("cryptoramp: WebhookCreateRequest.events is required")
 	}
@@ -69,6 +75,9 @@ func (s *Webhooks) Get(ctx context.Context, webhookID string, xAPIKey string) (*
 	if !isUUID(webhookID) {
 		return nil, errors.New("cryptoramp: webhook_id must be a valid UUID")
 	}
+	if xAPIKey == "" {
+		return nil, errors.New("cryptoramp: X-API-KEY is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if xAPIKey != "" {
@@ -92,6 +101,9 @@ func (s *Webhooks) Update(ctx context.Context, webhookID string, xAPIKey string,
 	}
 	if !isUUID(webhookID) {
 		return nil, errors.New("cryptoramp: webhook_id must be a valid UUID")
+	}
+	if xAPIKey == "" {
+		return nil, errors.New("cryptoramp: X-API-KEY is required")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -118,6 +130,9 @@ func (s *Webhooks) Delete(ctx context.Context, webhookID string, xAPIKey string)
 	}
 	if !isUUID(webhookID) {
 		return errors.New("cryptoramp: webhook_id must be a valid UUID")
+	}
+	if xAPIKey == "" {
+		return errors.New("cryptoramp: X-API-KEY is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

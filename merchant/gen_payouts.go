@@ -22,6 +22,12 @@ type Payouts struct {
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payout-list
 func (s *Payouts) GetList(ctx context.Context, authorization string, revolutAPIVersion PayoutsRevolutAPIVersion, opts *RetrievePayoutListParams) ([]Payout, error) {
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	path := "api/payouts"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
@@ -84,6 +90,12 @@ func (s *Payouts) Get(ctx context.Context, payoutID string, authorization string
 	}
 	if !isUUID(payoutID) {
 		return nil, errors.New("merchant: payout_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

@@ -26,6 +26,9 @@ func (s *Trades) GetAllTrades(ctx context.Context, symbol string, xRevxTimestamp
 	if symbol == "" {
 		return nil, errors.New("revolutx: symbol is required")
 	}
+	if xRevxSignature == "" {
+		return nil, errors.New("revolutx: X-Revx-Signature is required")
+	}
 	path := "trades/all/" + url.PathEscape(symbol)
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
@@ -89,6 +92,9 @@ func (s *Trades) GetAllTradesAll(ctx context.Context, symbol string, xRevxTimest
 func (s *Trades) GetPrivateTrades(ctx context.Context, symbol string, xRevxTimestamp int, xRevxSignature string, opts *GetPrivateTradesParams) (*PrivateTradesPaginatedResponse, error) {
 	if symbol == "" {
 		return nil, errors.New("revolutx: symbol is required")
+	}
+	if xRevxSignature == "" {
+		return nil, errors.New("revolutx: X-Revx-Signature is required")
 	}
 	path := "trades/private/" + url.PathEscape(symbol)
 	if q := opts.encode().Encode(); q != "" {

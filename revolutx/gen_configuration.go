@@ -5,6 +5,7 @@ package revolutx
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -20,6 +21,9 @@ type Configuration struct {
 //
 // Docs: https://developer.revolut.com/docs/revolutx/get-all-currencies
 func (s *Configuration) GetAllCurrencies(ctx context.Context, xRevxTimestamp int, xRevxSignature string) (*CurrenciesResponse, error) {
+	if xRevxSignature == "" {
+		return nil, errors.New("revolutx: X-Revx-Signature is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	r.Headers.Set("X-Revx-Timestamp", strconv.Itoa(int(xRevxTimestamp)))
@@ -41,6 +45,9 @@ func (s *Configuration) GetAllCurrencies(ctx context.Context, xRevxTimestamp int
 //
 // Docs: https://developer.revolut.com/docs/revolutx/get-all-currency-pairs
 func (s *Configuration) GetAllCurrencyPairs(ctx context.Context, xRevxTimestamp int, xRevxSignature string) (*CurrencyPairsResponse, error) {
+	if xRevxSignature == "" {
+		return nil, errors.New("revolutx: X-Revx-Signature is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	r.Headers.Set("X-Revx-Timestamp", strconv.Itoa(int(xRevxTimestamp)))

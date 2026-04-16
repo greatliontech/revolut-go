@@ -21,6 +21,9 @@ type ReportRuns struct {
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-report-run
 func (s *ReportRuns) Create(ctx context.Context, authorization string) (*ReportRunDetails, error) {
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -47,6 +50,9 @@ func (s *ReportRuns) GetDetails(ctx context.Context, reportRunID string, authori
 	if !isUUID(reportRunID) {
 		return nil, errors.New("merchant: report_run_id must be a valid UUID")
 	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -72,6 +78,9 @@ func (s *ReportRuns) DownloadReportFile(ctx context.Context, reportRunID string,
 	}
 	if !isUUID(reportRunID) {
 		return nil, errors.New("merchant: report_run_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
 	}
 	r := transport.RawRequest{
 		Accept: "text/csv",

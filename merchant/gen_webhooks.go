@@ -21,6 +21,12 @@ type Webhooks struct {
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-webhook-list
 func (s *Webhooks) GetList(ctx context.Context, authorization string, revolutAPIVersion WebhooksRevolutAPIVersion) (*WebhooksResponse, error) {
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -44,6 +50,12 @@ func (s *Webhooks) GetList(ctx context.Context, authorization string, revolutAPI
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-webhook
 func (s *Webhooks) Create(ctx context.Context, authorization string, revolutAPIVersion WebhooksRevolutAPIVersion, req WebhookCreation) (*WebhookV2, error) {
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	if len(req.Events) == 0 {
 		return nil, errors.New("merchant: WebhookCreation.events is required")
 	}
@@ -81,6 +93,12 @@ func (s *Webhooks) Get(ctx context.Context, webhookID string, authorization stri
 	if !isUUID(webhookID) {
 		return nil, errors.New("merchant: webhook_id must be a valid UUID")
 	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -109,6 +127,12 @@ func (s *Webhooks) Update(ctx context.Context, webhookID string, authorization s
 	}
 	if !isUUID(webhookID) {
 		return nil, errors.New("merchant: webhook_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -141,6 +165,12 @@ func (s *Webhooks) Delete(ctx context.Context, webhookID string, authorization s
 	if !isUUID(webhookID) {
 		return errors.New("merchant: webhook_id must be a valid UUID")
 	}
+	if authorization == "" {
+		return errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return errors.New("merchant: Revolut-Api-Version is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -166,6 +196,12 @@ func (s *Webhooks) RotateWebhookSigningSecret(ctx context.Context, webhookID str
 	}
 	if !isUUID(webhookID) {
 		return nil, errors.New("merchant: webhook_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,

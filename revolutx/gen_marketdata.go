@@ -25,6 +25,9 @@ func (s *MarketData) GetCandles(ctx context.Context, symbol string, xRevxTimesta
 	if symbol == "" {
 		return nil, errors.New("revolutx: symbol is required")
 	}
+	if xRevxSignature == "" {
+		return nil, errors.New("revolutx: X-Revx-Signature is required")
+	}
 	path := "candles/" + url.PathEscape(symbol)
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
@@ -53,6 +56,9 @@ func (s *MarketData) GetOrderBook(ctx context.Context, symbol string, xRevxTimes
 	if symbol == "" {
 		return nil, errors.New("revolutx: symbol is required")
 	}
+	if xRevxSignature == "" {
+		return nil, errors.New("revolutx: X-Revx-Signature is required")
+	}
 	path := "order-book/" + url.PathEscape(symbol)
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
@@ -78,6 +84,9 @@ func (s *MarketData) GetOrderBook(ctx context.Context, symbol string, xRevxTimes
 //
 // Docs: https://developer.revolut.com/docs/revolutx/get-ticker
 func (s *MarketData) GetTicker(ctx context.Context, xRevxTimestamp int, xRevxSignature string, opts *GetTickerParams) (*TickersResponse, error) {
+	if xRevxSignature == "" {
+		return nil, errors.New("revolutx: X-Revx-Signature is required")
+	}
 	path := "tickers"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q

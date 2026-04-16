@@ -19,6 +19,9 @@ type ApplePayMerchantRegistration struct {
 //
 // Docs: https://developer.revolut.com/docs/merchant/register-domain-apple-pay
 func (s *ApplePayMerchantRegistration) RegisterDomainApplePay(ctx context.Context, authorization string, req ApplePayMerchantRegistrationBody) error {
+	if authorization == "" {
+		return errors.New("merchant: Authorization is required")
+	}
 	if req.Domain == "" {
 		return errors.New("merchant: ApplePayMerchantRegistrationBody.domain is required")
 	}
@@ -41,6 +44,9 @@ func (s *ApplePayMerchantRegistration) RegisterDomainApplePay(ctx context.Contex
 //
 // Docs: https://developer.revolut.com/docs/merchant/unregister-domain-apple-pay
 func (s *ApplePayMerchantRegistration) UnregisterDomainApplePay(ctx context.Context, authorization string, revolutAPIVersion ApplePayMerchantRegistrationRevolutAPIVersion, req ApplePayMerchantRegistrationBody) error {
+	if authorization == "" {
+		return errors.New("merchant: Authorization is required")
+	}
 	if req.Domain == "" {
 		return errors.New("merchant: ApplePayMerchantRegistrationBody.domain is required")
 	}

@@ -23,6 +23,9 @@ type Orders struct {
 //
 // Docs: https://developer.revolut.com/docs/revolutx/place-order
 func (s *Orders) PlaceOrder(ctx context.Context, xRevxTimestamp int, xRevxSignature string, req OrderPlacementRequest) (*OrderPlacementResponse, error) {
+	if xRevxSignature == "" {
+		return nil, errors.New("revolutx: X-Revx-Signature is required")
+	}
 	if req.ClientOrderID == "" {
 		return nil, errors.New("revolutx: OrderPlacementRequest.client_order_id is required")
 	}
@@ -58,6 +61,9 @@ func (s *Orders) PlaceOrder(ctx context.Context, xRevxTimestamp int, xRevxSignat
 //
 // Docs: https://developer.revolut.com/docs/revolutx/cancel-all-orders
 func (s *Orders) CancelAllOrders(ctx context.Context, xRevxTimestamp int, xRevxSignature string) error {
+	if xRevxSignature == "" {
+		return errors.New("revolutx: X-Revx-Signature is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	r.Headers.Set("X-Revx-Timestamp", strconv.Itoa(int(xRevxTimestamp)))
@@ -76,6 +82,9 @@ func (s *Orders) CancelAllOrders(ctx context.Context, xRevxTimestamp int, xRevxS
 //
 // Docs: https://developer.revolut.com/docs/revolutx/get-active-orders
 func (s *Orders) GetActiveOrders(ctx context.Context, xRevxTimestamp int, xRevxSignature string, opts *GetActiveOrdersParams) (*ActiveOrdersPaginatedResponse, error) {
+	if xRevxSignature == "" {
+		return nil, errors.New("revolutx: X-Revx-Signature is required")
+	}
 	path := "orders/active"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
@@ -138,6 +147,9 @@ func (s *Orders) GetFills(ctx context.Context, venueOrderID string, xRevxTimesta
 	if !isUUID(venueOrderID) {
 		return nil, errors.New("revolutx: venue_order_id must be a valid UUID")
 	}
+	if xRevxSignature == "" {
+		return nil, errors.New("revolutx: X-Revx-Signature is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	r.Headers.Set("X-Revx-Timestamp", strconv.Itoa(int(xRevxTimestamp)))
@@ -159,6 +171,9 @@ func (s *Orders) GetFills(ctx context.Context, venueOrderID string, xRevxTimesta
 //
 // Docs: https://developer.revolut.com/docs/revolutx/get-historical-orders
 func (s *Orders) GetHistoricalOrders(ctx context.Context, xRevxTimestamp int, xRevxSignature string, opts *GetHistoricalOrdersParams) (*HistoricalOrdersPaginatedResponse, error) {
+	if xRevxSignature == "" {
+		return nil, errors.New("revolutx: X-Revx-Signature is required")
+	}
 	path := "orders/historical"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
@@ -221,6 +236,9 @@ func (s *Orders) Get(ctx context.Context, venueOrderID string, xRevxTimestamp in
 	if !isUUID(venueOrderID) {
 		return nil, errors.New("revolutx: venue_order_id must be a valid UUID")
 	}
+	if xRevxSignature == "" {
+		return nil, errors.New("revolutx: X-Revx-Signature is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	r.Headers.Set("X-Revx-Timestamp", strconv.Itoa(int(xRevxTimestamp)))
@@ -247,6 +265,9 @@ func (s *Orders) CancelOrder(ctx context.Context, venueOrderID string, xRevxTime
 	}
 	if !isUUID(venueOrderID) {
 		return errors.New("revolutx: venue_order_id must be a valid UUID")
+	}
+	if xRevxSignature == "" {
+		return errors.New("revolutx: X-Revx-Signature is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

@@ -25,6 +25,12 @@ func (s *Transactions) GetAccountsAccountIDDirectDebits(ctx context.Context, acc
 	if accountID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: AccountId is required")
 	}
+	if xFAPIFinancialID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if xFAPIFinancialID != "" {
@@ -64,6 +70,12 @@ func (s *Transactions) GetAccountsAccountIDStandingOrders(ctx context.Context, a
 	if accountID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: AccountId is required")
 	}
+	if xFAPIFinancialID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if xFAPIFinancialID != "" {
@@ -102,6 +114,12 @@ func (s *Transactions) GetAccountsAccountIDStandingOrders(ctx context.Context, a
 func (s *Transactions) GetAccountsAccountIDTransactions(ctx context.Context, accountID string, xFAPIFinancialID string, xFAPICustomerLastLoggedTime string, xFAPICustomerIPAddress string, xFAPIInteractionID string, authorization string, xCustomerUserAgent string, opts *GetAccountsAccountIDTransactionsParams) (*ObreadTransaction4, ResponseMetadata, error) {
 	if accountID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: AccountId is required")
+	}
+	if xFAPIFinancialID == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: x-fapi-financial-id is required")
+	}
+	if authorization == "" {
+		return nil, ResponseMetadata{}, errors.New("openbanking: Authorization is required")
 	}
 	path := "accounts/" + url.PathEscape(accountID) + "/transactions"
 	if q := opts.encode().Encode(); q != "" {

@@ -82,6 +82,21 @@ func writePathParamValidatorsSigned(w *fileWriter, spec *ir.Spec, m *ir.Method) 
 			w.write("\t}\n")
 		}
 	}
+	for _, hp := range m.HeaderParams {
+		if !hp.Required {
+			continue
+		}
+		if hp.Type == nil {
+			continue
+		}
+		if !(hp.Type.Kind == ir.KindPrim && hp.Type.Name == "string") && hp.Type.Kind != ir.KindNamed {
+			continue
+		}
+		wire := headerWireName(hp)
+		w.printf("\tif %s == \"\" {\n", hp.Name)
+		w.printf("\t\treturn nil, errors.New(%q)\n", spec.ErrPrefix+": "+wire+" is required")
+		w.write("\t}\n")
+	}
 }
 
 func writeFieldValidatorsSigned(w *fileWriter, m *ir.Method) {
@@ -222,6 +237,25 @@ func writePathParamValidators(w *fileWriter, spec *ir.Spec, m *ir.Method) {
 			w.printf("\t\treturn %serrors.New(%q)\n", zero, spec.ErrPrefix+": "+wire+" must be a valid UUID")
 			w.write("\t}\n")
 		}
+	}
+	// Required string-typed header params get the same empty-string
+	// pre-flight check. Non-string headers (int / bool) have no
+	// meaningful zero sentinel, so those stay unchecked — Required
+	// on a numeric header is a spec oddity the server can surface.
+	for _, hp := range m.HeaderParams {
+		if !hp.Required {
+			continue
+		}
+		if hp.Type == nil {
+			continue
+		}
+		if !(hp.Type.Kind == ir.KindPrim && hp.Type.Name == "string") && hp.Type.Kind != ir.KindNamed {
+			continue
+		}
+		wire := headerWireName(hp)
+		w.printf("\tif %s == \"\" {\n", hp.Name)
+		w.printf("\t\treturn %serrors.New(%q)\n", zero, spec.ErrPrefix+": "+wire+" is required")
+		w.write("\t}\n")
 	}
 }
 

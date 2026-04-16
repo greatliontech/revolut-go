@@ -96,6 +96,12 @@ func FileImports(spec *ir.Spec) map[string][]string {
 			if len(m.Validators) > 0 {
 				needsErrors = true
 			}
+			for _, hp := range m.HeaderParams {
+				if hp.Required {
+					needsErrors = true
+					break
+				}
+			}
 			collectMethodImports(m, set)
 			if m.Pagination != nil {
 				needsIter = true

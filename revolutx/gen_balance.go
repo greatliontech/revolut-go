@@ -5,6 +5,7 @@ package revolutx
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -20,6 +21,9 @@ type Balance struct {
 //
 // Docs: https://developer.revolut.com/docs/revolutx/get-all-balances
 func (s *Balance) GetAllBalances(ctx context.Context, xRevxTimestamp int, xRevxSignature string) ([]AccountBalanceEntry, error) {
+	if xRevxSignature == "" {
+		return nil, errors.New("revolutx: X-Revx-Signature is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	r.Headers.Set("X-Revx-Timestamp", strconv.Itoa(int(xRevxTimestamp)))

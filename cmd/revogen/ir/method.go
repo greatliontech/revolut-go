@@ -42,6 +42,12 @@ type Param struct {
 	// emitter only attaches pre-flight validators for formats it
 	// knows how to check locally.
 	Format string
+
+	// Required, when true, means the spec declared this parameter
+	// as mandatory. The emitter attaches a local pre-flight check
+	// for string-typed required headers so an empty value fails
+	// locally instead of producing an ambiguous server 400.
+	Required bool
 }
 
 // Method is one Go method on a Resource.

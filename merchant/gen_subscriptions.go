@@ -22,6 +22,12 @@ type Subscriptions struct {
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-subscription-plan-list
 func (s *Subscriptions) GetPlanList(ctx context.Context, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion, opts *RetrieveSubscriptionPlanListParams) (*SubscriptionPlans, error) {
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	path := "api/subscription-plans"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
@@ -77,6 +83,12 @@ func (s *Subscriptions) GetPlanListAll(ctx context.Context, authorization string
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-subscription-plan
 func (s *Subscriptions) CreatePlan(ctx context.Context, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion, req SubscriptionPlanCreation) (*SubscriptionPlan, error) {
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	if req.Name == "" {
 		return nil, errors.New("merchant: SubscriptionPlanCreation.name is required")
 	}
@@ -114,6 +126,12 @@ func (s *Subscriptions) GetPlan(ctx context.Context, subscriptionPlanID string, 
 	if !isUUID(subscriptionPlanID) {
 		return nil, errors.New("merchant: subscription_plan_id must be a valid UUID")
 	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -137,6 +155,12 @@ func (s *Subscriptions) GetPlan(ctx context.Context, subscriptionPlanID string, 
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-subscription-list
 func (s *Subscriptions) GetList(ctx context.Context, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion, opts *RetrieveSubscriptionListParams) (*SubscriptionsResponse, error) {
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	path := "api/subscriptions"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
@@ -192,6 +216,12 @@ func (s *Subscriptions) GetListAll(ctx context.Context, authorization string, re
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-subscription
 func (s *Subscriptions) Create(ctx context.Context, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion, idempotencyKey string, req SubscriptionCreation) (*Subscription, error) {
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	if req.CustomerID == "" {
 		return nil, errors.New("merchant: SubscriptionCreation.customer_id is required")
 	}
@@ -232,6 +262,12 @@ func (s *Subscriptions) Get(ctx context.Context, subscriptionID string, authoriz
 	if !isUUID(subscriptionID) {
 		return nil, errors.New("merchant: subscription_id must be a valid UUID")
 	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -260,6 +296,12 @@ func (s *Subscriptions) Update(ctx context.Context, subscriptionID string, autho
 	}
 	if !isUUID(subscriptionID) {
 		return nil, errors.New("merchant: subscription_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -292,6 +334,12 @@ func (s *Subscriptions) CancelSubscription(ctx context.Context, subscriptionID s
 	if !isUUID(subscriptionID) {
 		return errors.New("merchant: subscription_id must be a valid UUID")
 	}
+	if authorization == "" {
+		return errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return errors.New("merchant: Revolut-Api-Version is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -317,6 +365,12 @@ func (s *Subscriptions) GetCycleList(ctx context.Context, subscriptionID string,
 	}
 	if !isUUID(subscriptionID) {
 		return nil, errors.New("merchant: subscription_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
 	path := "api/subscriptions/" + url.PathEscape(subscriptionID) + "/cycles"
 	if q := opts.encode().Encode(); q != "" {
@@ -389,6 +443,12 @@ func (s *Subscriptions) GetCycle(ctx context.Context, subscriptionID string, cyc
 	}
 	if !isUUID(cycleID) {
 		return nil, errors.New("merchant: cycle_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
+	if revolutAPIVersion == "" {
+		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}

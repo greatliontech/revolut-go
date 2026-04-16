@@ -21,6 +21,9 @@ type Locations struct {
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-location-list
 func (s *Locations) GetList(ctx context.Context, authorization string, opts *RetrieveLocationListParams) ([]Location, error) {
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
 	path := "api/locations"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
@@ -45,6 +48,9 @@ func (s *Locations) GetList(ctx context.Context, authorization string, opts *Ret
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-location
 func (s *Locations) Create(ctx context.Context, authorization string, req LocationCreation) (*Location, error) {
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
 	r := transport.RawRequest{
 		JSONBody: req,
 	}
@@ -73,6 +79,9 @@ func (s *Locations) Get(ctx context.Context, locationID string, authorization st
 	if !isUUID(locationID) {
 		return nil, errors.New("merchant: location_id must be a valid UUID")
 	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
+	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
 	if authorization != "" {
@@ -98,6 +107,9 @@ func (s *Locations) Update(ctx context.Context, locationID string, authorization
 	}
 	if !isUUID(locationID) {
 		return nil, errors.New("merchant: location_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return nil, errors.New("merchant: Authorization is required")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -126,6 +138,9 @@ func (s *Locations) Delete(ctx context.Context, locationID string, authorization
 	}
 	if !isUUID(locationID) {
 		return errors.New("merchant: location_id must be a valid UUID")
+	}
+	if authorization == "" {
+		return errors.New("merchant: Authorization is required")
 	}
 	r := transport.RawRequest{}
 	r.Headers = http.Header{}
