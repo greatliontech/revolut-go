@@ -18,30 +18,12 @@ func writeTypesFile(spec *ir.Spec, imports []string) string {
 		w.printf("// APIVersion is the OpenAPI info.version this client was generated against.\nconst APIVersion = %q\n\n", spec.APIVersion)
 	}
 
-	hasUnion := false
-	for _, d := range spec.Decls {
-		if d.Kind == ir.DeclInterface {
-			hasUnion = true
-			break
-		}
-	}
-	if hasUnion {
-		writeUnionHelpers(w)
-	}
-
 	for _, d := range spec.Decls {
 		writeDecl(w, d)
 	}
 	writeResponseMetadata(w, spec)
-	writeFormatHelpers(w, spec)
 	return w.buf.String()
 }
-
-// writeFormatHelpers is a no-op now that the format-validation
-// helpers live in internal/validate and are imported by generated
-// code directly. Kept as a seam so future per-package helpers can
-// land here without reshaping the caller.
-func writeFormatHelpers(_ *fileWriter, _ *ir.Spec) {}
 
 // writeResponseMetadata emits the per-package ResponseMetadata
 // struct plus the extractResponseMetadata helper that pulls the
@@ -125,10 +107,6 @@ func specNeedsSigned(spec *ir.Spec) bool {
 	return false
 }
 
-// writeUnionHelpers used to emit a local hasJSONKey helper for
-// probe decoders; it now lives in internal/validate and is
-// referenced directly by generated code.
-func writeUnionHelpers(_ *fileWriter) {}
 
 // writeDecl dispatches to the kind-specific emitter.
 func writeDecl(w *fileWriter, d *ir.Decl) {

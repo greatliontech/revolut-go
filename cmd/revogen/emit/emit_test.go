@@ -206,17 +206,9 @@ func TestEmit_Union_WireTagged(t *testing.T) {
 	}
 }
 
-// TestEmit_Union_WireTagged_NullDecodes exercises the generated
-// decoder at runtime: JSON null must produce (nil, nil) and a
-// known tag must decode into the right concrete variant. The
-// unit-level assertion above locks the emitter's source; this
-// test locks the generated code's behaviour.
-func TestEmit_Union_WireTagged_NullDecodes(t *testing.T) {
-	// Not feasible here — the emit test produces source without
-	// compiling it into a usable runtime. Runtime behaviour is
-	// covered by the openbanking package via a concrete union; see
-	// openbanking-side tests below if/when added.
-}
+// Runtime behaviour of the wire-tagged decoder (null → (nil, nil),
+// unknown tag → error) is covered by the merchant package — see
+// merchant.TestUnion_DecodeNullReturnsNil.
 
 // TestEmit_Union_DropsShadowedTypeProperty pins the lower-side
 // behaviour at the emit boundary: a variant with a field named

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -101,23 +100,9 @@ func TestRawResponse_EmptyBodyGuard(t *testing.T) {
 // endpoint — its spec encoding.contentType is
 // application/pdf,image/png,image/jpeg.
 func TestMultipart_CustomFilenameAndContentType(t *testing.T) {
-	var gotBody []byte
-	var gotCT string
-	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotCT = r.Header.Get("Content-Type")
-		b, _ := io.ReadAll(r.Body)
-		gotBody = b
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = io.WriteString(w, `{}`)
-	})
-	srv := httptest.NewServer(h)
-	defer srv.Close()
-	_ = srv
-	_ = gotCT
-	_ = gotBody
-	// A direct-struct test of the emitted encodeMultipart is more
-	// illuminating than wiring through a real HTTP call: the
-	// per-field companion knobs are the thing under test.
+	// A direct-struct test of the emitted encodeMultipart is the
+	// most illuminating angle: the per-field companion knobs are
+	// the thing under test, not the HTTP plumbing around them.
 	req := DisputeEvidenceCreation{
 		File:            strings.NewReader("PDF-1.4\n%EOF"),
 		FileFilename:    "my-evidence.pdf",

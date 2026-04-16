@@ -48,11 +48,18 @@ func (f KeyResolverFunc) Resolve(h JWSHeader) (crypto.PublicKey, error) { return
 // is preserved in Extra so callers can inspect OBIE-specific claims
 // like http://openbanking.org.uk/iat without re-parsing.
 type JWSHeader struct {
-	Alg   string         `json:"alg"`
-	Kid   string         `json:"kid"`
-	Typ   string         `json:"typ,omitempty"`
-	Crit  []string       `json:"crit,omitempty"`
-	Extra map[string]any `json:"-"`
+	Alg  string   `json:"alg"`
+	Kid  string   `json:"kid"`
+	Typ  string   `json:"typ,omitempty"`
+	Crit []string `json:"crit,omitempty"`
+	// B64Encoded reports the b64 protected-header value (RFC 7797).
+	// When true (the JWS default), the signing input is
+	// base64url(payload). When false — OBIE's standard for
+	// detached signatures — the signing input is the raw payload.
+	// Default true when the header omits the field, matching JWS
+	// behaviour.
+	B64Encoded bool           `json:"-"`
+	Extra      map[string]any `json:"-"`
 }
 
 // Verify validates the Signed response's detached JWS against the
@@ -89,7 +96,7 @@ func verifyDetachedJWS(sig string, payload []byte, resolver KeyResolver) error {
 	if err := json.Unmarshal(headerBytes, &raw); err != nil {
 		return fmt.Errorf("openbanking: parse JWS header JSON: %w", err)
 	}
-	h := JWSHeader{Extra: map[string]any{}}
+	h := JWSHeader{B64Encoded: true, Extra: map[string]any{}}
 	for k, v := range raw {
 		switch k {
 		case "alg":
@@ -103,6 +110,10 @@ func verifyDetachedJWS(sig string, payload []byte, resolver KeyResolver) error {
 		case "typ":
 			if s, ok := v.(string); ok {
 				h.Typ = s
+			}
+		case "b64":
+			if b, ok := v.(bool); ok {
+				h.B64Encoded = b
 			}
 		case "crit":
 			if arr, ok := v.([]any); ok {
@@ -136,8 +147,15 @@ func verifyDetachedJWS(sig string, payload []byte, resolver KeyResolver) error {
 	if err != nil {
 		return fmt.Errorf("openbanking: resolve JWS key for kid=%q: %w", h.Kid, err)
 	}
-	payloadEnc := base64.RawURLEncoding.EncodeToString(payload)
-	signingInput := []byte(headerEnc + "." + payloadEnc)
+	// b64=false (RFC 7797): signing input is the raw payload.
+	// b64=true (default): signing input is base64url(payload).
+	var signingInput []byte
+	if h.B64Encoded {
+		payloadEnc := base64.RawURLEncoding.EncodeToString(payload)
+		signingInput = []byte(headerEnc + "." + payloadEnc)
+	} else {
+		signingInput = append([]byte(headerEnc+"."), payload...)
+	}
 	return verifyAlg(h.Alg, signingInput, sigBytes, pubKey)
 }
 
