@@ -24,9 +24,15 @@ import "github.com/greatliontech/revolut-go/cmd/revogen/ir"
 // Callers should prefer RunAll over invoking the individual
 // passes directly; the individual functions stay exported for
 // targeted unit tests only.
+//
+// PromoteOptionalStructs runs after ReadOnly (so it picks up
+// the cloned request-body decls) and before Validators (so the
+// validators see the post-promotion pointer types when computing
+// nil-checks).
 func RunAll(spec *ir.Spec) {
 	Unions(spec)
 	ReadOnly(spec)
+	PromoteOptionalStructs(spec)
 	Validators(spec)
 	ResolveNames(spec)
 }

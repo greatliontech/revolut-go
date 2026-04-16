@@ -98,12 +98,15 @@ type AuthCodeTokenSource struct {
 // NewAuthCodeTokenSource hydrates a source from a previously
 // persisted AuthCodeToken — typically the JSON cmd/ob-bootstrap
 // writes after the one-time consent flow.
+//
+// A missing RefreshToken is allowed: the source will hand out the
+// cached access token until it expires, then return an error
+// (rather than attempt a refresh against a token that doesn't
+// exist). PISP payment-scope tokens are typically single-use and
+// don't carry a refresh; AISP account-scope tokens usually do.
 func NewAuthCodeTokenSource(cfg AuthCodeConfig, initial AuthCodeToken) (*AuthCodeTokenSource, error) {
 	if initial.AccessToken == "" {
 		return nil, errors.New("openbanking: AuthCodeTokenSource needs a non-empty AccessToken")
-	}
-	if initial.RefreshToken == "" {
-		return nil, errors.New("openbanking: AuthCodeTokenSource needs a RefreshToken to renew without re-consent")
 	}
 	httc, err := authCodeHTTPClient(cfg)
 	if err != nil {
@@ -130,13 +133,18 @@ func (s *AuthCodeTokenSource) Apply(req *http.Request) error {
 
 // Token returns a valid access token, refreshing via the cached
 // refresh_token when the access token is past its EarlyRefresh
-// window.
+// window. If the cached pair has no RefreshToken (PISP tokens are
+// typically single-use) and the access token is expired, the
+// caller must re-run the consent flow — Token returns an error.
 func (s *AuthCodeTokenSource) Token(ctx context.Context) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	now := s.now()
 	if s.tok.AccessToken != "" && now.Before(s.tok.ExpiresAt) {
 		return s.tok.AccessToken, nil
+	}
+	if s.tok.RefreshToken == "" {
+		return "", errors.New("openbanking: access token expired and no refresh_token cached — re-run the consent flow")
 	}
 	form := url.Values{
 		"grant_type":    {"refresh_token"},

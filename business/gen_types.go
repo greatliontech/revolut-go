@@ -445,15 +445,15 @@ type CardCreatedResponse struct {
 	// The last 4 digits of the card's PAN.
 	LastDigits string `json:"last_digits"`
 
-	MerchantControls MerchantControlsSchema `json:"merchant_controls,omitempty"`
+	MerchantControls *MerchantControlsSchema `json:"merchant_controls,omitempty"`
 
 	// The card product offered by the card provider for this card.
-	Product CardProduct `json:"product,omitempty"`
+	Product *CardProduct `json:"product,omitempty"`
 
 	// References for the card.
 	References []CardReference `json:"references,omitempty"`
 
-	SpendingLimits SpendingLimits `json:"spending_limits,omitempty"`
+	SpendingLimits *SpendingLimits `json:"spending_limits,omitempty"`
 
 	// The controls for the card's spending period.
 	SpendingPeriod *CardCreatedResponseSpendingPeriod `json:"spending_period,omitempty"`
@@ -505,12 +505,12 @@ type CardInvitationCreatedResponse struct {
 	// The label of the card.
 	Label CardInvitationLabel `json:"label,omitempty"`
 
-	MerchantControls CardInvitationMerchantControls `json:"merchant_controls,omitempty"`
+	MerchantControls *CardInvitationMerchantControls `json:"merchant_controls,omitempty"`
 
-	SpendingLimits SpendingLimits `json:"spending_limits,omitempty"`
+	SpendingLimits *SpendingLimits `json:"spending_limits,omitempty"`
 
 	// The controls for the card's spending period.
-	SpendingPeriod CardInvitationSpendingPeriod `json:"spending_period,omitempty"`
+	SpendingPeriod *CardInvitationSpendingPeriod `json:"spending_period,omitempty"`
 
 	// The current state of the card invitation:
 	State CardInvitationState `json:"state"`
@@ -589,17 +589,17 @@ type CardInvitationResponse struct {
 	// The label of the card.
 	Label CardInvitationLabel `json:"label,omitempty"`
 
-	MerchantControls CardInvitationMerchantControls `json:"merchant_controls,omitempty"`
+	MerchantControls *CardInvitationMerchantControls `json:"merchant_controls,omitempty"`
 
 	// The [spend program](https://help.revolut.com/business/help/making-paymentsbusiness/spend-controls/setting-card-presets-for-my-team-members/) assigned to the card.
 	//
 	// Read-only: populated by the server; any value sent by the client is ignored.
-	SpendProgram SpendProgram `json:"spend_program,omitempty"`
+	SpendProgram *SpendProgram `json:"spend_program,omitempty"`
 
-	SpendingLimits SpendingLimits `json:"spending_limits,omitempty"`
+	SpendingLimits *SpendingLimits `json:"spending_limits,omitempty"`
 
 	// The controls for the card's spending period.
-	SpendingPeriod CardInvitationSpendingPeriod `json:"spending_period,omitempty"`
+	SpendingPeriod *CardInvitationSpendingPeriod `json:"spending_period,omitempty"`
 
 	// The current state of the card invitation:
 	State CardInvitationState `json:"state"`
@@ -622,25 +622,25 @@ type CardInvitationSpendProgram struct {
 
 type CardInvitationSpendingLimits struct {
 	// The limit for transactions within a given period.
-	AllTime SpendingLimitPeriodic `json:"all_time,omitempty"`
+	AllTime *SpendingLimitPeriodic `json:"all_time,omitempty"`
 
 	// The limit for transactions within a given period.
-	Day SpendingLimitPeriodic `json:"day,omitempty"`
+	Day *SpendingLimitPeriodic `json:"day,omitempty"`
 
 	// The limit for transactions within a given period.
-	Month SpendingLimitPeriodic `json:"month,omitempty"`
+	Month *SpendingLimitPeriodic `json:"month,omitempty"`
 
 	// The limit for transactions within a given period.
-	Quarter SpendingLimitPeriodic `json:"quarter,omitempty"`
+	Quarter *SpendingLimitPeriodic `json:"quarter,omitempty"`
 
 	// The limit for a single transaction.
-	Single SpendingLimitSingleTransaction `json:"single,omitempty"`
+	Single *SpendingLimitSingleTransaction `json:"single,omitempty"`
 
 	// The limit for transactions within a given period.
-	Week SpendingLimitPeriodic `json:"week,omitempty"`
+	Week *SpendingLimitPeriodic `json:"week,omitempty"`
 
 	// The limit for transactions within a given period.
-	Year SpendingLimitPeriodic `json:"year,omitempty"`
+	Year *SpendingLimitPeriodic `json:"year,omitempty"`
 }
 
 // CardInvitationSpendingPeriodEndDateAction the action to take after the end date of the spending period.
@@ -713,17 +713,17 @@ type CardInvitationUpdatedResponse struct {
 	// The label of the card.
 	Label CardInvitationLabel `json:"label,omitempty"`
 
-	MerchantControls CardInvitationMerchantControls `json:"merchant_controls,omitempty"`
+	MerchantControls *CardInvitationMerchantControls `json:"merchant_controls,omitempty"`
 
 	// The [spend program](https://help.revolut.com/business/help/making-paymentsbusiness/spend-controls/setting-card-presets-for-my-team-members/) assigned to the card.
 	//
 	// Read-only: populated by the server; any value sent by the client is ignored.
-	SpendProgram SpendProgram `json:"spend_program,omitempty"`
+	SpendProgram *SpendProgram `json:"spend_program,omitempty"`
 
-	SpendingLimits SpendingLimits `json:"spending_limits,omitempty"`
+	SpendingLimits *SpendingLimits `json:"spending_limits,omitempty"`
 
 	// The controls for the card's spending period.
-	SpendingPeriod CardInvitationSpendingPeriod `json:"spending_period,omitempty"`
+	SpendingPeriod *CardInvitationSpendingPeriod `json:"spending_period,omitempty"`
 
 	// The current state of the card invitation:
 	State CardInvitationState `json:"state"`
@@ -831,10 +831,10 @@ type CardResponse struct {
 	// The last 4 digits of the card's PAN.
 	LastDigits string `json:"last_digits"`
 
-	MerchantControls MerchantControlsSchema `json:"merchant_controls,omitempty"`
+	MerchantControls *MerchantControlsSchema `json:"merchant_controls,omitempty"`
 
 	// The card product offered by the card provider for this card.
-	Product CardProduct `json:"product,omitempty"`
+	Product *CardProduct `json:"product,omitempty"`
 
 	// References for the card.
 	References []CardReference `json:"references,omitempty"`
@@ -842,9 +842,9 @@ type CardResponse struct {
 	// The [spend program](https://help.revolut.com/business/help/making-paymentsbusiness/spend-controls/setting-card-presets-for-my-team-members/) assigned to the card.
 	//
 	// Read-only: populated by the server; any value sent by the client is ignored.
-	SpendProgram SpendProgram `json:"spend_program,omitempty"`
+	SpendProgram *SpendProgram `json:"spend_program,omitempty"`
 
-	SpendingLimits SpendingLimits `json:"spending_limits,omitempty"`
+	SpendingLimits *SpendingLimits `json:"spending_limits,omitempty"`
 
 	// The controls for the card's spending period.
 	SpendingPeriod *CardResponseSpendingPeriod `json:"spending_period,omitempty"`
@@ -1054,7 +1054,7 @@ type CounterpartyError struct {
 	Message string `json:"message"`
 
 	// Additional parameters related to the error.
-	Params CounterpartyErrorParams `json:"params,omitempty"`
+	Params *CounterpartyErrorParams `json:"params,omitempty"`
 }
 
 // CounterpartyErrorParams additional parameters related to the error.
@@ -1100,7 +1100,7 @@ type CreateCounterpartyRequest struct {
 	AccountNo string `json:"account_no,omitempty"`
 
 	// The address of the counterparty.
-	Address BeneficiaryAddress `json:"address,omitempty"`
+	Address *BeneficiaryAddress `json:"address,omitempty"`
 
 	// The country of the bank, provided as a 2-letter [ISO 3166](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes) code.
 	BankCountry BankCountryCode `json:"bank_country,omitempty"`
@@ -1127,7 +1127,7 @@ type CreateCounterpartyRequest struct {
 	Ifsc string `json:"ifsc,omitempty"`
 
 	// The name of the counterparty, provided when the counterparty is an **individual** (personal account type) and is **not** being added via Revtag.
-	IndividualName IndividualName `json:"individual_name,omitempty"`
+	IndividualName *IndividualName `json:"individual_name,omitempty"`
 
 	// The name of the counterparty, provided when the counterparty is being added via **Revtag**.
 	Name string `json:"name,omitempty"`
@@ -1656,7 +1656,7 @@ type PaymentDraftsResponse struct {
 
 // PaymentInfoCurrentChargeOptions the explanation of conversion process.
 type PaymentInfoCurrentChargeOptions struct {
-	Fee AmountWithCurrency `json:"fee,omitempty"`
+	Fee *AmountWithCurrency `json:"fee,omitempty"`
 
 	From AmountWithCurrency `json:"from"`
 
@@ -2069,48 +2069,48 @@ type SpendingLimitSingleTransaction struct {
 
 type SpendingLimits struct {
 	// The limit for transactions within a given period.
-	AllTime SpendingLimitPeriodic `json:"all_time,omitempty"`
+	AllTime *SpendingLimitPeriodic `json:"all_time,omitempty"`
 
 	// The limit for transactions within a given period.
-	Day SpendingLimitPeriodic `json:"day,omitempty"`
+	Day *SpendingLimitPeriodic `json:"day,omitempty"`
 
 	// The limit for transactions within a given period.
-	Month SpendingLimitPeriodic `json:"month,omitempty"`
+	Month *SpendingLimitPeriodic `json:"month,omitempty"`
 
 	// The limit for transactions within a given period.
-	Quarter SpendingLimitPeriodic `json:"quarter,omitempty"`
+	Quarter *SpendingLimitPeriodic `json:"quarter,omitempty"`
 
 	// The limit for a single transaction.
-	Single SpendingLimitSingleTransaction `json:"single,omitempty"`
+	Single *SpendingLimitSingleTransaction `json:"single,omitempty"`
 
 	// The limit for transactions within a given period.
-	Week SpendingLimitPeriodic `json:"week,omitempty"`
+	Week *SpendingLimitPeriodic `json:"week,omitempty"`
 
 	// The limit for transactions within a given period.
-	Year SpendingLimitPeriodic `json:"year,omitempty"`
+	Year *SpendingLimitPeriodic `json:"year,omitempty"`
 }
 
 type SpendingLimitsSchema struct {
 	// The limit for transactions within a given period.
-	AllTime SpendingLimitPeriodic `json:"all_time,omitempty"`
+	AllTime *SpendingLimitPeriodic `json:"all_time,omitempty"`
 
 	// The limit for transactions within a given period.
-	Day SpendingLimitPeriodic `json:"day,omitempty"`
+	Day *SpendingLimitPeriodic `json:"day,omitempty"`
 
 	// The limit for transactions within a given period.
-	Month SpendingLimitPeriodic `json:"month,omitempty"`
+	Month *SpendingLimitPeriodic `json:"month,omitempty"`
 
 	// The limit for transactions within a given period.
-	Quarter SpendingLimitPeriodic `json:"quarter,omitempty"`
+	Quarter *SpendingLimitPeriodic `json:"quarter,omitempty"`
 
 	// The limit for a single transaction.
-	Single SpendingLimitSingleTransaction `json:"single,omitempty"`
+	Single *SpendingLimitSingleTransaction `json:"single,omitempty"`
 
 	// The limit for transactions within a given period.
-	Week SpendingLimitPeriodic `json:"week,omitempty"`
+	Week *SpendingLimitPeriodic `json:"week,omitempty"`
 
 	// The limit for transactions within a given period.
-	Year SpendingLimitPeriodic `json:"year,omitempty"`
+	Year *SpendingLimitPeriodic `json:"year,omitempty"`
 }
 
 // SpendingPeriodSchemaEndDateAction the action to take after the end date of the spending period.
@@ -2207,7 +2207,7 @@ const (
 
 type Transaction struct {
 	// The details of the card associated with the transaction.
-	Card TransactionCard `json:"card,omitempty"`
+	Card *TransactionCard `json:"card,omitempty"`
 
 	// The date and time the transaction was completed in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
 	CompletedAt *time.Time `json:"completed_at,omitempty"`
@@ -2222,7 +2222,7 @@ type Transaction struct {
 	Legs []TransactionLeg `json:"legs"`
 
 	// The information about the merchant (only for card transactions).
-	Merchant TransactionMerchant `json:"merchant,omitempty"`
+	Merchant *TransactionMerchant `json:"merchant,omitempty"`
 
 	// The reason code when the transaction `state` is `declined` or `failed`.
 	ReasonCode string `json:"reason_code,omitempty"`
@@ -2326,7 +2326,7 @@ type TransactionLeg struct {
 	// [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency code in upper case.
 	BillCurrency Currency `json:"bill_currency,omitempty"`
 
-	Counterparty TransactionCounterparty `json:"counterparty,omitempty"`
+	Counterparty *TransactionCounterparty `json:"counterparty,omitempty"`
 
 	// [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency code in upper case.
 	Currency Currency `json:"currency"`
@@ -2789,7 +2789,7 @@ type ValidateAccountNameResponse struct {
 	IndividualName *ValidateAccountNameResponseIndividualName `json:"individual_name,omitempty"`
 
 	// A code which explains why a given result was returned, and the service that returned it.
-	Reason AccountNameValidationReasonAU `json:"reason,omitempty"`
+	Reason *AccountNameValidationReasonAU `json:"reason,omitempty"`
 
 	// The result of the check.
 	ResultCode ValidateAccountNameResponseResultCode `json:"result_code,omitempty"`
@@ -2848,7 +2848,7 @@ type ValidateAccountNameResponseAU struct {
 	IndividualName *ValidateAccountNameResponseAUIndividualName `json:"individual_name,omitempty"`
 
 	// A code which explains why a given result was returned, and the service that returned it.
-	Reason AccountNameValidationReasonAU `json:"reason,omitempty"`
+	Reason *AccountNameValidationReasonAU `json:"reason,omitempty"`
 
 	// The result of the check.
 	ResultCode ValidateAccountNameResponseAUResultCode `json:"result_code"`
@@ -2908,7 +2908,7 @@ type ValidateAccountNameResponseEUR struct {
 	IndividualName *ValidateAccountNameResponseEURIndividualName `json:"individual_name,omitempty"`
 
 	// A code which explains why a given result was returned, and the service that returned it.
-	Reason AccountNameValidationReasonEUR `json:"reason,omitempty"`
+	Reason *AccountNameValidationReasonEUR `json:"reason,omitempty"`
 
 	// The result of the check.
 	ResultCode ValidateAccountNameResponseEURResultCode `json:"result_code"`
@@ -2969,7 +2969,7 @@ type ValidateAccountNameResponseRO struct {
 	IndividualName *ValidateAccountNameResponseROIndividualName `json:"individual_name,omitempty"`
 
 	// A code which explains why a given result was returned, and the service that returned it.
-	Reason AccountNameValidationReasonRO `json:"reason,omitempty"`
+	Reason *AccountNameValidationReasonRO `json:"reason,omitempty"`
 
 	// The result of the check.
 	ResultCode ValidateAccountNameResponseROResultCode `json:"result_code"`
@@ -3034,7 +3034,7 @@ type ValidateAccountNameResponseUK struct {
 	IndividualName *ValidateAccountNameResponseUKIndividualName `json:"individual_name,omitempty"`
 
 	// A code which explains why a given result was returned, and the service that returned it.
-	Reason AccountNameValidationReasonUK `json:"reason,omitempty"`
+	Reason *AccountNameValidationReasonUK `json:"reason,omitempty"`
 
 	// The result of the check.
 	ResultCode ValidateAccountNameResponseUKResultCode `json:"result_code"`
@@ -3282,12 +3282,12 @@ type CardInvitationsBody struct {
 	// Default: "Virtual".
 	Label string `json:"label,omitempty"`
 
-	MerchantControls MerchantControlsSchema `json:"merchant_controls,omitempty"`
+	MerchantControls *MerchantControlsSchema `json:"merchant_controls,omitempty"`
 
 	// A unique ID of the request that you provide.
 	RequestID string `json:"request_id"`
 
-	SpendingLimits SpendingLimitsSchema `json:"spending_limits,omitempty"`
+	SpendingLimits *SpendingLimitsSchema `json:"spending_limits,omitempty"`
 
 	// The controls for the card's spending period.
 	SpendingPeriod *CardInvitationsBodySpendingPeriod `json:"spending_period,omitempty"`
@@ -3409,7 +3409,7 @@ type CardsBody struct {
 	// The label for the issued card, displayed in the UI to help distinguish between cards.
 	Label string `json:"label,omitempty"`
 
-	MerchantControls MerchantControlsSchema `json:"merchant_controls,omitempty"`
+	MerchantControls *MerchantControlsSchema `json:"merchant_controls,omitempty"`
 
 	// The card product offered by the card provider for this card.
 	Product *CardsBodyProduct `json:"product,omitempty"`
@@ -3420,7 +3420,7 @@ type CardsBody struct {
 	// A unique ID of the request that you provide.
 	RequestID string `json:"request_id"`
 
-	SpendingLimits SpendingLimitsSchema `json:"spending_limits,omitempty"`
+	SpendingLimits *SpendingLimitsSchema `json:"spending_limits,omitempty"`
 
 	// The controls for the card's spending period.
 	SpendingPeriod *CardsBodySpendingPeriod `json:"spending_period,omitempty"`

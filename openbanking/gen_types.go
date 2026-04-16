@@ -312,7 +312,7 @@ type Obbeneficiary3 struct {
 	BeneficiaryID string `json:"BeneficiaryId,omitempty"`
 
 	// The details to identify the account.
-	CreditorAccount ObcashAccount5 `json:"CreditorAccount,omitempty"`
+	CreditorAccount *ObcashAccount5 `json:"CreditorAccount,omitempty"`
 }
 
 // ObbranchAndFinancialInstitutionIdentification6 the party that manages the account on behalf of the account owner by:
@@ -332,7 +332,7 @@ type ObbranchAndFinancialInstitutionIdentification6 struct {
 	Name string `json:"Name,omitempty"`
 
 	// The postal address of the creditor, as defined by postal services.
-	PostalAddress ObpostalAddress6 `json:"PostalAddress,omitempty"`
+	PostalAddress *ObpostalAddress6 `json:"PostalAddress,omitempty"`
 
 	// The name of the identification scheme, which is published in an external list.
 	SchemeName []string `json:"SchemeName,omitempty"`
@@ -461,7 +461,7 @@ const (
 // ObcreditLine1 set of elements used to provide details on the credit line.
 type ObcreditLine1 struct {
 	// The amount of the cash balance after a transaction entry is applied to the account.
-	Amount ObactiveOrHistoricCurrencyAndAmount `json:"Amount,omitempty"`
+	Amount *ObactiveOrHistoricCurrencyAndAmount `json:"Amount,omitempty"`
 
 	// Indicates whether the credit line is included in the balance of the account.
 	Included bool `json:"Included"`
@@ -515,7 +515,7 @@ type ObdirectDebit1 struct {
 	Name string `json:"Name"`
 
 	// The amount of the cash balance after a transaction entry is applied to the account.
-	PreviousPaymentAmount ObactiveOrHistoricCurrencyAndAmount `json:"PreviousPaymentAmount,omitempty"`
+	PreviousPaymentAmount *ObactiveOrHistoricCurrencyAndAmount `json:"PreviousPaymentAmount,omitempty"`
 }
 
 // Obdomestic2InstructedAmount the amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency that the initiating party instructs.
@@ -537,10 +537,10 @@ type Obdomestic2 struct {
 	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"`
 
 	// The postal address of the creditor, as defined by postal services.
-	CreditorPostalAddress ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"`
+	CreditorPostalAddress *ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"`
 
 	// The details to identify the account from which the payment consent can be approved.
-	DebtorAccount ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"`
+	DebtorAccount *ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"`
 
 	// The unique and immutable ID that the initiating party assigns to unambiguously identify the transaction.
 	EndToEndIdentification string `json:"EndToEndIdentification"`
@@ -552,7 +552,7 @@ type Obdomestic2 struct {
 	InstructionIdentification string `json:"InstructionIdentification"`
 
 	// The information used for matching an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system.
-	RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
+	RemittanceInformation *ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
 
 	// The additional information that cannot be captured in the structured fields and/or any other specific block.
 	SupplementaryData ObsupplementaryData1 `json:"SupplementaryData,omitempty"`
@@ -572,10 +572,10 @@ type ObdomesticInitiationBaseInstructedAmount struct {
 // ObdomesticInitiationBase the initiation payload that the initiating party sends to the [ASPSP](https://developer.revolut.com/docs/guides/build-banking-apps/glossary), which is used to request movement of funds from the debtor account to the creditor for a single domestic payment.
 type ObdomesticInitiationBase struct {
 	// The details to identify the account.
-	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"`
+	CreditorAccount *ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"`
 
 	// The postal address of the creditor, as defined by postal services.
-	CreditorPostalAddress ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"`
+	CreditorPostalAddress *ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"`
 
 	// The unique and immutable ID that the initiating party assigns to unambiguously identify the transaction.
 	EndToEndIdentification string `json:"EndToEndIdentification,omitempty"`
@@ -587,7 +587,7 @@ type ObdomesticInitiationBase struct {
 	InstructionIdentification string `json:"InstructionIdentification,omitempty"`
 
 	// The information used for matching an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system.
-	RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
+	RemittanceInformation *ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
 
 	// The additional information that cannot be captured in the structured fields and/or any other specific block.
 	SupplementaryData ObsupplementaryData1 `json:"SupplementaryData,omitempty"`
@@ -612,7 +612,7 @@ type ObdomesticInitiationResponse struct {
 	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"`
 
 	// The postal address of the creditor, as defined by postal services.
-	CreditorPostalAddress ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"`
+	CreditorPostalAddress *ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"`
 
 	// The details to identify the account which was used to approve the payment consent.
 	DebtorAccount ObcashAccountDebtorResponse `json:"DebtorAccount"`
@@ -627,7 +627,7 @@ type ObdomesticInitiationResponse struct {
 	InstructionIdentification string `json:"InstructionIdentification"`
 
 	// The information used for matching an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system.
-	RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
+	RemittanceInformation *ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
 
 	// The additional information that cannot be captured in the structured fields and/or any other specific block.
 	SupplementaryData ObsupplementaryData1 `json:"SupplementaryData,omitempty"`
@@ -652,10 +652,10 @@ type ObdomesticScheduled2 struct {
 	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"`
 
 	// The postal address of the creditor, as defined by postal services.
-	CreditorPostalAddress ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"`
+	CreditorPostalAddress *ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"`
 
 	// The details to identify the account from which the payment consent can be approved.
-	DebtorAccount ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"`
+	DebtorAccount *ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"`
 
 	// The unique and immutable ID that the initiating party assigns to unambiguously identify the transaction.
 	EndToEndIdentification string `json:"EndToEndIdentification,omitempty"`
@@ -667,7 +667,7 @@ type ObdomesticScheduled2 struct {
 	InstructionIdentification string `json:"InstructionIdentification"`
 
 	// The information used for matching an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system.
-	RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
+	RemittanceInformation *ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
 
 	// The date and time when the initiating party requests the clearing agent to process the payment.
 	RequestedExecutionDateTime time.Time `json:"RequestedExecutionDateTime"`
@@ -687,10 +687,10 @@ type ObdomesticScheduledBaseInstructedAmount struct {
 // ObdomesticScheduledBase the Initiation payload that the initiating party sends to the [ASPSP](https://developer.revolut.com/docs/guides/build-banking-apps/glossary), which is used to request movement of funds from the debtor account to the creditor for a single scheduled domestic payment.
 type ObdomesticScheduledBase struct {
 	// The details to identify the account.
-	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"`
+	CreditorAccount *ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"`
 
 	// The postal address of the creditor, as defined by postal services.
-	CreditorPostalAddress ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"`
+	CreditorPostalAddress *ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"`
 
 	// The unique and immutable ID that the initiating party assigns to unambiguously identify the transaction.
 	EndToEndIdentification string `json:"EndToEndIdentification,omitempty"`
@@ -702,7 +702,7 @@ type ObdomesticScheduledBase struct {
 	InstructionIdentification string `json:"InstructionIdentification,omitempty"`
 
 	// The information used for matching an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system.
-	RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
+	RemittanceInformation *ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
 
 	// The date and time when the initiating party requests the clearing agent to process the payment.
 	RequestedExecutionDateTime *time.Time `json:"RequestedExecutionDateTime,omitempty"`
@@ -727,7 +727,7 @@ type ObdomesticScheduledInitiationResponse struct {
 	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"`
 
 	// The postal address of the creditor, as defined by postal services.
-	CreditorPostalAddress ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"`
+	CreditorPostalAddress *ObpostalAddress6 `json:"CreditorPostalAddress,omitempty"`
 
 	// The details to identify the account which was used to approve the payment consent.
 	DebtorAccount ObcashAccountDebtorResponse `json:"DebtorAccount"`
@@ -742,7 +742,7 @@ type ObdomesticScheduledInitiationResponse struct {
 	InstructionIdentification string `json:"InstructionIdentification"`
 
 	// The information used for matching an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system.
-	RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
+	RemittanceInformation *ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
 
 	// The date and time when the initiating party requests the clearing agent to process the payment.
 	RequestedExecutionDateTime time.Time `json:"RequestedExecutionDateTime"`
@@ -787,7 +787,7 @@ type ObdomesticStandingOrder2 struct {
 	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"`
 
 	// The details to identify the account from which the payment consent can be approved.
-	DebtorAccount ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"`
+	DebtorAccount *ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"`
 
 	// :::caution
 	FinalPaymentAmount *ObdomesticStandingOrder2FinalPaymentAmount `json:"FinalPaymentAmount,omitempty"`
@@ -848,7 +848,7 @@ type ObdomesticStandingOrderBaseRecurringPaymentAmount struct {
 // ObdomesticStandingOrderBase the Initiation payload that the initiating party sends to the [ASPSP](https://developer.revolut.com/docs/guides/build-banking-apps/glossary), which is used to request movement of funds from the debtor account to the creditor for a domestic standing order.
 type ObdomesticStandingOrderBase struct {
 	// The details to identify the account.
-	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"`
+	CreditorAccount *ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"`
 
 	// :::caution
 	FinalPaymentAmount *ObdomesticStandingOrderBaseFinalPaymentAmount `json:"FinalPaymentAmount,omitempty"`
@@ -1167,7 +1167,7 @@ const (
 // The initiation payload that the initiating party sends to the [ASPSP](https://developer.revolut.com/docs/guides/build-banking-apps/glossary), which is used to request movement of funds using a payment file.
 type Obfile2 struct {
 	// The details to identify the account from which the payment consent can be approved.
-	DebtorAccount ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"`
+	DebtorAccount *ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"`
 
 	// A base64 encoding of a SHA256 hash of the file to be uploaded.
 	FileHash string `json:"FileHash"`
@@ -1182,7 +1182,7 @@ type Obfile2 struct {
 	LocalInstrument ObexternalLocalInstrument1code `json:"LocalInstrument,omitempty"`
 
 	// The information used for matching an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system.
-	RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
+	RemittanceInformation *ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
 
 	// The date and time when the initiating party requests the clearing agent to process the payment.
 	RequestedExecutionDateTime *time.Time `json:"RequestedExecutionDateTime,omitempty"`
@@ -1203,7 +1203,7 @@ type ObfileBase struct {
 	LocalInstrument ObexternalLocalInstrument1code `json:"LocalInstrument,omitempty"`
 
 	// The information used for matching an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system.
-	RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
+	RemittanceInformation *ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
 
 	// The date and time when the initiating party requests the clearing agent to process the payment.
 	RequestedExecutionDateTime *time.Time `json:"RequestedExecutionDateTime,omitempty"`
@@ -1229,7 +1229,7 @@ type ObfileInitiationResponse struct {
 	LocalInstrument ObexternalLocalInstrument1code `json:"LocalInstrument,omitempty"`
 
 	// The information used for matching an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system.
-	RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
+	RemittanceInformation *ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
 
 	// The date and time when the initiating party requests the clearing agent to process the payment.
 	RequestedExecutionDateTime *time.Time `json:"RequestedExecutionDateTime,omitempty"`
@@ -1262,25 +1262,25 @@ type Obinternational2 struct {
 	ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"`
 
 	// The party that an amount of money is due to.
-	Creditor ObpartyIdentification43 `json:"Creditor,omitempty"`
+	Creditor *ObpartyIdentification43 `json:"Creditor,omitempty"`
 
 	// The details to identify the account.
 	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"`
 
 	// The party that manages the account on behalf of the account owner by:
-	CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
+	CreditorAgent *ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
 
 	// The currency of the money to be transferred, which is different from the currency of the debtor's account.
 	CurrencyOfTransfer string `json:"CurrencyOfTransfer"`
 
 	// The details to identify the account from which the payment consent can be approved.
-	DebtorAccount ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"`
+	DebtorAccount *ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"`
 
 	// The unique and immutable ID that the initiating party assigns to unambiguously identify the transaction.
 	EndToEndIdentification string `json:"EndToEndIdentification"`
 
 	// The details on the currency exchange rate and contract.
-	ExchangeRateInformation ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"`
+	ExchangeRateInformation *ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"`
 
 	// The amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency that the initiating party instructs.
 	InstructedAmount *Obinternational2InstructedAmount `json:"InstructedAmount"`
@@ -1289,7 +1289,7 @@ type Obinternational2 struct {
 	InstructionIdentification string `json:"InstructionIdentification"`
 
 	// The information used for matching an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system.
-	RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
+	RemittanceInformation *ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
 }
 
 // ObinternationalBaseInstructedAmount the amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency that the initiating party instructs.
@@ -1308,13 +1308,13 @@ type ObinternationalBase struct {
 	ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"`
 
 	// The party that an amount of money is due to.
-	Creditor ObpartyIdentification43 `json:"Creditor,omitempty"`
+	Creditor *ObpartyIdentification43 `json:"Creditor,omitempty"`
 
 	// The details to identify the account.
-	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"`
+	CreditorAccount *ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"`
 
 	// The party that manages the account on behalf of the account owner by:
-	CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
+	CreditorAgent *ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
 
 	// The currency of the money to be transferred, which is different from the currency of the debtor's account.
 	CurrencyOfTransfer string `json:"CurrencyOfTransfer,omitempty"`
@@ -1323,7 +1323,7 @@ type ObinternationalBase struct {
 	EndToEndIdentification string `json:"EndToEndIdentification,omitempty"`
 
 	// The details on the currency exchange rate and contract.
-	ExchangeRateInformation ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"`
+	ExchangeRateInformation *ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"`
 
 	// The amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency that the initiating party instructs.
 	InstructedAmount *ObinternationalBaseInstructedAmount `json:"InstructedAmount,omitempty"`
@@ -1332,7 +1332,7 @@ type ObinternationalBase struct {
 	InstructionIdentification string `json:"InstructionIdentification,omitempty"`
 
 	// The information used for matching an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system.
-	RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
+	RemittanceInformation *ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
 }
 
 // ObinternationalInitiationResponseInstructedAmount the amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency that the initiating party instructs.
@@ -1353,13 +1353,13 @@ type ObinternationalInitiationResponse struct {
 	ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"`
 
 	// The party that an amount of money is due to.
-	Creditor ObpartyIdentification43 `json:"Creditor,omitempty"`
+	Creditor *ObpartyIdentification43 `json:"Creditor,omitempty"`
 
 	// The details to identify the account.
 	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"`
 
 	// The party that manages the account on behalf of the account owner by:
-	CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
+	CreditorAgent *ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
 
 	// The currency of the money to be transferred, which is different from the currency of the debtor's account.
 	CurrencyOfTransfer string `json:"CurrencyOfTransfer"`
@@ -1371,7 +1371,7 @@ type ObinternationalInitiationResponse struct {
 	EndToEndIdentification string `json:"EndToEndIdentification"`
 
 	// The details on the currency exchange rate and contract.
-	ExchangeRateInformation ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"`
+	ExchangeRateInformation *ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"`
 
 	// The amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency that the initiating party instructs.
 	InstructedAmount *ObinternationalInitiationResponseInstructedAmount `json:"InstructedAmount"`
@@ -1380,7 +1380,7 @@ type ObinternationalInitiationResponse struct {
 	InstructionIdentification string `json:"InstructionIdentification"`
 
 	// The information used for matching an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system.
-	RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
+	RemittanceInformation *ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
 }
 
 // ObinternationalScheduled2InstructedAmount the amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency that the initiating party instructs.
@@ -1402,25 +1402,25 @@ type ObinternationalScheduled2 struct {
 	ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"`
 
 	// The party that an amount of money is due to.
-	Creditor ObpartyIdentification43 `json:"Creditor,omitempty"`
+	Creditor *ObpartyIdentification43 `json:"Creditor,omitempty"`
 
 	// The details to identify the account.
 	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"`
 
 	// The party that manages the account on behalf of the account owner by:
-	CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
+	CreditorAgent *ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
 
 	// The currency of the money to be transferred, which is different from the currency of the debtor's account.
 	CurrencyOfTransfer string `json:"CurrencyOfTransfer"`
 
 	// The details to identify the account from which the payment consent can be approved.
-	DebtorAccount ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"`
+	DebtorAccount *ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"`
 
 	// The unique and immutable ID that the initiating party assigns to unambiguously identify the transaction.
 	EndToEndIdentification string `json:"EndToEndIdentification,omitempty"`
 
 	// The details on the currency exchange rate and contract.
-	ExchangeRateInformation ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"`
+	ExchangeRateInformation *ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"`
 
 	// The amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency that the initiating party instructs.
 	InstructedAmount *ObinternationalScheduled2InstructedAmount `json:"InstructedAmount"`
@@ -1429,7 +1429,7 @@ type ObinternationalScheduled2 struct {
 	InstructionIdentification string `json:"InstructionIdentification"`
 
 	// The information used for matching an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system.
-	RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
+	RemittanceInformation *ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
 
 	// The date and time when the initiating party requests the clearing agent to process the payment.
 	RequestedExecutionDateTime time.Time `json:"RequestedExecutionDateTime"`
@@ -1452,13 +1452,13 @@ type ObinternationalScheduledBase struct {
 	ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"`
 
 	// The party that an amount of money is due to.
-	Creditor ObpartyIdentification43 `json:"Creditor,omitempty"`
+	Creditor *ObpartyIdentification43 `json:"Creditor,omitempty"`
 
 	// The details to identify the account.
-	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"`
+	CreditorAccount *ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"`
 
 	// The party that manages the account on behalf of the account owner by:
-	CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
+	CreditorAgent *ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
 
 	// The currency of the money to be transferred, which is different from the currency of the debtor's account.
 	CurrencyOfTransfer string `json:"CurrencyOfTransfer,omitempty"`
@@ -1467,7 +1467,7 @@ type ObinternationalScheduledBase struct {
 	EndToEndIdentification string `json:"EndToEndIdentification,omitempty"`
 
 	// The details on the currency exchange rate and contract.
-	ExchangeRateInformation ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"`
+	ExchangeRateInformation *ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"`
 
 	// The amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency that the initiating party instructs.
 	InstructedAmount *ObinternationalScheduledBaseInstructedAmount `json:"InstructedAmount,omitempty"`
@@ -1476,7 +1476,7 @@ type ObinternationalScheduledBase struct {
 	InstructionIdentification string `json:"InstructionIdentification,omitempty"`
 
 	// The information used for matching an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system.
-	RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
+	RemittanceInformation *ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
 
 	// The date and time when the initiating party requests the clearing agent to process the payment.
 	RequestedExecutionDateTime *time.Time `json:"RequestedExecutionDateTime,omitempty"`
@@ -1501,13 +1501,13 @@ type ObinternationalScheduledInitiationResponse struct {
 	ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"`
 
 	// The party that an amount of money is due to.
-	Creditor ObpartyIdentification43 `json:"Creditor,omitempty"`
+	Creditor *ObpartyIdentification43 `json:"Creditor,omitempty"`
 
 	// The details to identify the account.
 	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"`
 
 	// The party that manages the account on behalf of the account owner by:
-	CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
+	CreditorAgent *ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
 
 	// The currency of the money to be transferred, which is different from the currency of the debtor's account.
 	CurrencyOfTransfer string `json:"CurrencyOfTransfer"`
@@ -1519,7 +1519,7 @@ type ObinternationalScheduledInitiationResponse struct {
 	EndToEndIdentification string `json:"EndToEndIdentification,omitempty"`
 
 	// The details on the currency exchange rate and contract.
-	ExchangeRateInformation ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"`
+	ExchangeRateInformation *ObexchangeRate1 `json:"ExchangeRateInformation,omitempty"`
 
 	// The amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency that the initiating party instructs.
 	InstructedAmount *ObinternationalScheduledInitiationResponseInstructedAmount `json:"InstructedAmount"`
@@ -1528,7 +1528,7 @@ type ObinternationalScheduledInitiationResponse struct {
 	InstructionIdentification string `json:"InstructionIdentification"`
 
 	// The information used for matching an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system.
-	RemittanceInformation ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
+	RemittanceInformation *ObremittanceInformation1 `json:"RemittanceInformation,omitempty"`
 
 	// The date and time when the initiating party requests the clearing agent to process the payment.
 	RequestedExecutionDateTime time.Time `json:"RequestedExecutionDateTime"`
@@ -1553,19 +1553,19 @@ type ObinternationalStandingOrder2 struct {
 	ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"`
 
 	// The party that an amount of money is due to.
-	Creditor ObpartyIdentification43 `json:"Creditor,omitempty"`
+	Creditor *ObpartyIdentification43 `json:"Creditor,omitempty"`
 
 	// The details to identify the account.
 	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"`
 
 	// The party that manages the account on behalf of the account owner by:
-	CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
+	CreditorAgent *ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
 
 	// The currency of the money to be transferred, which is different from the currency of the debtor's account.
 	CurrencyOfTransfer string `json:"CurrencyOfTransfer"`
 
 	// The details to identify the account from which the payment consent can be approved.
-	DebtorAccount ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"`
+	DebtorAccount *ObcashAccountDebtor4 `json:"DebtorAccount,omitempty"`
 
 	// :::caution
 	FinalPaymentDateTime *time.Time `json:"FinalPaymentDateTime,omitempty"`
@@ -1603,13 +1603,13 @@ type ObinternationalStandingOrderBase struct {
 	ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"`
 
 	// The party that an amount of money is due to.
-	Creditor ObpartyIdentification43 `json:"Creditor,omitempty"`
+	Creditor *ObpartyIdentification43 `json:"Creditor,omitempty"`
 
 	// The details to identify the account.
-	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"`
+	CreditorAccount *ObcashAccountCreditor3 `json:"CreditorAccount,omitempty"`
 
 	// The party that manages the account on behalf of the account owner by:
-	CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
+	CreditorAgent *ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
 
 	// The currency of the money to be transferred, which is different from the currency of the debtor's account.
 	CurrencyOfTransfer string `json:"CurrencyOfTransfer,omitempty"`
@@ -1652,13 +1652,13 @@ type ObinternationalStandingOrderInitiationResponse struct {
 	ChargeBearer ObchargeBearerType1code `json:"ChargeBearer,omitempty"`
 
 	// The party that an amount of money is due to.
-	Creditor ObpartyIdentification43 `json:"Creditor,omitempty"`
+	Creditor *ObpartyIdentification43 `json:"Creditor,omitempty"`
 
 	// The details to identify the account.
 	CreditorAccount ObcashAccountCreditor3 `json:"CreditorAccount"`
 
 	// The party that manages the account on behalf of the account owner by:
-	CreditorAgent ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
+	CreditorAgent *ObbranchAndFinancialInstitutionIdentification6 `json:"CreditorAgent,omitempty"`
 
 	// The currency of the money to be transferred, which is different from the currency of the debtor's account.
 	CurrencyOfTransfer string `json:"CurrencyOfTransfer"`
@@ -1697,7 +1697,7 @@ type ObpartyIdentification43 struct {
 	Name string `json:"Name,omitempty"`
 
 	// The postal address of the creditor, as defined by postal services.
-	PostalAddress ObpostalAddress6 `json:"PostalAddress,omitempty"`
+	PostalAddress *ObpostalAddress6 `json:"PostalAddress,omitempty"`
 }
 
 // ObpostalAddress6 the postal address of the creditor, as defined by postal services.
@@ -2000,7 +2000,7 @@ type ObstandingOrder4 struct {
 	AccountID AccountID `json:"AccountId"`
 
 	// The details to identify the account.
-	CreditorAccount ObcashAccount5 `json:"CreditorAccount,omitempty"`
+	CreditorAccount *ObcashAccount5 `json:"CreditorAccount,omitempty"`
 
 	// The amount of the first standing order payment.
 	FirstPaymentAmount *ObstandingOrder4FirstPaymentAmount `json:"FirstPaymentAmount,omitempty"`
@@ -2093,7 +2093,7 @@ type Obtransaction4 struct {
 	Amount *Obtransaction4Amount `json:"Amount"`
 
 	// A list of elements used to define the balance as a numerical representation of the net increases and decreases in an account after a transaction entry is applied to the account.
-	Balance ObtransactionCashBalance `json:"Balance,omitempty"`
+	Balance *ObtransactionCashBalance `json:"Balance,omitempty"`
 
 	// The date and time when the transaction entry is created in Revolut's systems.
 	BookingDateTime time.Time `json:"BookingDateTime"`
@@ -2108,16 +2108,16 @@ type Obtransaction4 struct {
 	CreditDebitIndicator Obtransaction4CreditDebitIndicator `json:"CreditDebitIndicator"`
 
 	// The unique ID of the account in the case of a transaction.
-	CreditorAccount ObcashAccount6 `json:"CreditorAccount,omitempty"`
+	CreditorAccount *ObcashAccount6 `json:"CreditorAccount,omitempty"`
 
 	// A list of elements to provide details on the currency exchange.
-	CurrencyExchange ObcurrencyExchange5 `json:"CurrencyExchange,omitempty"`
+	CurrencyExchange *ObcurrencyExchange5 `json:"CurrencyExchange,omitempty"`
 
 	// The unique ID of the account in the case of a transaction.
-	DebtorAccount ObcashAccount6 `json:"DebtorAccount,omitempty"`
+	DebtorAccount *ObcashAccount6 `json:"DebtorAccount,omitempty"`
 
 	// The details of the merchant involved in the transaction.
-	MerchantDetails ObmerchantDetails1 `json:"MerchantDetails,omitempty"`
+	MerchantDetails *ObmerchantDetails1 `json:"MerchantDetails,omitempty"`
 
 	// A list of elements to fully identify a proprietary bank transaction code.
 	ProprietaryBankTransactionCode *Obtransaction4ProprietaryBankTransactionCode `json:"ProprietaryBankTransactionCode,omitempty"`
@@ -2392,7 +2392,7 @@ type ObwriteDataFileResponse2 struct {
 
 type ObwriteDataFundsConfirmationResponse1 struct {
 	// The results of the funds availability check.
-	FundsAvailableResult ObfundsAvailableResult1 `json:"FundsAvailableResult,omitempty"`
+	FundsAvailableResult *ObfundsAvailableResult1 `json:"FundsAvailableResult,omitempty"`
 }
 
 type ObwriteDataInternational2 struct {
@@ -2416,7 +2416,7 @@ type ObwriteDataInternationalConsentResponse2 struct {
 	CreationDateTime time.Time `json:"CreationDateTime"`
 
 	// Further detailed information on the exchange rate that is used in the payment transaction.
-	ExchangeRateInformation ObexchangeRate2 `json:"ExchangeRateInformation,omitempty"`
+	ExchangeRateInformation *ObexchangeRate2 `json:"ExchangeRateInformation,omitempty"`
 
 	// The initiation payload that the initiating party sends to the [ASPSP](https://developer.revolut.com/docs/guides/build-banking-apps/glossary), which is used to request movement of funds from the debtor account to the creditor for a single international payment.
 	Initiation Obinternational2 `json:"Initiation"`
@@ -2436,7 +2436,7 @@ type ObwriteDataInternationalResponse2 struct {
 	CreationDateTime time.Time `json:"CreationDateTime"`
 
 	// Further detailed information on the exchange rate that is used in the payment transaction.
-	ExchangeRateInformation ObexchangeRate2 `json:"ExchangeRateInformation,omitempty"`
+	ExchangeRateInformation *ObexchangeRate2 `json:"ExchangeRateInformation,omitempty"`
 
 	// The initiation payload that the initiating party sends to the [ASPSP](https://developer.revolut.com/docs/guides/build-banking-apps/glossary), which is used to request movement of funds from the debtor account to the creditor for a single international payment.
 	Initiation ObinternationalInitiationResponse `json:"Initiation"`
@@ -2475,7 +2475,7 @@ type ObwriteDataInternationalScheduledConsentResponse2 struct {
 	CreationDateTime time.Time `json:"CreationDateTime"`
 
 	// Further detailed information on the exchange rate that is used in the payment transaction.
-	ExchangeRateInformation ObexchangeRate2 `json:"ExchangeRateInformation,omitempty"`
+	ExchangeRateInformation *ObexchangeRate2 `json:"ExchangeRateInformation,omitempty"`
 
 	// The initiation payload that the initiating party sends to the [ASPSP](https://developer.revolut.com/docs/guides/build-banking-apps/glossary), which is used to request movement of funds from the debtor account to the creditor for a single scheduled international payment.
 	Initiation ObinternationalScheduled2 `json:"Initiation"`
@@ -2498,7 +2498,7 @@ type ObwriteDataInternationalScheduledResponse2 struct {
 	CreationDateTime time.Time `json:"CreationDateTime"`
 
 	// Further detailed information on the exchange rate that is used in the payment transaction.
-	ExchangeRateInformation ObexchangeRate2 `json:"ExchangeRateInformation,omitempty"`
+	ExchangeRateInformation *ObexchangeRate2 `json:"ExchangeRateInformation,omitempty"`
 
 	// The initiation payload that the initiating party sends to the [ASPSP](https://developer.revolut.com/docs/guides/build-banking-apps/glossary), which is used to request movement of funds from the debtor account to the creditor for a single scheduled international payment.
 	Initiation ObinternationalScheduledInitiationResponse `json:"Initiation"`

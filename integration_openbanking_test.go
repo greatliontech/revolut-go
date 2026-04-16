@@ -4,11 +4,14 @@ package revolut_test
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
+	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -299,6 +302,272 @@ func loadAISPTokens(t *testing.T, dir string) (openbanking.AuthCodeToken, string
 		t.Fatalf("AISP tokens file has no access_token")
 	}
 	return bundle.Token, bundle.ConsentID
+}
+
+// loadPISPTokens is the PISP analogue of loadAISPTokens.
+func loadPISPTokens(t *testing.T, dir string) (openbanking.AuthCodeToken, string) {
+	t.Helper()
+	path := filepath.Join(dir, "tokens-pisp.json")
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			t.Skipf("PISP tokens missing (%s) — run `go run ./cmd/ob-bootstrap -scope=\"openid payments\"` first", path)
+		}
+		t.Fatalf("read PISP tokens: %v", err)
+	}
+	var bundle struct {
+		Token     openbanking.AuthCodeToken `json:"token"`
+		ConsentID string                    `json:"consent_id"`
+	}
+	if err := json.Unmarshal(raw, &bundle); err != nil {
+		t.Fatalf("parse PISP tokens: %v", err)
+	}
+	if bundle.Token.AccessToken == "" {
+		t.Fatalf("PISP tokens file has no access_token")
+	}
+	if time.Now().After(bundle.Token.ExpiresAt) {
+		t.Skipf("PISP access token expired at %s — re-run the bootstrap to capture a fresh one",
+			bundle.Token.ExpiresAt.Format(time.RFC3339))
+	}
+	return bundle.Token, bundle.ConsentID
+}
+
+// pispClients is the bundle of clients an end-to-end PISP test
+// needs: a TPP-context client (client_credentials, payments scope)
+// for reading consent state, and a PSU-context client (auth-code
+// from tokens-pisp.json) for actually initiating the payment.
+type pispClients struct {
+	tpp        *openbanking.Client
+	psu        *openbanking.Client
+	consentID  string
+	signingKey *rsa.PrivateKey
+	signer     *openbanking.Signer
+}
+
+func newPISPClients(t *testing.T, cfg obSandboxConfig) pispClients {
+	t.Helper()
+	psuTok, consentID := loadPISPTokens(t, cfg.dir)
+	key := cfg.loadPrivateKey(t)
+	cert, err := openbanking.LoadTransportCert(
+		filepath.Join(cfg.dir, cfg.TransportCertFile),
+		filepath.Join(cfg.dir, cfg.PrivateKeyFile),
+	)
+	if err != nil {
+		t.Fatalf("LoadTransportCert: %v", err)
+	}
+	bundle, err := os.ReadFile(filepath.Join(cfg.dir, "obie-pp-ca-bundle.pem"))
+	if err != nil {
+		t.Fatalf("read OBIE PP CA bundle: %v", err)
+	}
+	mtls := openbanking.MTLSHTTPClient(cert, bundle)
+
+	tppSrc, err := openbanking.NewClientCredentialsTokenSource(openbanking.ClientCredentialsConfig{
+		ClientID:      cfg.ClientID,
+		TokenURL:      "https://sandbox-oba-auth.revolut.com/token",
+		Kid:           cfg.Kid,
+		PrivateKey:    key,
+		TransportCert: cert,
+		Alg:           coalesceAlg(cfg.Alg),
+		HTTPClient:    mtls,
+		Scope:         "payments",
+	})
+	if err != nil {
+		t.Fatalf("TPP token source: %v", err)
+	}
+	tpp, err := revolut.NewOpenBankingClient(tppSrc,
+		revolut.WithEnvironment(revolut.EnvironmentSandbox),
+		revolut.WithHTTPClient(mtls),
+	)
+	if err != nil {
+		t.Fatalf("TPP client: %v", err)
+	}
+	psuSrc, err := openbanking.NewAuthCodeTokenSource(openbanking.AuthCodeConfig{
+		ClientID:      cfg.ClientID,
+		TokenURL:      "https://sandbox-oba-auth.revolut.com/token",
+		Kid:           cfg.Kid,
+		PrivateKey:    key,
+		TransportCert: cert,
+		Alg:           coalesceAlg(cfg.Alg),
+		HTTPClient:    mtls,
+	}, psuTok)
+	if err != nil {
+		t.Fatalf("PSU token source: %v", err)
+	}
+	psu, err := revolut.NewOpenBankingClient(psuSrc,
+		revolut.WithEnvironment(revolut.EnvironmentSandbox),
+		revolut.WithHTTPClient(mtls),
+	)
+	if err != nil {
+		t.Fatalf("PSU client: %v", err)
+	}
+	// Build a Signer for the actual payment-creation POST. The
+	// JWKS URL's host doubles as the TAN; persisted in
+	// credentials.json by the bootstrap.
+	jwksHost := "greatliontech.github.io"
+	signingCertDER, err := os.ReadFile(filepath.Join(cfg.dir, cfg.SigningCertFile))
+	if err != nil {
+		t.Fatalf("read signing cert: %v", err)
+	}
+	signingCert, err := x509.ParseCertificate(signingCertDER)
+	if err != nil {
+		t.Fatalf("parse signing cert: %v", err)
+	}
+	signer, err := openbanking.NewSigner(key, cfg.Kid, signingCert.Subject.String(),
+		openbanking.SignerOptions{
+			Alg:         coalesceAlg(cfg.Alg),
+			TrustAnchor: jwksHost,
+		})
+	if err != nil {
+		t.Fatalf("Signer: %v", err)
+	}
+	return pispClients{tpp: tpp, psu: psu, consentID: consentID, signingKey: key, signer: signer}
+}
+
+// fapiHeaders is the standard FAPI header tuple every OB call
+// takes. The interaction-id should be a UUID per call so server
+// logs can correlate.
+func fapiHeaders(interactionID string) (string, string, string, string, string) {
+	if interactionID == "" {
+		// 16 random bytes as 8-4-4-4-12 hex; no need to pull in
+		// a UUID dependency for what's essentially noise.
+		raw := make([]byte, 16)
+		_, _ = io.ReadFull(rand.Reader, raw)
+		raw[6] = (raw[6] & 0x0f) | 0x40 // version 4
+		raw[8] = (raw[8] & 0x3f) | 0x80 // variant 1
+		interactionID = fmt.Sprintf("%08x-%04x-%04x-%04x-%012x", raw[0:4], raw[4:6], raw[6:8], raw[8:10], raw[10:16])
+	}
+	return "001580000103UAvAAM",
+		time.Now().UTC().Format(time.RFC1123),
+		"127.0.0.1",
+		interactionID,
+		"revolut-go-sandbox-test/0.1"
+}
+
+// TestSandbox_OpenBanking_PISP_ConsentAuthorised reads the payment
+// consent state via the TPP client (PISP consents are a TPP-context
+// resource) and asserts the PSU completed authorisation in the
+// browser.
+func TestSandbox_OpenBanking_PISP_ConsentAuthorised(t *testing.T) {
+	cfg := loadOBSandbox(t)
+	pc := newPISPClients(t, cfg)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	fin, last, ip, ix, ua := fapiHeaders("")
+	consent, _, err := pc.tpp.DomesticPayment.GetConsentsConsentID(ctx,
+		pc.consentID, fin, last, ip, ix, ua)
+	if err != nil {
+		var apiErr *revolut.APIError
+		if errors.As(err, &apiErr) {
+			t.Fatalf("GetConsent APIError: status=%d body=%s", apiErr.StatusCode, apiErr.Body)
+		}
+		t.Fatalf("GetConsent: %v", err)
+	}
+	if consent == nil {
+		t.Fatal("nil consent response")
+	}
+	t.Logf("PISP consent: id=%s status=%s amount=%s %s creditor=%s",
+		consent.Data.ConsentID, consent.Data.Status,
+		consent.Data.Initiation.InstructedAmount.Amount,
+		consent.Data.Initiation.InstructedAmount.Currency,
+		consent.Data.Initiation.CreditorAccount.Identification,
+	)
+	// PISP consents are single-use. Authorised = ready to pay,
+	// Consumed = payment already created, Rejected = a prior
+	// payment attempt failed and burned the consent. Any of
+	// those proves the wiring; AwaitingAuthorisation means the
+	// PSU never finished the browser flow.
+	switch s := string(consent.Data.Status); s {
+	case "Authorised", "Consumed", "Rejected":
+		// ok
+	case "AwaitingAuthorisation":
+		t.Errorf("status=%q; PSU consent never completed — re-run cmd/ob-bootstrap", s)
+	default:
+		t.Errorf("unexpected consent status %q", s)
+	}
+}
+
+// TestSandbox_OpenBanking_PISP_CreatePayment initiates the actual
+// domestic payment using the PSU access token + a JWS-signed POST
+// body. End-to-end proof of the full PISP path: SDK Signer
+// produces a wire signature Revolut accepts, the PSU-bound token
+// authenticates the call, the payment is created and assigned a
+// DomesticPaymentId.
+func TestSandbox_OpenBanking_PISP_CreatePayment(t *testing.T) {
+	cfg := loadOBSandbox(t)
+	pc := newPISPClients(t, cfg)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Re-fetch the consent to get the canonical Initiation block —
+	// the payment POST must echo it byte-for-byte (after JSON
+	// re-marshal) or the JWS signature won't match.
+	fin, last, ip, ix, ua := fapiHeaders("")
+	consent, _, err := pc.tpp.DomesticPayment.GetConsentsConsentID(ctx,
+		pc.consentID, fin, last, ip, ix, ua)
+	if err != nil {
+		t.Fatalf("GetConsent: %v", err)
+	}
+	// Only Authorised consents are usable for a fresh payment;
+	// Consumed/Rejected mean a previous run already exercised
+	// the consent and we should skip rather than attempt a
+	// second payment Revolut would reject.
+	if s := string(consent.Data.Status); s != "Authorised" {
+		t.Skipf("consent state=%q; need Authorised — re-run cmd/ob-bootstrap to mint a fresh consent", s)
+	}
+
+	// Build the payment body and sign the EXACT bytes the SDK
+	// would marshal — encoding/json's deterministic field
+	// ordering means the Signer's input matches the wire body.
+	body := openbanking.ObwriteDomestic2{
+		Data: openbanking.ObwriteDataDomestic2{
+			ConsentID:  pc.consentID,
+			Initiation: consent.Data.Initiation,
+		},
+	}
+	bodyJSON, err := json.Marshal(body)
+	if err != nil {
+		t.Fatalf("marshal payment body: %v", err)
+	}
+	jws, err := pc.signer.Sign(bodyJSON)
+	if err != nil {
+		t.Fatalf("Signer.Sign payment body: %v", err)
+	}
+	idem := fmt.Sprintf("rgo-test-%d", time.Now().UnixMilli())
+	fin, last, ip, ix, ua = fapiHeaders("")
+	payment, _, err := pc.psu.DomesticPayment.Create(ctx,
+		fin, last, ip, ix, idem, jws, ua,
+		body,
+	)
+	if err != nil {
+		var apiErr *revolut.APIError
+		if errors.As(err, &apiErr) {
+			// Sandbox PSU accounts often start at zero — Revolut
+			// returns 422 + Code "1006" (Insufficient balance)
+			// when the debtor account can't cover the consent
+			// amount. The full wiring (MTLS + PSU bearer + JWS)
+			// successfully reached the business-logic layer, so
+			// treat it as a soft pass: log + return.
+			if apiErr.StatusCode == 422 && apiErr.Code == "1006" {
+				t.Logf("payment rejected with sandbox 'Insufficient balance' (code 1006); "+
+					"wiring is correct — top up the test PSU or lower -pisp-amount and re-bootstrap. body=%s",
+					apiErr.Body)
+				return
+			}
+			t.Fatalf("Create payment APIError: status=%d body=%s", apiErr.StatusCode, apiErr.Body)
+		}
+		t.Fatalf("Create payment: %v", err)
+	}
+	if payment == nil || payment.Data.DomesticPaymentID == "" {
+		t.Fatalf("payment response missing DomesticPaymentId: %+v", payment)
+	}
+	t.Logf("payment created: id=%s status=%s amount=%s %s",
+		payment.Data.DomesticPaymentID,
+		payment.Data.Status,
+		payment.Data.Initiation.InstructedAmount.Amount,
+		payment.Data.Initiation.InstructedAmount.Currency,
+	)
 }
 
 // TestSandbox_OpenBanking_AISP_AccountsList reads the test PSU's

@@ -404,7 +404,7 @@ type Order struct {
 	// ID of the order assigned by the client when creating the order.
 	ClientOrderID string `json:"client_order_id"`
 
-	Conditional OrderTrigger `json:"conditional,omitempty"`
+	Conditional *OrderTrigger `json:"conditional,omitempty"`
 
 	// Timestamp in Unix epoch milliseconds.
 	CreatedDate int64 `json:"created_date"`
@@ -439,12 +439,12 @@ type Order struct {
 	// Status of the order:
 	Status OrderStatus `json:"status"`
 
-	StopLoss OrderTrigger `json:"stop_loss,omitempty"`
+	StopLoss *OrderTrigger `json:"stop_loss,omitempty"`
 
 	// Symbol of the asset for which this order has been created.
 	Symbol string `json:"symbol"`
 
-	TakeProfit OrderTrigger `json:"take_profit,omitempty"`
+	TakeProfit *OrderTrigger `json:"take_profit,omitempty"`
 
 	// Time in force of the order.
 	TimeInForce OrderTimeInForce `json:"time_in_force"`
@@ -596,10 +596,10 @@ type OrderBookPublicPriceLevel struct {
 
 // OrderPlacementRequestOrderConfiguration configuration for the order. Must contain exactly one of 'limit' or 'market'.
 type OrderPlacementRequestOrderConfiguration struct {
-	Limit LimitOrderConfiguration `json:"limit,omitempty"`
+	Limit *LimitOrderConfiguration `json:"limit,omitempty"`
 
 	// Market order configuration. Must contain exactly one of 'base_size' or 'quote_size'.
-	Market MarketOrderConfiguration `json:"market,omitempty"`
+	Market *MarketOrderConfiguration `json:"market,omitempty"`
 }
 
 type OrderPlacementRequest struct {

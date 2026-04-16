@@ -161,8 +161,9 @@ func verifyDetachedJWS(sig string, payload []byte, resolver KeyResolver) error {
 
 // isUnderstoodCrit reports whether a crit entry is one the verifier
 // recognises. OBIE defines several vendor-specific claims; we
-// accept the common set by URI so TPPs issuing spec-compliant
-// signatures validate cleanly. Unknown entries are rejected.
+// accept the common set by URI so signatures from TPPs that ship
+// either the OBIE-prod or Revolut-sandbox header set validate
+// cleanly. Unknown entries are rejected per RFC 7515 §4.1.11.
 func isUnderstoodCrit(c string) bool {
 	switch c {
 	case
@@ -175,12 +176,23 @@ func isUnderstoodCrit(c string) bool {
 	return false
 }
 
+// splitDetached accepts both shapes Revolut produces:
+//
+//   - "<header>..<sig>" — RFC 7797 detached b64=false form
+//     (the original OBIE prod style)
+//   - "<header>.<payload>.<sig>" — full compact JWS form
+//     (Revolut sandbox style)
+//
+// Returns headerEnc + sigEnc; the caller already has the payload
+// from the request body so the middle segment is discarded.
 func splitDetached(sig string) (string, string, bool) {
-	parts := strings.SplitN(sig, "..", 2)
-	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-		return "", "", false
+	if parts := strings.SplitN(sig, "..", 2); len(parts) == 2 && parts[0] != "" && parts[1] != "" {
+		return parts[0], parts[1], true
 	}
-	return parts[0], parts[1], true
+	if parts := strings.Split(sig, "."); len(parts) == 3 && parts[0] != "" && parts[2] != "" {
+		return parts[0], parts[2], true
+	}
+	return "", "", false
 }
 
 func verifyAlg(alg string, signingInput, sig []byte, pub crypto.PublicKey) error {

@@ -34,6 +34,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -66,12 +67,23 @@ type config struct {
 	apiHost     string
 	tlsCertPEM  string
 	tlsKeyPEM   string
+	tan         string // OBIE trust anchor name (TAN claim); empty = environment-derived
+
+	// PISP-only — sandbox-friendly defaults; flip with flags.
+	pispAmount                 string
+	pispCurrency               string
+	pispCreditorIdentification string
+	pispCreditorName           string
+	pispInstructionID          string
+	pispEndToEndID             string
+	pispRef                    string
 }
 
 type credentials struct {
 	ClientID          string `json:"client_id"`
 	Kid               string `json:"kid"`
 	Alg               string `json:"alg"`
+	JwksURL           string `json:"jwks_url"`
 	PrivateKeyFile    string `json:"private_key"`
 	SigningCertFile   string `json:"signing_cert"`
 	TransportCertFile string `json:"transport_cert"`
@@ -115,6 +127,18 @@ func run() error {
 	flag.StringVar(&cfg.apiHost, "api-host", cfg.apiHost, "base URL for the AISP CreateAccountAccessConsents call")
 	flag.StringVar(&cfg.tlsCertPEM, "tls-cert", "", "PEM file for the local HTTPS callback (defaults to a self-signed in-memory cert)")
 	flag.StringVar(&cfg.tlsKeyPEM, "tls-key", "", "PEM key for the local HTTPS callback (defaults to a self-signed in-memory key)")
+	flag.StringVar(&cfg.tan, "tan", "", "OBIE TAN claim override (default: openbankingtest.org.uk for sandbox, openbanking.org.uk otherwise)")
+	// PISP-specific flags. Defaults are sandbox-safe values that
+	// move 1.00 GBP to a fictional creditor — Revolut's sandbox
+	// accepts arbitrary creditor accounts under the
+	// UK.OBIE.SortCodeAccountNumber scheme.
+	flag.StringVar(&cfg.pispAmount, "pisp-amount", "1.00", "PISP InstructedAmount.Amount")
+	flag.StringVar(&cfg.pispCurrency, "pisp-currency", "GBP", "PISP InstructedAmount.Currency")
+	flag.StringVar(&cfg.pispCreditorIdentification, "pisp-creditor-id", "11280001234567", "PISP CreditorAccount.Identification (sort+account)")
+	flag.StringVar(&cfg.pispCreditorName, "pisp-creditor-name", "Sandbox Creditor", "PISP CreditorAccount.Name")
+	flag.StringVar(&cfg.pispInstructionID, "pisp-instr-id", "", "PISP InstructionIdentification (default: random)")
+	flag.StringVar(&cfg.pispEndToEndID, "pisp-e2e-id", "", "PISP EndToEndIdentification (default: random)")
+	flag.StringVar(&cfg.pispRef, "pisp-ref", "ob-bootstrap-test", "PISP RemittanceInformation reference + unstructured")
 	flag.Parse()
 
 	if cfg.output == "" {
@@ -126,6 +150,12 @@ func run() error {
 		default:
 			cfg.output = filepath.Join(cfg.dir, "tokens-aisp.json")
 		}
+	}
+	if cfg.pispInstructionID == "" {
+		cfg.pispInstructionID = "INSTR-" + randomToken(8)
+	}
+	if cfg.pispEndToEndID == "" {
+		cfg.pispEndToEndID = "E2E-" + randomToken(8)
 	}
 
 	creds, err := loadCredentials(cfg.dir)
@@ -171,8 +201,45 @@ func run() error {
 	}
 	fmt.Printf("step 1 ok: TPP access token (%d bytes)\n", len(tppToken))
 
+	// PISP consent bodies need a JWS signature in
+	// x-jws-signature; build a Signer up front. The JWS `iss`
+	// claim must be the signing cert's full subject DN — that's
+	// what Revolut binds the assertion to (and what
+	// Applications.Get reports as tls_client_auth_dn).
+	signingCertDER, err := os.ReadFile(filepath.Join(cfg.dir, creds.SigningCertFile))
+	if err != nil {
+		return fmt.Errorf("read signing cert: %w", err)
+	}
+	signingCert, err := x509.ParseCertificate(signingCertDER)
+	if err != nil {
+		return fmt.Errorf("parse signing cert: %w", err)
+	}
+	// Revolut's verifier requires the JWS TAN claim to match the
+	// DNS host of the JWKS we publish — NOT openbanking.org.uk
+	// or any OBIE-directory anchor. Default: parse the host out
+	// of the credentials' JwksURL when set, else require -tan.
+	signerOpts := openbanking.SignerOptions{Alg: creds.Alg}
+	switch {
+	case cfg.tan != "":
+		signerOpts.TrustAnchor = cfg.tan
+	case creds.JwksURL != "":
+		if u, perr := url.Parse(creds.JwksURL); perr == nil && u.Host != "" {
+			signerOpts.TrustAnchor = u.Host
+		}
+	}
+	if signerOpts.TrustAnchor == "" {
+		return errors.New("ob-bootstrap: -tan is required (set it to the DNS host of your published JWKS, e.g. greatliontech.github.io) or add jwks_url to credentials.json")
+	}
+	signer, err := openbanking.NewSigner(priv, creds.Kid,
+		signingCert.Subject.String(),
+		signerOpts,
+	)
+	if err != nil {
+		return fmt.Errorf("init signer: %w", err)
+	}
+
 	// Step 2 — create the consent (AISP or PISP).
-	consentID, err := createConsent(ctx, mtlsHTTPC, cfg, tppToken)
+	consentID, err := createConsent(ctx, mtlsHTTPC, cfg, creds, signer, tppToken)
 	if err != nil {
 		return fmt.Errorf("create consent: %w", err)
 	}
@@ -323,13 +390,21 @@ func scopeForCC(consentScope string) string {
 }
 
 // createConsent posts the appropriate consent body for the
-// requested scope. AISP consents specify a permission set; PISP
-// consents go through Signer.Sign and aren't wired here yet —
-// the PISP version follows in a separate iteration.
-func createConsent(ctx context.Context, httc *http.Client, cfg config, accessToken string) (string, error) {
+// requested scope and returns the ConsentId Revolut assigned.
+//
+// AISP: a plain JSON body listing Permissions; bearer-only auth.
+// PISP: a payment-initiation body that MUST be signed with the
+// TPP's signing key — Revolut requires the x-jws-signature header
+// on every POST under the payments scope, computed via the
+// detached b64=false JWS the openbanking.Signer produces.
+func createConsent(ctx context.Context, httc *http.Client, cfg config, creds *credentials, signer *openbanking.Signer, accessToken string) (string, error) {
 	if strings.Contains(cfg.scope, "payments") {
-		return "", errors.New("ob-bootstrap: PISP consent flow not wired yet; supply -scope=\"openid accounts\" for now")
+		return createPISPConsent(ctx, httc, cfg, signer, accessToken)
 	}
+	return createAISPConsent(ctx, httc, cfg, accessToken)
+}
+
+func createAISPConsent(ctx context.Context, httc *http.Client, cfg config, accessToken string) (string, error) {
 	body := strings.NewReader(`{
         "Data":{"Permissions":[
             "ReadAccountsBasic","ReadAccountsDetail",
@@ -338,7 +413,48 @@ func createConsent(ctx context.Context, httc *http.Client, cfg config, accessTok
         ]},
         "Risk":{}
     }`)
-	endpoint := strings.TrimRight(cfg.apiHost, "/") + "/account-access-consents"
+	return postConsent(ctx, httc, cfg, "/account-access-consents", body, accessToken, "")
+}
+
+// createPISPConsent builds a minimal domestic payment consent
+// body with sandbox-friendly defaults: a small GBP amount to a
+// fictional creditor account. The body is signed with the
+// openbanking.Signer to produce the x-jws-signature header
+// Revolut requires on the POST.
+func createPISPConsent(ctx context.Context, httc *http.Client, cfg config, signer *openbanking.Signer, accessToken string) (string, error) {
+	body := []byte(fmt.Sprintf(`{
+        "Data":{
+            "Initiation":{
+                "InstructionIdentification":"%s",
+                "EndToEndIdentification":"%s",
+                "InstructedAmount":{"Amount":"%s","Currency":"%s"},
+                "CreditorAccount":{
+                    "SchemeName":"UK.OBIE.SortCodeAccountNumber",
+                    "Identification":"%s",
+                    "Name":"%s"
+                },
+                "RemittanceInformation":{"Reference":"%s","Unstructured":"%s"}
+            }
+        },
+        "Risk":{}
+    }`,
+		cfg.pispInstructionID,
+		cfg.pispEndToEndID,
+		cfg.pispAmount, cfg.pispCurrency,
+		cfg.pispCreditorIdentification, cfg.pispCreditorName,
+		cfg.pispRef, cfg.pispRef,
+	))
+	jws, err := signer.Sign(body)
+	if err != nil {
+		return "", fmt.Errorf("sign PISP consent body: %w", err)
+	}
+	return postConsent(ctx, httc, cfg, "/domestic-payment-consents", strings.NewReader(string(body)), accessToken, jws)
+}
+
+// postConsent is the shared HTTP path for AISP and PISP consent
+// creation. PISP additionally needs the x-jws-signature header.
+func postConsent(ctx context.Context, httc *http.Client, cfg config, path string, body *strings.Reader, accessToken, jwsHeader string) (string, error) {
+	endpoint := strings.TrimRight(cfg.apiHost, "/") + path
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, body)
 	if err != nil {
 		return "", err
@@ -347,6 +463,12 @@ func createConsent(ctx context.Context, httc *http.Client, cfg config, accessTok
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("x-fapi-financial-id", "001580000103UAvAAM")
+	if jwsHeader != "" {
+		req.Header.Set("x-jws-signature", jwsHeader)
+		// Idempotency-Key is required on PISP POSTs; a fresh
+		// random per call is the spec-canonical approach.
+		req.Header.Set("x-idempotency-key", randomToken(16))
+	}
 	resp, err := httc.Do(req)
 	if err != nil {
 		return "", err
@@ -354,7 +476,7 @@ func createConsent(ctx context.Context, httc *http.Client, cfg config, accessTok
 	defer resp.Body.Close()
 	respBody, _ := readAll(resp)
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return "", fmt.Errorf("/account-access-consents %d: %s", resp.StatusCode, respBody)
+		return "", fmt.Errorf("POST %s %d: %s", path, resp.StatusCode, respBody)
 	}
 	var parsed struct {
 		Data struct {

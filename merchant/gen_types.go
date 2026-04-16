@@ -203,7 +203,7 @@ type ApplePay struct {
 	CardholderName string `json:"cardholder_name,omitempty"`
 
 	// The details of the check for card payment. Only for orders with successful payments.
-	Checks CardChecksV2 `json:"checks,omitempty"`
+	Checks *CardChecksV2 `json:"checks,omitempty"`
 
 	// A unique identifier for a payment method, always 44 characters long. This fingerprint can be used to uniquely identify various payment methods.
 	Fingerprint Fingerprint `json:"fingerprint,omitempty"`
@@ -514,13 +514,13 @@ type CarRentalV2 struct {
 	DropOffDate time.Time `json:"drop_off_date"`
 
 	// Object containing address details.
-	DropOffLocation AddressV2 `json:"drop_off_location,omitempty"`
+	DropOffLocation *AddressV2 `json:"drop_off_location,omitempty"`
 
 	// The UTC date and time of the pick-up.
 	PickUpDate *time.Time `json:"pick_up_date,omitempty"`
 
 	// Object containing address details.
-	PickUpLocation AddressV2 `json:"pick_up_location,omitempty"`
+	PickUpLocation *AddressV2 `json:"pick_up_location,omitempty"`
 
 	// Parameter indicating whether the booking is refundable, partially refundable, or not refundable.
 	Refundability Refundability `json:"refundability,omitempty"`
@@ -574,7 +574,7 @@ type Card struct {
 	CardholderName string `json:"cardholder_name,omitempty"`
 
 	// The details of the check for card payment. Only for orders with successful payments.
-	Checks CardChecksV2 `json:"checks,omitempty"`
+	Checks *CardChecksV2 `json:"checks,omitempty"`
 
 	// A unique identifier for a payment method, always 44 characters long. This fingerprint can be used to uniquely identify various payment methods.
 	Fingerprint Fingerprint `json:"fingerprint,omitempty"`
@@ -774,7 +774,7 @@ type CardLastFour = string
 // :::
 type CardV2 struct {
 	// The billing address associated with the payment method.
-	BillingAddress BillingAddress `json:"billing_address,omitempty"`
+	BillingAddress *BillingAddress `json:"billing_address,omitempty"`
 
 	// The BIN (Bank Identification Number) of the payment card, typically the first 6-8 digits.
 	Bin CardBin `json:"bin,omitempty"`
@@ -1241,7 +1241,7 @@ type Dispute struct {
 	ID string `json:"id,omitempty"`
 
 	// Object containing the details of the original payment associated with the dispute.
-	Payment DisputePayment `json:"payment,omitempty"`
+	Payment *DisputePayment `json:"payment,omitempty"`
 
 	// Dispute reason code from the payment scheme, following standard formats defined by individual providers.
 	ReasonCode string `json:"reason_code,omitempty"`
@@ -1695,7 +1695,7 @@ type GooglePay struct {
 	CardholderName string `json:"cardholder_name,omitempty"`
 
 	// The details of the check for card payment. Only for orders with successful payments.
-	Checks CardChecksV2 `json:"checks,omitempty"`
+	Checks *CardChecksV2 `json:"checks,omitempty"`
 
 	// A unique identifier for a payment method, always 44 characters long. This fingerprint can be used to uniquely identify various payment methods.
 	Fingerprint Fingerprint `json:"fingerprint,omitempty"`
@@ -1847,22 +1847,22 @@ type IncrementalAuthorisationRequest struct {
 // :::
 type IndustryDataV3 struct {
 	// Object containing additional information about an airline booking associated with the order.
-	Airline AirlineDataV2 `json:"airline,omitempty"`
+	Airline *AirlineDataV2 `json:"airline,omitempty"`
 
 	// Object containing additional information about a car rental booking associated with the order.
-	CarRental CarRentalV2 `json:"car_rental,omitempty"`
+	CarRental *CarRentalV2 `json:"car_rental,omitempty"`
 
 	// Object containing information about crypto transactions associated with the order.
-	Crypto CryptoTransactionsV3 `json:"crypto,omitempty"`
+	Crypto *CryptoTransactionsV3 `json:"crypto,omitempty"`
 
 	// Object containing booking information for a list of event tickets associated with the order.
-	Event EventsV2 `json:"event,omitempty"`
+	Event *EventsV2 `json:"event,omitempty"`
 
 	// Object containing details of a lodging booking.
-	Lodging LodgingV3 `json:"lodging,omitempty"`
+	Lodging *LodgingV3 `json:"lodging,omitempty"`
 
 	// This object is required by Mastercard and Visa for merchants operating as marketplaces under the Merchant Category Code (MCC) `5262`. The marketplace object ensures compliance with the card schemes' regulations by providing detailed information about the seller involved in the transaction.
-	Marketplace MarketplaceV3 `json:"marketplace,omitempty"`
+	Marketplace *MarketplaceV3 `json:"marketplace,omitempty"`
 }
 
 type JourneyLeg struct {
@@ -2210,7 +2210,7 @@ func decodeLocationUpdate(data []byte) (LocationUpdate, error) {
 
 type LocationUpdateOnline struct {
 	// Additional details of the location.
-	Details LocationOnlineDetails `json:"details,omitempty"`
+	Details *LocationOnlineDetails `json:"details,omitempty"`
 
 	// Name of the location.
 	Name LocationName `json:"name,omitempty"`
@@ -2320,13 +2320,13 @@ type LodgingItem struct {
 	Guests []Guest `json:"guests,omitempty"`
 
 	// Address of the accommodation.
-	Location LodgingLocation `json:"location,omitempty"`
+	Location *LodgingLocation `json:"location,omitempty"`
 
 	// Parameter indicating whether the booking is refundable, partially refundable, or not refundable.
 	Refundability Refundability `json:"refundability,omitempty"`
 
 	// Object containing supplier information about the lodging provider.
-	Supplier LodgingSupplier `json:"supplier,omitempty"`
+	Supplier *LodgingSupplier `json:"supplier,omitempty"`
 }
 
 // LodgingLocation address of the accommodation.
@@ -2573,7 +2573,7 @@ type OrderCreationV6 struct {
 	Currency Currency `json:"currency"`
 
 	// Object containing information about a customer.
-	Customer CustomerV2 `json:"customer,omitempty"`
+	Customer *CustomerV2 `json:"customer,omitempty"`
 
 	// The description of the order.
 	Description OrderDescription `json:"description,omitempty"`
@@ -2587,7 +2587,7 @@ type OrderCreationV6 struct {
 	ExpirePendingAfter ExpirePendingAfter `json:"expire_pending_after,omitempty"`
 
 	// Object containing industry-specific information associated with the order.
-	IndustryData IndustryDataV3 `json:"industry_data,omitempty"`
+	IndustryData *IndustryDataV3 `json:"industry_data,omitempty"`
 
 	// An array of line items included in the order. Each line item represents an individual product or service, along with its quantity, price, taxes, and discounts.
 	LineItems []LineItem `json:"line_items,omitempty"`
@@ -2596,7 +2596,7 @@ type OrderCreationV6 struct {
 	LocationID LocationID `json:"location_id,omitempty"`
 
 	// Object for providing additional information stored in the merchant's order management system.
-	MerchantOrderData MerchantOrderData `json:"merchant_order_data,omitempty"`
+	MerchantOrderData *MerchantOrderData `json:"merchant_order_data,omitempty"`
 
 	// Additional information to track your orders in your system, by providing custom metadata using `"<key>" : "<value>"` pairs.
 	Metadata Metadata `json:"metadata,omitempty"`
@@ -2608,13 +2608,13 @@ type OrderCreationV6 struct {
 	SettlementCurrency SettlementCurrency `json:"settlement_currency,omitempty"`
 
 	// Details about the shipping related to the order, including address, contact information, and individual shipments.
-	Shipping Shipping `json:"shipping,omitempty"`
+	Shipping *Shipping `json:"shipping,omitempty"`
 
 	// You can set a dynamic statement descriptor for your orders by providing a custom suffix.
 	StatementDescriptorSuffix StatementDescriptorSuffix `json:"statement_descriptor_suffix,omitempty"`
 
 	// Object containing information about upcoming payments associated with the order.
-	UpcomingPaymentData UpcomingPayment `json:"upcoming_payment_data,omitempty"`
+	UpcomingPaymentData *UpcomingPayment `json:"upcoming_payment_data,omitempty"`
 }
 
 // OrderCustomerV2 a lightweight customer object embedded in an order.
@@ -2694,7 +2694,7 @@ type OrderSimplifiedV2 struct {
 	Currency Currency `json:"currency"`
 
 	// A lightweight customer object embedded in an order.
-	Customer OrderCustomerV2 `json:"customer,omitempty"`
+	Customer *OrderCustomerV2 `json:"customer,omitempty"`
 
 	// The description of the order.
 	Description OrderDescription `json:"description,omitempty"`
@@ -2714,7 +2714,7 @@ type OrderSimplifiedV2 struct {
 	LocationID LocationID `json:"location_id,omitempty"`
 
 	// Object for providing additional information stored in the merchant's order management system.
-	MerchantOrderData MerchantOrderData `json:"merchant_order_data,omitempty"`
+	MerchantOrderData *MerchantOrderData `json:"merchant_order_data,omitempty"`
 
 	// Additional information to track your orders in your system, by providing custom metadata using `"<key>" : "<value>"` pairs.
 	Metadata Metadata `json:"metadata,omitempty"`
@@ -2795,10 +2795,10 @@ const (
 // OrderUpdateV6 object schema containing information about order update body request parameters.
 type OrderUpdateV6 struct {
 	// Object containing information about a customer.
-	Customer CustomerV2 `json:"customer,omitempty"`
+	Customer *CustomerV2 `json:"customer,omitempty"`
 
 	// Object containing industry-specific information associated with the order.
-	IndustryData IndustryDataV3 `json:"industry_data,omitempty"`
+	IndustryData *IndustryDataV3 `json:"industry_data,omitempty"`
 
 	// An array of line items included in the order. Each line item represents an individual product or service, along with its quantity, price, taxes, and discounts.
 	LineItems []LineItem `json:"line_items,omitempty"`
@@ -2807,7 +2807,7 @@ type OrderUpdateV6 struct {
 	Metadata Metadata `json:"metadata,omitempty"`
 
 	// Details about the shipping related to the order, including address, contact information, and individual shipments.
-	Shipping Shipping `json:"shipping,omitempty"`
+	Shipping *Shipping `json:"shipping,omitempty"`
 }
 
 // OrderV6 to process the order from a credit or debit card, you create an `Order` object. You can then retrieve, capture, cancel, refund, or pay an order using its unique `id`. Alternatively, you can use its unique `token` to process a card payment with the Revolut Checkout Widget.
@@ -2838,7 +2838,7 @@ type OrderV6 struct {
 	Currency Currency `json:"currency,omitempty"`
 
 	// Object containing information about a customer.
-	Customer CustomerV2 `json:"customer,omitempty"`
+	Customer *CustomerV2 `json:"customer,omitempty"`
 
 	// The description of the order.
 	Description OrderDescription `json:"description,omitempty"`
@@ -2855,7 +2855,7 @@ type OrderV6 struct {
 	IncrementalAuthorisations []IncrementalAuthorisation `json:"incremental_authorisations,omitempty"`
 
 	// Object containing industry-specific information associated with the order.
-	IndustryData IndustryDataV3 `json:"industry_data,omitempty"`
+	IndustryData *IndustryDataV3 `json:"industry_data,omitempty"`
 
 	// An array of line items included in the order. Each line item represents an individual product or service, along with its quantity, price, taxes, and discounts.
 	LineItems []LineItem `json:"line_items,omitempty"`
@@ -2864,7 +2864,7 @@ type OrderV6 struct {
 	LocationID LocationID `json:"location_id,omitempty"`
 
 	// Object for providing additional information stored in the merchant's order management system.
-	MerchantOrderData MerchantOrderData `json:"merchant_order_data,omitempty"`
+	MerchantOrderData *MerchantOrderData `json:"merchant_order_data,omitempty"`
 
 	// Additional information to track your orders in your system, by providing custom metadata using `"<key>" : "<value>"` pairs.
 	Metadata Metadata `json:"metadata,omitempty"`
@@ -2888,7 +2888,7 @@ type OrderV6 struct {
 	SettlementCurrency SettlementCurrency `json:"settlement_currency,omitempty"`
 
 	// Details about the shipping related to the order, including address, contact information, and individual shipments.
-	Shipping Shipping `json:"shipping,omitempty"`
+	Shipping *Shipping `json:"shipping,omitempty"`
 
 	// The state of the order in its lifecycle.
 	State OrderState `json:"state,omitempty"`
@@ -2903,7 +2903,7 @@ type OrderV6 struct {
 	Type OrderTypeV2 `json:"type,omitempty"`
 
 	// Object containing information about upcoming payments associated with the order.
-	UpcomingPaymentData UpcomingPayment `json:"upcoming_payment_data,omitempty"`
+	UpcomingPaymentData *UpcomingPayment `json:"upcoming_payment_data,omitempty"`
 
 	// The date and time the order was last updated.
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
@@ -3242,7 +3242,7 @@ type PaymentRetrievalV2 struct {
 	BankMessage BankMessage `json:"bank_message,omitempty"`
 
 	// Object containing address details.
-	BillingAddress AddressV2 `json:"billing_address,omitempty"`
+	BillingAddress *AddressV2 `json:"billing_address,omitempty"`
 
 	// The date and time the payment was created.
 	CreatedAt PaymentCreated `json:"created_at"`
@@ -3263,7 +3263,7 @@ type PaymentRetrievalV2 struct {
 	OrderID string `json:"order_id,omitempty"`
 
 	// The person who made the payment. This object is present when an email or phone number is provided during the payment flow.
-	Payer Payer `json:"payer,omitempty"`
+	Payer *Payer `json:"payer,omitempty"`
 
 	// The details of the payment method used to make the payment.
 	PaymentMethod PaymentMethodV2 `json:"payment_method,omitempty"`
@@ -3358,7 +3358,7 @@ type PaymentV2 struct {
 	BankMessage BankMessage `json:"bank_message,omitempty"`
 
 	// Object containing address details.
-	BillingAddress AddressV2 `json:"billing_address,omitempty"`
+	BillingAddress *AddressV2 `json:"billing_address,omitempty"`
 
 	// The date and time the payment was created.
 	CreatedAt PaymentCreated `json:"created_at"`
@@ -3376,7 +3376,7 @@ type PaymentV2 struct {
 	ID PaymentID `json:"id"`
 
 	// The person who made the payment. This object is present when an email or phone number is provided during the payment flow.
-	Payer Payer `json:"payer,omitempty"`
+	Payer *Payer `json:"payer,omitempty"`
 
 	// The details of the payment method used to make the payment.
 	PaymentMethod PaymentMethodV2 `json:"payment_method,omitempty"`
@@ -3595,7 +3595,7 @@ type ReportRunCustomReport struct {
 	Format ReportRunFormat `json:"format"`
 
 	// Further options to customize the report.
-	Options ReportRunOptions `json:"options,omitempty"`
+	Options *ReportRunOptions `json:"options,omitempty"`
 
 	// Type of the report.
 	Type ReportRunType `json:"type"`
@@ -3701,7 +3701,7 @@ type ReportRunIcppReport struct {
 	Format ReportRunFormat `json:"format"`
 
 	// Further options to customize the report.
-	Options ReportRunOptions `json:"options,omitempty"`
+	Options *ReportRunOptions `json:"options,omitempty"`
 
 	// Type of the report.
 	Type ReportRunType `json:"type"`
@@ -3762,7 +3762,7 @@ type ReportRunPaymentsReport struct {
 	Format ReportRunFormat `json:"format"`
 
 	// Further options to customize the report.
-	Options ReportRunPaymentsOptions `json:"options,omitempty"`
+	Options *ReportRunPaymentsOptions `json:"options,omitempty"`
 
 	// Type of the report.
 	Type ReportRunType `json:"type"`
@@ -3783,7 +3783,7 @@ type ReportRunPayoutReport struct {
 	Format ReportRunFormat `json:"format"`
 
 	// Further options to customize the report.
-	Options ReportRunOptions `json:"options,omitempty"`
+	Options *ReportRunOptions `json:"options,omitempty"`
 
 	// Type of the report.
 	Type ReportRunType `json:"type"`
@@ -3798,7 +3798,7 @@ type ReportRunSettlementReport struct {
 	Format ReportRunFormat `json:"format"`
 
 	// Further options to customize the report.
-	Options ReportRunOptions `json:"options,omitempty"`
+	Options *ReportRunOptions `json:"options,omitempty"`
 
 	// Type of the report.
 	Type ReportRunType `json:"type"`
@@ -3941,7 +3941,7 @@ type RevolutPayCard struct {
 	CardholderName string `json:"cardholder_name,omitempty"`
 
 	// The details of the check for card payment. Only for orders with successful payments.
-	Checks CardChecksV2 `json:"checks,omitempty"`
+	Checks *CardChecksV2 `json:"checks,omitempty"`
 
 	// A unique identifier for a payment method, always 44 characters long. This fingerprint can be used to uniquely identify various payment methods.
 	Fingerprint Fingerprint `json:"fingerprint,omitempty"`
@@ -4118,10 +4118,10 @@ type Shipment struct {
 // :::
 type Shipping struct {
 	// Details of a physical address.
-	Address AddressV3 `json:"address,omitempty"`
+	Address *AddressV3 `json:"address,omitempty"`
 
 	// Contact details for someone responsible for the shipment.
-	Contact Contact `json:"contact,omitempty"`
+	Contact *Contact `json:"contact,omitempty"`
 
 	// List of individual shipment details.
 	Shipments []Shipment `json:"shipments,omitempty"`

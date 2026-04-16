@@ -1,7 +1,6 @@
 package openbanking
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
 	"encoding/base64"
 	"encoding/json"
@@ -10,41 +9,51 @@ import (
 	"time"
 )
 
-// SignerOptions configure a Signer. Zero value uses PS256 with the
-// OBIE-standard trust anchor.
+// SignerOptions configure a Signer. Zero value uses PS256.
 type SignerOptions struct {
 	// Alg names the JWS algorithm. Supported: PS256, PS384, PS512,
-	// RS256, RS384, RS512. Empty defaults to PS256, OBIE's
-	// recommended algorithm.
+	// RS256, RS384, RS512. Empty defaults to PS256.
 	Alg string
 
-	// TrustAnchor is the value of the OBIE
-	// `http://openbanking.org.uk/tan` claim. Empty defaults to
-	// "openbanking.org.uk", the canonical anchor.
+	// TrustAnchor is the value of the
+	// `http://openbanking.org.uk/tan` claim — the DNS domain
+	// hosting the TPP's JWKS. For Revolut sandbox callers
+	// publishing JWKS on GitHub Pages this is something like
+	// "greatliontech.github.io". Empty is rejected by NewSigner
+	// because Revolut's PISP endpoints reject every JWS that
+	// lacks a TAN value matching the JWKS host.
 	TrustAnchor string
 
-	// Now lets tests inject a clock for the
-	// `http://openbanking.org.uk/iat` issued-at claim. Nil uses
-	// time.Now().UTC().
+	// Now lets tests inject a clock. Nil uses time.Now().UTC().
+	// Reserved for future header claims that need a timestamp;
+	// the current Revolut-flavoured header doesn't carry iat.
 	Now func() time.Time
 }
 
-// Signer produces detached JWS signatures suitable for the
-// x-jws-signature header on Revolut Open Banking POST/PUT requests.
+// Signer produces compact JWS signatures suitable for the
+// x-jws-signature header on Revolut Open Banking POST/PUT
+// requests.
 //
-// OBIE compliance notes encoded into the signer:
+// Wire shape (matches what the Revolut sandbox accepts):
 //
-//   - JWS uses b64=false: the signing input is
-//     base64url(header) + "." + payload (raw bytes), not
-//     base64url(payload). The wire form is the detached compact
-//     serialisation `base64url(header)..base64url(signature)`.
-//   - The protected header always carries the OBIE-required
-//     vendor claims `iat`, `iss`, `tan` and lists them (plus `b64`)
-//     in `crit`. Verifiers MUST understand each crit entry per
-//     RFC 7515 §4.1.11; openbanking's verify side accepts these.
-//   - Algorithm defaults to PS256 (RSASSA-PSS over SHA-256), the
-//     OBIE-recommended choice. RS256 (PKCS#1 v1.5) is supported
-//     for ASPSPs that haven't migrated.
+//   - Standard JWS, NOT b64=false detached. The signing input is
+//     base64url(header) + "." + base64url(payload).
+//   - The output is the full compact form
+//     base64url(header) + "." + base64url(payload) + "." + base64url(sig).
+//     The payload is duplicated between the request body and the
+//     header — Revolut's verifier expects it that way.
+//   - Header carries only alg, kid, crit:["http://openbanking.org.uk/tan"]
+//     and the TAN claim itself. The full OBIE prod header (iat / iss /
+//     b64=false) is not what the Revolut sandbox wants; their verifier
+//     rejects extra crit entries with "Required '...' is missing"
+//     when their meaning differs from prod, and rejects unknown TAN
+//     values when iss/iat are present.
+//   - Algorithm defaults to PS256 (RSASSA-PSS over SHA-256). PS384/512
+//     and RS256/384/512 are also supported.
+//
+// The issuer string passed to NewSigner is retained for callers that
+// later want to switch to the OBIE-prod header set (where iss is
+// mandatory) without re-plumbing.
 type Signer struct {
 	key         *rsa.PrivateKey
 	kid         string
@@ -77,10 +86,10 @@ func NewSigner(key *rsa.PrivateKey, kid, issuer string, opts SignerOptions) (*Si
 	default:
 		return nil, fmt.Errorf("openbanking: unsupported signing alg %q", alg)
 	}
-	tan := opts.TrustAnchor
-	if tan == "" {
-		tan = "openbanking.org.uk"
+	if opts.TrustAnchor == "" {
+		return nil, errors.New("openbanking: signer TrustAnchor is empty (set it to the DNS host of your published JWKS, e.g. greatliontech.github.io)")
 	}
+	tan := opts.TrustAnchor
 	now := opts.Now
 	if now == nil {
 		now = func() time.Time { return time.Now().UTC() }
@@ -107,45 +116,26 @@ func (s *Signer) Sign(payload []byte) (string, error) {
 	header := map[string]any{
 		"alg":                           s.alg,
 		"kid":                           s.kid,
-		"typ":                           "JOSE",
-		"cty":                           "application/json",
-		"b64":                           false,
-		"http://openbanking.org.uk/iat": s.now().Unix(),
-		"http://openbanking.org.uk/iss": s.issuer,
+		"crit":                          []string{"http://openbanking.org.uk/tan"},
 		"http://openbanking.org.uk/tan": s.trustAnchor,
-		"crit": []string{
-			"b64",
-			"http://openbanking.org.uk/iat",
-			"http://openbanking.org.uk/iss",
-			"http://openbanking.org.uk/tan",
-		},
 	}
 	headerJSON, err := json.Marshal(header)
 	if err != nil {
 		return "", fmt.Errorf("openbanking: marshal JWS header: %w", err)
 	}
 	headerEnc := base64.RawURLEncoding.EncodeToString(headerJSON)
+	payloadEnc := base64.RawURLEncoding.EncodeToString(payload)
 
-	// b64=false signing input: base64url(header) + "." + raw payload.
-	signingInput := append([]byte(headerEnc+"."), payload...)
-	hash, cryptoHash := hashFor(s.alg)
-	hash.Write(signingInput)
-	digest := hash.Sum(nil)
-
-	var sig []byte
-	switch s.alg {
-	case "PS256", "PS384", "PS512":
-		opts := &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthEqualsHash, Hash: cryptoHash}
-		sig, err = rsa.SignPSS(rand.Reader, s.key, cryptoHash, digest, opts)
-	case "RS256", "RS384", "RS512":
-		sig, err = rsa.SignPKCS1v15(rand.Reader, s.key, cryptoHash, digest)
-	default:
-		return "", fmt.Errorf("openbanking: unreachable alg %q", s.alg)
-	}
+	// Standard JWS (b64=true) signing input.
+	signingInput := []byte(headerEnc + "." + payloadEnc)
+	sig, err := signRSA(s.alg, s.key, signingInput)
 	if err != nil {
 		return "", fmt.Errorf("openbanking: sign JWS: %w", err)
 	}
-	return headerEnc + ".." + base64.RawURLEncoding.EncodeToString(sig), nil
+	// Full compact serialisation — Revolut's verifier expects the
+	// payload duplicated in the JWS even though it's also in the
+	// request body.
+	return headerEnc + "." + payloadEnc + "." + base64.RawURLEncoding.EncodeToString(sig), nil
 }
 
 // Convenience: a known JWS algorithm constant set so callers don't
