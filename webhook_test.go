@@ -62,6 +62,47 @@ func TestVerifyWebhook_AcceptsMultipleV1Entries(t *testing.T) {
 	}
 }
 
+// TestVerifyWebhook_RejectsFutureBeyondSkew: a timestamp minutes
+// in the future is rejected by the forward-skew tolerance.
+func TestVerifyWebhook_RejectsFutureBeyondSkew(t *testing.T) {
+	secret := []byte("s3cret")
+	body := []byte(`{}`)
+	ts := strconv.FormatInt(time.Now().Add(10*time.Minute).UnixMilli(), 10)
+	sig := sign(secret, ts, body)
+	err := revolut.VerifyWebhook(secret, body, ts, sig, revolut.WebhookVerificationOptions{})
+	if err == nil || !strings.Contains(err.Error(), "future") {
+		t.Fatalf("want future-skew error, got %v", err)
+	}
+}
+
+// TestVerifyWebhook_SmallFutureDriftAccepted: a timestamp a few
+// seconds in the future is allowed under the default skew window so
+// a well-synchronised-but-imperfect clock doesn't reject valid
+// deliveries.
+func TestVerifyWebhook_SmallFutureDriftAccepted(t *testing.T) {
+	secret := []byte("s3cret")
+	body := []byte(`{}`)
+	ts := strconv.FormatInt(time.Now().Add(5*time.Second).UnixMilli(), 10)
+	sig := sign(secret, ts, body)
+	if err := revolut.VerifyWebhook(secret, body, ts, sig, revolut.WebhookVerificationOptions{}); err != nil {
+		t.Errorf("tiny future drift should pass default skew, got %v", err)
+	}
+}
+
+// TestVerifyWebhook_FutureSkewDisabled: setting a negative
+// FutureSkew turns the forward-drift tolerance off entirely; any
+// future timestamp is rejected.
+func TestVerifyWebhook_FutureSkewDisabled(t *testing.T) {
+	secret := []byte("s3cret")
+	body := []byte(`{}`)
+	ts := strconv.FormatInt(time.Now().Add(time.Second).UnixMilli(), 10)
+	sig := sign(secret, ts, body)
+	err := revolut.VerifyWebhook(secret, body, ts, sig, revolut.WebhookVerificationOptions{FutureSkew: -1})
+	if err == nil {
+		t.Fatal("want rejection with negative FutureSkew")
+	}
+}
+
 func TestVerifyWebhook_MissingHeaders(t *testing.T) {
 	if err := revolut.VerifyWebhook([]byte("s"), []byte("x"), "", "v1=xx", revolut.WebhookVerificationOptions{}); err == nil {
 		t.Error("want error on missing timestamp header")

@@ -27,8 +27,8 @@ type WebhookVerificationOptions struct {
 	// being rejected. Revolut stamps on send, so a real delivery's
 	// timestamp is always in the past; this knob only absorbs clock
 	// drift. Zero uses DefaultWebhookFutureSkew. A negative value
-	// disables forward-skew tolerance entirely (any future timestamp
-	// is rejected).
+	// disables forward-skew tolerance entirely: any timestamp in the
+	// future (even by a millisecond) is rejected.
 	FutureSkew time.Duration
 
 	// Now lets tests inject a clock. Nil uses time.Now().UTC().
@@ -122,11 +122,15 @@ func checkTimestamp(raw string, opts WebhookVerificationOptions) error {
 	// tolerated via FutureSkew; a legitimate delivery's timestamp
 	// can't be hours in the future.
 	futureSkew := opts.FutureSkew
-	if futureSkew == 0 {
+	switch {
+	case futureSkew == 0:
 		futureSkew = DefaultWebhookFutureSkew
+	case futureSkew < 0:
+		// Caller has disabled forward tolerance; treat as zero.
+		futureSkew = 0
 	}
 	delta := now.Sub(when)
-	if futureSkew >= 0 && delta < -futureSkew {
+	if delta < -futureSkew {
 		return fmt.Errorf("revolut: webhook timestamp %s is in the future beyond clock-skew tolerance (%s)", when.Format(time.RFC3339), futureSkew)
 	}
 	if delta > maxAge {

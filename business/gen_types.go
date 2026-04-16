@@ -2238,7 +2238,7 @@ func (v TransactionCard) String() string {
 	if clone.CardNumber != "" {
 		clone.CardNumber = "[REDACTED]"
 	}
-	return fmt.Sprintf("%+v", TransactionCard(clone))
+	return fmt.Sprintf("TransactionCard"+"%+v", clone)
 }
 
 // GoString mirrors String so %#v and slog.Value both redact.
@@ -2986,7 +2986,7 @@ func (v WebhookV2) String() string {
 	if clone.SigningSecret != "" {
 		clone.SigningSecret = "[REDACTED]"
 	}
-	return fmt.Sprintf("%+v", WebhookV2(clone))
+	return fmt.Sprintf("WebhookV2"+"%+v", clone)
 }
 
 // GoString mirrors String so %#v and slog.Value both redact.
@@ -3361,7 +3361,7 @@ func (v GetSensitiveCardDetailsResponse) String() string {
 	if clone.Cvv != "" {
 		clone.Cvv = "[REDACTED]"
 	}
-	return fmt.Sprintf("%+v", GetSensitiveCardDetailsResponse(clone))
+	return fmt.Sprintf("GetSensitiveCardDetailsResponse"+"%+v", clone)
 }
 
 // GoString mirrors String so %#v and slog.Value both redact.

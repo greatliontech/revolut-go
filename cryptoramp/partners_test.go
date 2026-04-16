@@ -127,6 +127,29 @@ func TestPartners_ListOrders_XAPIKeyHeaderWired(t *testing.T) {
 	}
 }
 
+// TestGetOrdersParams_EncodeEmitsRequiredTimeUnconditionally pins
+// the query-encoder fix for required time.Time fields: even if the
+// caller-side validator was disabled, encode() would emit the
+// zero-valued time rather than drop it silently. Exercises the
+// encoder in isolation so it doesn't depend on the validator's
+// behaviour.
+func TestGetOrdersParams_EncodeEmitsRequiredTimeUnconditionally(t *testing.T) {
+	p := &GetOrdersParams{} // zero-value required times
+	q := p.encode()
+	if q.Get("start") == "" {
+		t.Errorf("required start dropped on encode(); query=%v", q)
+	}
+	if q.Get("end") == "" {
+		t.Errorf("required end dropped on encode(); query=%v", q)
+	}
+	// Zero-valued time.Time renders as 0001-01-01T00:00:00Z; lock
+	// the prefix so a regression that re-adds the non-zero guard
+	// fails loudly.
+	if got := q.Get("start"); !strings.HasPrefix(got, "0001-01-01T00:00:00") {
+		t.Errorf("start wire form=%q", got)
+	}
+}
+
 // TestWebhooks_Get_UUIDValidation exercises the UUID pre-flight
 // check. The webhook_id path param is declared `format: uuid`
 // in the spec; order_id on GetOrder is NOT (the spec says

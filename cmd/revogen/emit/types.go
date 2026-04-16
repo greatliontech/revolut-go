@@ -264,7 +264,11 @@ func writeSensitiveRedaction(w *fileWriter, d *ir.Decl) {
 		}
 		writeSensitiveFieldRedact(w, f, "clone."+f.GoName, f.Type)
 	}
-	w.printf("\treturn fmt.Sprintf(\"%%+v\", %s(clone))\n", d.Name)
+	// Cast-back to d.Name would re-enter this String method and
+	// recurse until the goroutine stack overflows. Print the alias
+	// instead, prefixed with the original type name so the fmt
+	// output still identifies the type.
+	w.printf("\treturn fmt.Sprintf(%q + \"%%+v\", clone)\n", d.Name)
 	w.write("}\n\n")
 	w.printf("// GoString mirrors String so %%#v and slog.Value both redact.\n")
 	w.printf("func (v %s) GoString() string { return v.String() }\n\n", d.Name)

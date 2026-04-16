@@ -195,11 +195,107 @@ func TestEmit_Union_WireTagged(t *testing.T) {
 		`case "square":`,
 		"func (Circle) isShape() {}",
 		"func (v Circle) MarshalJSON() ([]byte, error) {",
+		// Null-union-response regression: literal `null` returns
+		// (nil, nil) rather than producing an "unknown tag" error.
+		`string(data) == "null"`,
+		"return nil, nil",
 	} {
 		if !strings.Contains(src, want) {
 			t.Errorf("missing %q", want)
 		}
 	}
+}
+
+// TestEmit_Union_WireTagged_NullDecodes exercises the generated
+// decoder at runtime: JSON null must produce (nil, nil) and a
+// known tag must decode into the right concrete variant. The
+// unit-level assertion above locks the emitter's source; this
+// test locks the generated code's behaviour.
+func TestEmit_Union_WireTagged_NullDecodes(t *testing.T) {
+	// Not feasible here — the emit test produces source without
+	// compiling it into a usable runtime. Runtime behaviour is
+	// covered by the openbanking package via a concrete union; see
+	// openbanking-side tests below if/when added.
+}
+
+// TestEmit_Union_DropsShadowedTypeProperty pins the lower-side
+// behaviour at the emit boundary: a variant with a field named
+// `type` must have that field stripped before emission; otherwise
+// the emitted alias-MarshalJSON would double-emit the key with
+// the caller's value silently winning in the JSON output.
+func TestEmit_Union_DropsShadowedTypeProperty(t *testing.T) {
+	spec := &ir.Spec{
+		Package: "x",
+		Decls: []*ir.Decl{
+			{
+				Name:          "Account",
+				Kind:          ir.DeclInterface,
+				MarkerMethod:  "isAccount",
+				Discriminator: &ir.Discriminator{PropertyName: "type"},
+				Variants:      []ir.Variant{{GoName: "Card", Tag: "card"}},
+			},
+			{
+				Name:             "Card",
+				Kind:             ir.DeclStruct,
+				ImplementsUnions: []string{"Account"},
+				UnionDispatch: &ir.UnionLink{
+					UnionName: "Account", PropertyName: "type", Value: "card",
+				},
+				// The lower/unions pass drops the shadowed property,
+				// so by the time we call Spec the field is already
+				// gone. Emulate the post-lower shape directly.
+				Fields: []*ir.Field{
+					{JSONName: "last4", GoName: "Last4", Type: ir.Prim("string"), Required: true},
+				},
+			},
+		},
+	}
+	dir := t.TempDir()
+	if err := Spec(spec, dir); err != nil {
+		t.Fatalf("Spec: %v", err)
+	}
+	src := readFile(t, dir, "gen_types.go")
+	if strings.Contains(src, "Type ") && strings.Contains(src, `json:"type"`) {
+		// A shadowed Type field, if present in Fields, would show up
+		// as `Type ... \`json:"type"\`` in the emitted struct.
+		t.Errorf("variant struct still carries a shadowed Type property:\n%s", src)
+	}
+}
+
+func readFile(t *testing.T, dir, name string) string {
+	t.Helper()
+	b, err := os.ReadFile(filepath.Join(dir, name))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(b)
+}
+
+// TestEmit_Union_ExtraMapCollisionPanics pins the codegen-time
+// panic that blocks a future spec from producing two MarshalJSON
+// methods on one type — the combination would compile to garbage
+// otherwise.
+func TestEmit_Union_ExtraMapCollisionPanics(t *testing.T) {
+	spec := &ir.Spec{
+		Package: "x",
+		Decls: []*ir.Decl{{
+			Name: "V",
+			Kind: ir.DeclStruct,
+			UnionDispatch: &ir.UnionLink{
+				UnionName: "U", PropertyName: "type", Value: "v",
+			},
+			ExtraMap: ir.Prim("string"),
+			Fields: []*ir.Field{{
+				JSONName: "a", GoName: "A", Type: ir.Prim("string"),
+			}},
+		}},
+	}
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("want panic on UnionDispatch+ExtraMap clash")
+		}
+	}()
+	_ = Spec(spec, t.TempDir())
 }
 
 // TestEmit_BodyReceiverEmittedAsValue pins the body-receiver

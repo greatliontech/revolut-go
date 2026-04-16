@@ -34,6 +34,9 @@ func (s *Simulations) SimulateTopUp(ctx context.Context, req SimulationsBody) (*
 	if req.Amount == "" {
 		return nil, errors.New("business: SimulationsBody.amount is required")
 	}
+	if validate.NumberAsFloat(req.Amount) > 10000 {
+		return nil, errors.New("business: SimulationsBody.amount must be at maximum 10000")
+	}
 	if req.Currency == "" {
 		return nil, errors.New("business: SimulationsBody.currency is required")
 	}

@@ -711,7 +711,7 @@ func (v CardChecksV2) String() string {
 	if clone.CvvVerification != "" {
 		clone.CvvVerification = "[REDACTED]"
 	}
-	return fmt.Sprintf("%+v", CardChecksV2(clone))
+	return fmt.Sprintf("CardChecksV2"+"%+v", clone)
 }
 
 // GoString mirrors String so %#v and slog.Value both redact.
@@ -4861,7 +4861,7 @@ func (v WebhookV2) String() string {
 	if clone.SigningSecret != "" {
 		clone.SigningSecret = "[REDACTED]"
 	}
-	return fmt.Sprintf("%+v", WebhookV2(clone))
+	return fmt.Sprintf("WebhookV2"+"%+v", clone)
 }
 
 // GoString mirrors String so %#v and slog.Value both redact.

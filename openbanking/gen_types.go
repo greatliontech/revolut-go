@@ -220,7 +220,7 @@ func (v GetApplicationResponse) String() string {
 	if clone.IDTokenSignedResponseAlg != "" {
 		clone.IDTokenSignedResponseAlg = "[REDACTED]"
 	}
-	return fmt.Sprintf("%+v", GetApplicationResponse(clone))
+	return fmt.Sprintf("GetApplicationResponse"+"%+v", clone)
 }
 
 // GoString mirrors String so %#v and slog.Value both redact.
@@ -2926,7 +2926,7 @@ func (v RegisterApplicationResponse) String() string {
 	if clone.IDTokenSignedResponseAlg != "" {
 		clone.IDTokenSignedResponseAlg = "[REDACTED]"
 	}
-	return fmt.Sprintf("%+v", RegisterApplicationResponse(clone))
+	return fmt.Sprintf("RegisterApplicationResponse"+"%+v", clone)
 }
 
 // GoString mirrors String so %#v and slog.Value both redact.

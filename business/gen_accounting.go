@@ -677,6 +677,12 @@ func (s *Accounting) CreateTaxRate(ctx context.Context, req CreateTaxRateRequest
 	if req.Percentage == "" {
 		return nil, errors.New("business: CreateTaxRateRequest.percentage is required")
 	}
+	if validate.NumberAsFloat(req.Percentage) < 0 {
+		return nil, errors.New("business: CreateTaxRateRequest.percentage must be at minimum 0")
+	}
+	if validate.NumberAsFloat(req.Percentage) > 100 {
+		return nil, errors.New("business: CreateTaxRateRequest.percentage must be at maximum 100")
+	}
 	var out ResourceCreatedResponse
 	if err := s.t.Do(ctx, http.MethodPost, "tax-rates", req, &out); err != nil {
 		return nil, err

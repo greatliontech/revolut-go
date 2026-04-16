@@ -93,3 +93,62 @@ func TestSigned_Verify_MalformedHeader(t *testing.T) {
 type testErr struct{ msg string }
 
 func (e *testErr) Error() string { return e.msg }
+
+// signDetachedWithHeader is like signDetached but lets the test
+// inject arbitrary header fields (e.g. crit).
+func signDetachedWithHeader(t *testing.T, priv *rsa.PrivateKey, header map[string]any, payload []byte) string {
+	t.Helper()
+	hdrJSON, _ := json.Marshal(header)
+	hdrEnc := base64.RawURLEncoding.EncodeToString(hdrJSON)
+	payEnc := base64.RawURLEncoding.EncodeToString(payload)
+	input := []byte(hdrEnc + "." + payEnc)
+	h := sha256.New()
+	h.Write(input)
+	sum := h.Sum(nil)
+	sig, err := rsa.SignPKCS1v15(rand.Reader, priv, crypto.SHA256, sum)
+	if err != nil {
+		t.Fatalf("sign: %v", err)
+	}
+	return hdrEnc + ".." + base64.RawURLEncoding.EncodeToString(sig)
+}
+
+// TestSigned_Verify_RejectsUnknownCrit covers RFC 7515 §4.1.11:
+// the verifier MUST understand every crit entry. An unknown URI
+// fails verification even though the math would succeed.
+func TestSigned_Verify_RejectsUnknownCrit(t *testing.T) {
+	priv, _ := rsa.GenerateKey(rand.Reader, 2048)
+	body := []byte(`{"ok":true}`)
+	hdr := map[string]any{
+		"alg":  "RS256",
+		"kid":  "kid-1",
+		"crit": []string{"http://example.com/unrecognised-extension"},
+	}
+	sig := signDetachedWithHeader(t, priv, hdr, body)
+	signed := Signed[int]{Raw: body, Metadata: ResponseMetadata{JWSSignature: sig}}
+	err := signed.Verify(KeyResolverFunc(func(JWSHeader) (crypto.PublicKey, error) {
+		return &priv.PublicKey, nil
+	}))
+	if err == nil || !strings.Contains(err.Error(), "crit") {
+		t.Fatalf("want crit-rejection error, got %v", err)
+	}
+}
+
+// TestSigned_Verify_AcceptsKnownCrit: OBIE's documented crit
+// extensions pass through. The test uses iat as a representative.
+func TestSigned_Verify_AcceptsKnownCrit(t *testing.T) {
+	priv, _ := rsa.GenerateKey(rand.Reader, 2048)
+	body := []byte(`{"ok":true}`)
+	hdr := map[string]any{
+		"alg":  "RS256",
+		"kid":  "kid-1",
+		"crit": []string{"http://openbanking.org.uk/iat", "http://openbanking.org.uk/tan"},
+	}
+	sig := signDetachedWithHeader(t, priv, hdr, body)
+	signed := Signed[int]{Raw: body, Metadata: ResponseMetadata{JWSSignature: sig}}
+	err := signed.Verify(KeyResolverFunc(func(JWSHeader) (crypto.PublicKey, error) {
+		return &priv.PublicKey, nil
+	}))
+	if err != nil {
+		t.Fatalf("known crit extensions should pass: %v", err)
+	}
+}

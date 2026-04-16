@@ -307,7 +307,7 @@ func (v Webhook) String() string {
 	if clone.SigningSecret != "" {
 		clone.SigningSecret = "[REDACTED]"
 	}
-	return fmt.Sprintf("%+v", Webhook(clone))
+	return fmt.Sprintf("Webhook"+"%+v", clone)
 }
 
 // GoString mirrors String so %#v and slog.Value both redact.

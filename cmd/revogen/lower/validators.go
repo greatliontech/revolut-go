@@ -130,16 +130,18 @@ func walkValidators(d *ir.Decl, exprPrefix, jsonPathPrefix string, declByName ma
 // constraintValidators emits one ir.Validator per spec-declared
 // value-range, length, or pattern constraint on f. Optional fields
 // get a "present" guard so unset isn't treated as invalid.
+//
+// Note that json.Number is BOTH string-like (on the wire) and
+// numeric (semantically), so lengths/patterns and min/max can
+// coexist on the same field; we run each family independently
+// instead of a mutually-exclusive switch.
 func constraintValidators(f *ir.Field, expr, jsonPath, errPrefix string, declByName map[string]*ir.Decl) []ir.Validator {
 	if f == nil || f.Type == nil {
 		return nil
 	}
 	var out []ir.Validator
 	present := presentGuard(f, expr)
-	// String length + pattern. Only apply to plain string / json.Number /
-	// string-backed named types whose wire shape is a string.
-	switch {
-	case isStringLikeValidatable(f.Type, declByName):
+	if isStringLikeValidatable(f.Type, declByName) {
 		base := stringAccess(f.Type, expr)
 		if f.MinLength > 0 {
 			out = append(out, wrapGuard(ir.Validator{
@@ -160,7 +162,8 @@ func constraintValidators(f *ir.Field, expr, jsonPath, errPrefix string, declByN
 				Uses:    ir.UsesPattern,
 			}, present))
 		}
-	case isNumericValidatable(f.Type):
+	}
+	if isNumericValidatable(f.Type) {
 		base := numericAccess(f.Type, expr)
 		numericUses := ir.ValidatorUses(0)
 		if isJSONNumber(f.Type) {
@@ -188,7 +191,8 @@ func constraintValidators(f *ir.Field, expr, jsonPath, errPrefix string, declByN
 				Uses:    numericUses,
 			}, numericPresentGuard(f, expr)))
 		}
-	case f.Type.IsSlice():
+	}
+	if f.Type.IsSlice() {
 		if f.MinItems > 0 {
 			out = append(out, ir.Validator{
 				Cond:    "len(" + expr + ") > 0 && uint64(len(" + expr + ")) < " + strconv.FormatUint(f.MinItems, 10),
