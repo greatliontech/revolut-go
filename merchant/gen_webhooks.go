@@ -52,8 +52,20 @@ func (s *Webhooks) Create(ctx context.Context, revolutAPIVersion RevolutAPIVersi
 	if len(req.Events) == 0 {
 		return nil, errors.New("merchant: WebhookCreation.events is required")
 	}
+	if len(req.Events) > 0 && uint64(len(req.Events)) < 1 {
+		return nil, errors.New("merchant: WebhookCreation.events must contain at least 1 items")
+	}
+	if uint64(len(req.Events)) < 1 {
+		return nil, errors.New("merchant: WebhookCreation.events must contain at least 1 items")
+	}
 	if req.URL == "" {
 		return nil, errors.New("merchant: WebhookCreation.url is required")
+	}
+	if len(string(req.URL)) > 2000 {
+		return nil, errors.New("merchant: WebhookCreation.url must be at most 2000 characters")
+	}
+	if !mustMatchPattern("^https?:\\/{2}.+/gi", string(req.URL)) {
+		return nil, errors.New("merchant: WebhookCreation.url must match pattern ^https?:\\/{2}.+/gi")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -118,6 +130,15 @@ func (s *Webhooks) Update(ctx context.Context, webhookID string, revolutAPIVersi
 	}
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
+	if len(req.Events) > 0 && uint64(len(req.Events)) < 1 {
+		return nil, errors.New("merchant: WebhookUpdate.events must contain at least 1 items")
+	}
+	if req.URL != "" && len(string(req.URL)) > 2000 {
+		return nil, errors.New("merchant: WebhookUpdate.url must be at most 2000 characters")
+	}
+	if req.URL != "" && !mustMatchPattern("^https?:\\/{2}.+/gi", string(req.URL)) {
+		return nil, errors.New("merchant: WebhookUpdate.url must match pattern ^https?:\\/{2}.+/gi")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,

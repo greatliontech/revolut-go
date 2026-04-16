@@ -37,40 +37,88 @@ func writeTypesFile(spec *ir.Spec, imports []string) string {
 	return w.buf.String()
 }
 
-// writeFormatHelpers emits the local format-validation helpers
-// path-param validators call. Currently just isUUID — emitted
-// only when at least one path param in the spec declares
-// `format: uuid`, so packages that never reference it stay flat.
-//
-// The check is a single RFC 4122 canonical-form match: 8-4-4-4-12
-// hex digits with no brace/URN wrapper. Forgiving-but-typical, to
-// reject obvious typos without second-guessing server-side
-// dialects (UUIDv1/v4/v6 look identical structurally; we don't
-// version-discriminate).
+// writeFormatHelpers emits the local format-validation helpers the
+// generated validator pass relies on: isUUID (path params),
+// mustMatchPattern (string-pattern constraints), and
+// parseNumberForValidation (json.Number bound checks). Each is
+// emitted only when at least one generated validator references it.
 func writeFormatHelpers(w *fileWriter, spec *ir.Spec) {
-	if !specUsesUUIDValidator(spec) {
-		return
+	if specUsesUUIDValidator(spec) {
+		w.write("\n// isUUID reports whether s matches the RFC 4122 canonical form\n")
+		w.write("// (8-4-4-4-12 hex digits). Used by generated path-param validators\n")
+		w.write("// to reject malformed IDs before issuing the HTTP call.\n")
+		w.write("func isUUID(s string) bool {\n")
+		w.write("\tif len(s) != 36 {\n\t\treturn false\n\t}\n")
+		w.write("\tfor i, r := range s {\n")
+		w.write("\t\tswitch i {\n")
+		w.write("\t\tcase 8, 13, 18, 23:\n")
+		w.write("\t\t\tif r != '-' { return false }\n")
+		w.write("\t\tdefault:\n")
+		w.write("\t\t\tswitch {\n")
+		w.write("\t\t\tcase r >= '0' && r <= '9':\n")
+		w.write("\t\t\tcase r >= 'a' && r <= 'f':\n")
+		w.write("\t\t\tcase r >= 'A' && r <= 'F':\n")
+		w.write("\t\t\tdefault: return false\n")
+		w.write("\t\t\t}\n")
+		w.write("\t\t}\n")
+		w.write("\t}\n")
+		w.write("\treturn true\n")
+		w.write("}\n")
 	}
-	w.write("\n// isUUID reports whether s matches the RFC 4122 canonical form\n")
-	w.write("// (8-4-4-4-12 hex digits). Used by generated path-param validators\n")
-	w.write("// to reject malformed IDs before issuing the HTTP call.\n")
-	w.write("func isUUID(s string) bool {\n")
-	w.write("\tif len(s) != 36 {\n\t\treturn false\n\t}\n")
-	w.write("\tfor i, r := range s {\n")
-	w.write("\t\tswitch i {\n")
-	w.write("\t\tcase 8, 13, 18, 23:\n")
-	w.write("\t\t\tif r != '-' { return false }\n")
-	w.write("\t\tdefault:\n")
-	w.write("\t\t\tswitch {\n")
-	w.write("\t\t\tcase r >= '0' && r <= '9':\n")
-	w.write("\t\t\tcase r >= 'a' && r <= 'f':\n")
-	w.write("\t\t\tcase r >= 'A' && r <= 'F':\n")
-	w.write("\t\t\tdefault: return false\n")
-	w.write("\t\t\t}\n")
-	w.write("\t\t}\n")
-	w.write("\t}\n")
-	w.write("\treturn true\n")
-	w.write("}\n")
+	if specUsesPatternValidator(spec) {
+		w.write("\n// mustMatchPattern reports whether s matches the regex re. The\n")
+		w.write("// regex is compiled once per call site via regexp.MustCompile;\n")
+		w.write("// bad spec patterns crash the program on first use rather than\n")
+		w.write("// silently let malformed input through. re is a spec literal,\n")
+		w.write("// not user input.\n")
+		w.write("var patternCache sync.Map\n")
+		w.write("func mustMatchPattern(pattern, s string) bool {\n")
+		w.write("\tv, ok := patternCache.Load(pattern)\n")
+		w.write("\tif !ok {\n")
+		w.write("\t\tre := regexp.MustCompile(pattern)\n")
+		w.write("\t\tv, _ = patternCache.LoadOrStore(pattern, re)\n")
+		w.write("\t}\n")
+		w.write("\treturn v.(*regexp.Regexp).MatchString(s)\n")
+		w.write("}\n")
+	}
+	if specUsesNumberValidator(spec) {
+		w.write("\n// parseNumberForValidation coerces a json.Number into float64\n")
+		w.write("// for spec-declared minimum/maximum bound checks. Non-numeric\n")
+		w.write("// strings return 0 so the guard only fires on true out-of-range\n")
+		w.write("// values; malformed numbers fail server-side.\n")
+		w.write("func parseNumberForValidation(n json.Number) float64 {\n")
+		w.write("\tif n == \"\" {\n\t\treturn 0\n\t}\n")
+		w.write("\tf, err := n.Float64()\n")
+		w.write("\tif err != nil {\n\t\treturn 0\n\t}\n")
+		w.write("\treturn f\n")
+		w.write("}\n")
+	}
+}
+
+func specUsesPatternValidator(spec *ir.Spec) bool {
+	for _, r := range spec.Resources {
+		for _, m := range r.Methods {
+			for _, v := range m.Validators {
+				if strings.Contains(v.Cond, "mustMatchPattern(") {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+func specUsesNumberValidator(spec *ir.Spec) bool {
+	for _, r := range spec.Resources {
+		for _, m := range r.Methods {
+			for _, v := range m.Validators {
+				if strings.Contains(v.Cond, "parseNumberForValidation(") {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 // specUsesUUIDValidator reports whether any method in spec has

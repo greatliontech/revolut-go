@@ -94,8 +94,23 @@ func (s *Subscriptions) CreatePlan(ctx context.Context, revolutAPIVersion Revolu
 	if req.Name == "" {
 		return nil, errors.New("merchant: SubscriptionPlanCreation.name is required")
 	}
+	if len(string(req.Name)) < 1 {
+		return nil, errors.New("merchant: SubscriptionPlanCreation.name must be at least 1 characters")
+	}
+	if len(string(req.Name)) > 1024 {
+		return nil, errors.New("merchant: SubscriptionPlanCreation.name must be at most 1024 characters")
+	}
+	if req.TrialDuration != "" && !mustMatchPattern("^P[0-9]+D$", string(req.TrialDuration)) {
+		return nil, errors.New("merchant: SubscriptionPlanCreation.trial_duration must match pattern ^P[0-9]+D$")
+	}
 	if len(req.Variations) == 0 {
 		return nil, errors.New("merchant: SubscriptionPlanCreation.variations is required")
+	}
+	if len(req.Variations) > 0 && uint64(len(req.Variations)) < 1 {
+		return nil, errors.New("merchant: SubscriptionPlanCreation.variations must contain at least 1 items")
+	}
+	if uint64(len(req.Variations)) < 1 {
+		return nil, errors.New("merchant: SubscriptionPlanCreation.variations must contain at least 1 items")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -224,8 +239,20 @@ func (s *Subscriptions) Create(ctx context.Context, revolutAPIVersion RevolutAPI
 	if req.CustomerID == "" {
 		return nil, errors.New("merchant: SubscriptionCreation.customer_id is required")
 	}
+	if req.ExternalReference != "" && len(string(req.ExternalReference)) > 1024 {
+		return nil, errors.New("merchant: SubscriptionCreation.external_reference must be at most 1024 characters")
+	}
 	if req.PlanVariationID == "" {
 		return nil, errors.New("merchant: SubscriptionCreation.plan_variation_id is required")
+	}
+	if req.SetupOrderRedirectURL != "" && len(string(req.SetupOrderRedirectURL)) > 2000 {
+		return nil, errors.New("merchant: SubscriptionCreation.setup_order_redirect_url must be at most 2000 characters")
+	}
+	if req.SetupOrderRedirectURL != "" && !mustMatchPattern("^https?:\\/{2}.+/gi", string(req.SetupOrderRedirectURL)) {
+		return nil, errors.New("merchant: SubscriptionCreation.setup_order_redirect_url must match pattern ^https?:\\/{2}.+/gi")
+	}
+	if req.TrialDuration != "" && !mustMatchPattern("^P[0-9]+D$", string(req.TrialDuration)) {
+		return nil, errors.New("merchant: SubscriptionCreation.trial_duration must match pattern ^P[0-9]+D$")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -293,6 +320,9 @@ func (s *Subscriptions) Update(ctx context.Context, subscriptionID string, revol
 	}
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
+	}
+	if req.ExternalReference != "" && len(string(req.ExternalReference)) > 1024 {
+		return nil, errors.New("merchant: SubscriptionUpdate.external_reference must be at most 1024 characters")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,

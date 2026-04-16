@@ -216,7 +216,7 @@ func (b *Builder) structFromSchema(goName string, s *openapi3.Schema) *ir.Decl {
 		if !isRequired && fieldType.GoExpr() == "time.Time" {
 			fieldType = ir.Pointer(fieldType)
 		}
-		decl.Fields = append(decl.Fields, &ir.Field{
+		f := &ir.Field{
 			JSONName:       propName,
 			GoName:         names.FieldName(propName),
 			Type:           fieldType,
@@ -227,7 +227,9 @@ func (b *Builder) structFromSchema(goName string, s *openapi3.Schema) *ir.Decl {
 			Doc:            firstLine(pv.Description),
 			DefaultDoc:     defaultDoc(pv),
 			DefaultLiteral: defaultLiteral(pv, fieldType),
-		})
+		}
+		applySchemaConstraints(f, pv)
+		decl.Fields = append(decl.Fields, f)
 	}
 
 	// additionalProperties combined with fixed properties: emit a
@@ -295,6 +297,35 @@ func deprecationMessage(s *openapi3.Schema) string {
 		return firstLine(s.Description)
 	}
 	return "retained for backwards compatibility; the API may remove it."
+}
+
+// applySchemaConstraints copies numeric bounds, string lengths,
+// array lengths, and pattern from the OpenAPI schema onto the
+// generated field. Used by the emitter's validator pass to produce
+// pre-flight checks that mirror what the server would reject.
+func applySchemaConstraints(f *ir.Field, s *openapi3.Schema) {
+	if s == nil {
+		return
+	}
+	if s.Min != nil {
+		v := *s.Min
+		f.Minimum = &v
+	}
+	if s.Max != nil {
+		v := *s.Max
+		f.Maximum = &v
+	}
+	f.ExclusiveMin = s.ExclusiveMin
+	f.ExclusiveMax = s.ExclusiveMax
+	f.MinLength = s.MinLength
+	if s.MaxLength != nil {
+		f.MaxLength = *s.MaxLength
+	}
+	f.MinItems = s.MinItems
+	if s.MaxItems != nil {
+		f.MaxItems = *s.MaxItems
+	}
+	f.Pattern = s.Pattern
 }
 
 // defaultDoc formats the spec-level `default:` value for inclusion

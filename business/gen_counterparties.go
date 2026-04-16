@@ -87,6 +87,12 @@ func (s *Counterparties) ListAll(ctx context.Context, opts *GetCounterpartiesPar
 // Docs: https://developer.revolut.com/docs/business/add-counterparty
 // Required scopes: READ, WRITE
 func (s *Counterparties) Create(ctx context.Context, req CreateCounterpartyRequest) (*Counterparty, error) {
+	if req.BankCountry != "" && !mustMatchPattern("^[A-Z]{2}$", string(req.BankCountry)) {
+		return nil, errors.New("business: CreateCounterpartyRequest.bank_country must match pattern ^[A-Z]{2}$")
+	}
+	if req.Currency != "" && !mustMatchPattern("^[A-Z]{3}$", string(req.Currency)) {
+		return nil, errors.New("business: CreateCounterpartyRequest.currency must match pattern ^[A-Z]{3}$")
+	}
 	var out Counterparty
 	if err := s.t.Do(ctx, http.MethodPost, "counterparty", req, &out); err != nil {
 		return nil, err

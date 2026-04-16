@@ -28,6 +28,12 @@ func (s *Accounts) CreateAccessConsents(ctx context.Context, xFAPIFinancialID st
 	if len(req.Data.Permissions) == 0 {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObreadConsent1.Data.Permissions is required")
 	}
+	if len(req.Data.Permissions) > 0 && uint64(len(req.Data.Permissions)) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObreadConsent1.Data.Permissions must contain at least 1 items")
+	}
+	if uint64(len(req.Data.Permissions)) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObreadConsent1.Data.Permissions must contain at least 1 items")
+	}
 	r := transport.RawRequest{
 		JSONBody: req,
 	}

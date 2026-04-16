@@ -30,6 +30,9 @@ func (s *Simulations) SimulateTopUp(ctx context.Context, req SimulationsBody) (*
 	if req.Currency == "" {
 		return nil, errors.New("business: SimulationsBody.currency is required")
 	}
+	if !mustMatchPattern("^[A-Z]{3}$", string(req.Currency)) {
+		return nil, errors.New("business: SimulationsBody.currency must match pattern ^[A-Z]{3}$")
+	}
 	var out SimulateTopUpResponse
 	if err := s.t.Do(ctx, http.MethodPost, "sandbox/topup", req, &out); err != nil {
 		return nil, err

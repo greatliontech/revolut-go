@@ -133,6 +133,7 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 		defaultDoc     string
 		defaultLiteral string
 		explodeFalse   bool
+		schema         *openapi3.Schema
 	}
 	var queries []queryParam
 	for _, paramRef := range concatParameters(item.Parameters, op.Parameters) {
@@ -169,6 +170,7 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 			if p.Schema != nil && p.Schema.Value != nil {
 				q.defaultDoc = defaultDoc(p.Schema.Value)
 				q.defaultLiteral = defaultLiteral(p.Schema.Value, typ)
+				q.schema = p.Schema.Value
 			}
 			queries = append(queries, q)
 		case "header":
@@ -210,7 +212,7 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 		QueryParamsEncoder: true,
 	}
 	for _, q := range queries {
-		paramsDecl.Fields = append(paramsDecl.Fields, &ir.Field{
+		f := &ir.Field{
 			JSONName:       q.wireName,
 			GoName:         q.goName,
 			Type:           q.typ,
@@ -219,7 +221,11 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 			DefaultDoc:     q.defaultDoc,
 			DefaultLiteral: q.defaultLiteral,
 			ExplodeFalse:   q.explodeFalse,
-		})
+		}
+		if q.schema != nil {
+			applySchemaConstraints(f, q.schema)
+		}
+		paramsDecl.Fields = append(paramsDecl.Fields, f)
 	}
 	b.registerDecl(paramsName, paramsDecl)
 	m.OptsParam = &ir.Param{Name: "opts", Type: ir.Pointer(ir.Named(paramsName))}

@@ -44,6 +44,9 @@ func (s *Partners) GetBuy(ctx context.Context, xAPIKey string, opts *GetBuyParam
 	if opts.Wallet == "" {
 		return nil, errors.New("cryptoramp: GetBuyParams.wallet is required")
 	}
+	if opts.AdditionalProperties != "" && !mustMatchPattern("additionalProperties.[key]=[value]", opts.AdditionalProperties) {
+		return nil, errors.New("cryptoramp: GetBuyParams.additionalProperties must match pattern additionalProperties.[key]=[value]")
+	}
 	path := "buy"
 	if q := opts.encode().Encode(); q != "" {
 		path += "?" + q
@@ -102,6 +105,12 @@ func (s *Partners) ListOrders(ctx context.Context, xAPIKey string, opts *GetOrde
 	}
 	if opts.End.IsZero() {
 		return nil, errors.New("cryptoramp: GetOrdersParams.end is required")
+	}
+	if opts.Limit != 0 && opts.Limit < 1 {
+		return nil, errors.New("cryptoramp: GetOrdersParams.limit must be at minimum 1")
+	}
+	if opts.Limit != 0 && opts.Limit > 1000 {
+		return nil, errors.New("cryptoramp: GetOrdersParams.limit must be at maximum 1000")
 	}
 	path := "orders"
 	if q := opts.encode().Encode(); q != "" {

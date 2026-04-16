@@ -59,6 +59,30 @@ func (s *Orders) Create(ctx context.Context, revolutAPIVersion RevolutAPIVersion
 	if req.Currency == "" {
 		return nil, errors.New("merchant: OrderCreationV6.currency is required")
 	}
+	if len(string(req.Currency)) < 3 {
+		return nil, errors.New("merchant: OrderCreationV6.currency must be at least 3 characters")
+	}
+	if len(string(req.Currency)) > 3 {
+		return nil, errors.New("merchant: OrderCreationV6.currency must be at most 3 characters")
+	}
+	if uint64(len(req.LineItems)) > 250 {
+		return nil, errors.New("merchant: OrderCreationV6.line_items must contain at most 250 items")
+	}
+	if req.RedirectURL != "" && len(string(req.RedirectURL)) > 2000 {
+		return nil, errors.New("merchant: OrderCreationV6.redirect_url must be at most 2000 characters")
+	}
+	if req.RedirectURL != "" && !mustMatchPattern("^https?:\\/{2}.+/gi", string(req.RedirectURL)) {
+		return nil, errors.New("merchant: OrderCreationV6.redirect_url must match pattern ^https?:\\/{2}.+/gi")
+	}
+	if req.StatementDescriptorSuffix != "" && len(string(req.StatementDescriptorSuffix)) < 1 {
+		return nil, errors.New("merchant: OrderCreationV6.statement_descriptor_suffix must be at least 1 characters")
+	}
+	if req.StatementDescriptorSuffix != "" && len(string(req.StatementDescriptorSuffix)) > 19 {
+		return nil, errors.New("merchant: OrderCreationV6.statement_descriptor_suffix must be at most 19 characters")
+	}
+	if req.StatementDescriptorSuffix != "" && !mustMatchPattern("^[^*\\n\\r\\\\]+$", string(req.StatementDescriptorSuffix)) {
+		return nil, errors.New("merchant: OrderCreationV6.statement_descriptor_suffix must match pattern ^[^*\\n\\r\\\\]+$")
+	}
 	r := transport.RawRequest{
 		JSONBody: req,
 	}
@@ -123,6 +147,9 @@ func (s *Orders) Update(ctx context.Context, orderID string, revolutAPIVersion R
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
+	if uint64(len(req.LineItems)) > 250 {
+		return nil, errors.New("merchant: OrderUpdateV6.line_items must contain at most 250 items")
+	}
 	r := transport.RawRequest{
 		JSONBody: req,
 	}
@@ -184,6 +211,9 @@ func (s *Orders) CaptureOrder(ctx context.Context, orderID string, revolutAPIVer
 	if revolutAPIVersion == "" {
 		return nil, errors.New("merchant: Revolut-Api-Version is required")
 	}
+	if uint64(len(req.LineItems)) > 250 {
+		return nil, errors.New("merchant: OrderCaptureV2.line_items must contain at most 250 items")
+	}
 	r := transport.RawRequest{
 		JSONBody: req,
 	}
@@ -219,6 +249,12 @@ func (s *Orders) IncrementAuthorisation(ctx context.Context, orderID string, rev
 	}
 	if req.Amount == 0 {
 		return nil, errors.New("merchant: IncrementalAuthorisationRequest.amount is required")
+	}
+	if uint64(len(req.LineItems)) > 250 {
+		return nil, errors.New("merchant: IncrementalAuthorisationRequest.line_items must contain at most 250 items")
+	}
+	if req.Reference != "" && len(string(req.Reference)) > 255 {
+		return nil, errors.New("merchant: IncrementalAuthorisationRequest.reference must be at most 255 characters")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -307,6 +343,12 @@ func (s *Orders) RefundOrder(ctx context.Context, orderID string, revolutAPIVers
 	}
 	if req.Currency == "" {
 		return nil, errors.New("merchant: OrderRefundV2.currency is required")
+	}
+	if len(string(req.Currency)) < 3 {
+		return nil, errors.New("merchant: OrderRefundV2.currency must be at least 3 characters")
+	}
+	if len(string(req.Currency)) > 3 {
+		return nil, errors.New("merchant: OrderRefundV2.currency must be at most 3 characters")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,

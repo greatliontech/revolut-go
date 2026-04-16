@@ -35,8 +35,26 @@ func (s *FilePayment) CreateConsents(ctx context.Context, xFAPIFinancialID strin
 	if req.Data.Initiation.FileHash == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.FileHash is required")
 	}
+	if len(req.Data.Initiation.FileHash) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.FileHash must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.FileHash) > 44 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.FileHash must be at most 44 characters")
+	}
+	if req.Data.Initiation.FileReference != "" && len(req.Data.Initiation.FileReference) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.FileReference must be at least 1 characters")
+	}
+	if req.Data.Initiation.FileReference != "" && len(req.Data.Initiation.FileReference) > 40 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.FileReference must be at most 40 characters")
+	}
 	if req.Data.Initiation.FileType == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.FileType is required")
+	}
+	if req.Data.Initiation.LocalInstrument != "" && len(string(req.Data.Initiation.LocalInstrument)) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.LocalInstrument must be at least 1 characters")
+	}
+	if req.Data.Initiation.LocalInstrument != "" && len(string(req.Data.Initiation.LocalInstrument)) > 50 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.LocalInstrument must be at most 50 characters")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -92,8 +110,26 @@ func (s *FilePayment) CreateConsentsSigned(ctx context.Context, xFAPIFinancialID
 	if req.Data.Initiation.FileHash == "" {
 		return nil, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.FileHash is required")
 	}
+	if len(req.Data.Initiation.FileHash) < 1 {
+		return nil, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.FileHash must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.FileHash) > 44 {
+		return nil, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.FileHash must be at most 44 characters")
+	}
+	if req.Data.Initiation.FileReference != "" && len(req.Data.Initiation.FileReference) < 1 {
+		return nil, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.FileReference must be at least 1 characters")
+	}
+	if req.Data.Initiation.FileReference != "" && len(req.Data.Initiation.FileReference) > 40 {
+		return nil, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.FileReference must be at most 40 characters")
+	}
 	if req.Data.Initiation.FileType == "" {
 		return nil, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.FileType is required")
+	}
+	if req.Data.Initiation.LocalInstrument != "" && len(string(req.Data.Initiation.LocalInstrument)) < 1 {
+		return nil, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.LocalInstrument must be at least 1 characters")
+	}
+	if req.Data.Initiation.LocalInstrument != "" && len(string(req.Data.Initiation.LocalInstrument)) > 50 {
+		return nil, errors.New("openbanking: ObwriteFileConsent2.Data.Initiation.LocalInstrument must be at most 50 characters")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -324,11 +360,35 @@ func (s *FilePayment) Create(ctx context.Context, xFAPIFinancialID string, xFAPI
 	if req.Data.ConsentID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFile2.Data.ConsentId is required")
 	}
+	if len(req.Data.ConsentID) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFile2.Data.ConsentId must be at least 1 characters")
+	}
+	if len(req.Data.ConsentID) > 128 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFile2.Data.ConsentId must be at most 128 characters")
+	}
 	if req.Data.Initiation.FileHash == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFile2.Data.Initiation.FileHash is required")
 	}
+	if len(req.Data.Initiation.FileHash) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFile2.Data.Initiation.FileHash must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.FileHash) > 44 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFile2.Data.Initiation.FileHash must be at most 44 characters")
+	}
+	if req.Data.Initiation.FileReference != "" && len(req.Data.Initiation.FileReference) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFile2.Data.Initiation.FileReference must be at least 1 characters")
+	}
+	if req.Data.Initiation.FileReference != "" && len(req.Data.Initiation.FileReference) > 40 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFile2.Data.Initiation.FileReference must be at most 40 characters")
+	}
 	if req.Data.Initiation.FileType == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFile2.Data.Initiation.FileType is required")
+	}
+	if req.Data.Initiation.LocalInstrument != "" && len(string(req.Data.Initiation.LocalInstrument)) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFile2.Data.Initiation.LocalInstrument must be at least 1 characters")
+	}
+	if req.Data.Initiation.LocalInstrument != "" && len(string(req.Data.Initiation.LocalInstrument)) > 50 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteFile2.Data.Initiation.LocalInstrument must be at most 50 characters")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -384,11 +444,35 @@ func (s *FilePayment) CreateSigned(ctx context.Context, xFAPIFinancialID string,
 	if req.Data.ConsentID == "" {
 		return nil, errors.New("openbanking: ObwriteFile2.Data.ConsentId is required")
 	}
+	if len(req.Data.ConsentID) < 1 {
+		return nil, errors.New("openbanking: ObwriteFile2.Data.ConsentId must be at least 1 characters")
+	}
+	if len(req.Data.ConsentID) > 128 {
+		return nil, errors.New("openbanking: ObwriteFile2.Data.ConsentId must be at most 128 characters")
+	}
 	if req.Data.Initiation.FileHash == "" {
 		return nil, errors.New("openbanking: ObwriteFile2.Data.Initiation.FileHash is required")
 	}
+	if len(req.Data.Initiation.FileHash) < 1 {
+		return nil, errors.New("openbanking: ObwriteFile2.Data.Initiation.FileHash must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.FileHash) > 44 {
+		return nil, errors.New("openbanking: ObwriteFile2.Data.Initiation.FileHash must be at most 44 characters")
+	}
+	if req.Data.Initiation.FileReference != "" && len(req.Data.Initiation.FileReference) < 1 {
+		return nil, errors.New("openbanking: ObwriteFile2.Data.Initiation.FileReference must be at least 1 characters")
+	}
+	if req.Data.Initiation.FileReference != "" && len(req.Data.Initiation.FileReference) > 40 {
+		return nil, errors.New("openbanking: ObwriteFile2.Data.Initiation.FileReference must be at most 40 characters")
+	}
 	if req.Data.Initiation.FileType == "" {
 		return nil, errors.New("openbanking: ObwriteFile2.Data.Initiation.FileType is required")
+	}
+	if req.Data.Initiation.LocalInstrument != "" && len(string(req.Data.Initiation.LocalInstrument)) < 1 {
+		return nil, errors.New("openbanking: ObwriteFile2.Data.Initiation.LocalInstrument must be at least 1 characters")
+	}
+	if req.Data.Initiation.LocalInstrument != "" && len(string(req.Data.Initiation.LocalInstrument)) > 50 {
+		return nil, errors.New("openbanking: ObwriteFile2.Data.Initiation.LocalInstrument must be at most 50 characters")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,

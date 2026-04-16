@@ -152,8 +152,20 @@ func (s *Disputes) ChallengeDispute(ctx context.Context, disputeID string, revol
 	if revolutAPIVersion == "" {
 		return errors.New("merchant: Revolut-Api-Version is required")
 	}
+	if req.Comment != "" && len(string(req.Comment)) > 250 {
+		return errors.New("merchant: DisputeChallenge.comment must be at most 250 characters")
+	}
 	if len(req.Evidences) == 0 {
 		return errors.New("merchant: DisputeChallenge.evidences is required")
+	}
+	if len(req.Evidences) > 0 && uint64(len(req.Evidences)) < 1 {
+		return errors.New("merchant: DisputeChallenge.evidences must contain at least 1 items")
+	}
+	if uint64(len(req.Evidences)) < 1 {
+		return errors.New("merchant: DisputeChallenge.evidences must contain at least 1 items")
+	}
+	if uint64(len(req.Evidences)) > 10 {
+		return errors.New("merchant: DisputeChallenge.evidences must contain at most 10 items")
 	}
 	if req.Reason == "" {
 		return errors.New("merchant: DisputeChallenge.reason is required")

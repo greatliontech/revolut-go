@@ -78,8 +78,20 @@ func (s *Accounting) CreateCategory(ctx context.Context, req CreateAccountingCat
 	if req.Code == "" {
 		return nil, errors.New("business: CreateAccountingCategoryRequest.code is required")
 	}
+	if len(req.Code) < 1 {
+		return nil, errors.New("business: CreateAccountingCategoryRequest.code must be at least 1 characters")
+	}
+	if len(req.Code) > 50 {
+		return nil, errors.New("business: CreateAccountingCategoryRequest.code must be at most 50 characters")
+	}
 	if req.Name == "" {
 		return nil, errors.New("business: CreateAccountingCategoryRequest.name is required")
+	}
+	if len(req.Name) < 1 {
+		return nil, errors.New("business: CreateAccountingCategoryRequest.name must be at least 1 characters")
+	}
+	if len(req.Name) > 60 {
+		return nil, errors.New("business: CreateAccountingCategoryRequest.name must be at most 60 characters")
 	}
 	var out ResourceCreatedResponse
 	if err := s.t.Do(ctx, http.MethodPost, "accounting-categories", req, &out); err != nil {
@@ -116,6 +128,18 @@ func (s *Accounting) UpdateCategory(ctx context.Context, accountingCategoryID st
 	}
 	if !isUUID(accountingCategoryID) {
 		return errors.New("business: accounting_category_id must be a valid UUID")
+	}
+	if req.Code != "" && len(req.Code) < 1 {
+		return errors.New("business: UpdateAccountingCategoryRequest.code must be at least 1 characters")
+	}
+	if req.Code != "" && len(req.Code) > 50 {
+		return errors.New("business: UpdateAccountingCategoryRequest.code must be at most 50 characters")
+	}
+	if req.Name != "" && len(req.Name) < 1 {
+		return errors.New("business: UpdateAccountingCategoryRequest.name must be at least 1 characters")
+	}
+	if req.Name != "" && len(req.Name) > 60 {
+		return errors.New("business: UpdateAccountingCategoryRequest.name must be at most 60 characters")
 	}
 	return s.t.Do(ctx, http.MethodPatch, "accounting-categories/"+url.PathEscape(accountingCategoryID), req, nil)
 }
@@ -195,8 +219,23 @@ func (s *Accounting) CreateLabelGroup(ctx context.Context, req CreateLabelGroupR
 	if len(req.Labels) == 0 {
 		return nil, errors.New("business: CreateLabelGroupRequest.labels is required")
 	}
+	if len(req.Labels) > 0 && uint64(len(req.Labels)) < 1 {
+		return nil, errors.New("business: CreateLabelGroupRequest.labels must contain at least 1 items")
+	}
+	if uint64(len(req.Labels)) < 1 {
+		return nil, errors.New("business: CreateLabelGroupRequest.labels must contain at least 1 items")
+	}
+	if uint64(len(req.Labels)) > 200 {
+		return nil, errors.New("business: CreateLabelGroupRequest.labels must contain at most 200 items")
+	}
 	if req.Name == "" {
 		return nil, errors.New("business: CreateLabelGroupRequest.name is required")
+	}
+	if len(req.Name) < 1 {
+		return nil, errors.New("business: CreateLabelGroupRequest.name must be at least 1 characters")
+	}
+	if len(req.Name) > 100 {
+		return nil, errors.New("business: CreateLabelGroupRequest.name must be at most 100 characters")
 	}
 	var out ResourceCreatedResponse
 	if err := s.t.Do(ctx, http.MethodPost, "label-groups", req, &out); err != nil {
@@ -236,6 +275,12 @@ func (s *Accounting) UpdateLabelGroup(ctx context.Context, groupID string, req U
 	}
 	if req.Name == "" {
 		return errors.New("business: UpdateLabelGroupRequest.name is required")
+	}
+	if len(req.Name) < 1 {
+		return errors.New("business: UpdateLabelGroupRequest.name must be at least 1 characters")
+	}
+	if len(req.Name) > 100 {
+		return errors.New("business: UpdateLabelGroupRequest.name must be at most 100 characters")
 	}
 	return s.t.Do(ctx, http.MethodPatch, "label-groups/"+url.PathEscape(groupID), req, nil)
 }
@@ -332,6 +377,12 @@ func (s *Accounting) CreateLabel(ctx context.Context, groupID string, req Create
 	if req.Name == "" {
 		return nil, errors.New("business: CreateLabelRequest.name is required")
 	}
+	if len(req.Name) < 1 {
+		return nil, errors.New("business: CreateLabelRequest.name must be at least 1 characters")
+	}
+	if len(req.Name) > 100 {
+		return nil, errors.New("business: CreateLabelRequest.name must be at most 100 characters")
+	}
 	var out ResourceCreatedResponse
 	if err := s.t.Do(ctx, http.MethodPost, "label-groups/"+url.PathEscape(groupID)+"/labels", req, &out); err != nil {
 		return nil, err
@@ -358,6 +409,12 @@ func (s *Accounting) UpdateLabel(ctx context.Context, groupID string, labelID st
 	}
 	if req.Name == "" {
 		return errors.New("business: UpdateLabelRequest.name is required")
+	}
+	if len(req.Name) < 1 {
+		return errors.New("business: UpdateLabelRequest.name must be at least 1 characters")
+	}
+	if len(req.Name) > 100 {
+		return errors.New("business: UpdateLabelRequest.name must be at most 100 characters")
 	}
 	return s.t.Do(ctx, http.MethodPatch, "label-groups/"+url.PathEscape(groupID)+"/labels/"+url.PathEscape(labelID), req, nil)
 }
@@ -443,6 +500,12 @@ func (s *Accounting) CreateTaxRate(ctx context.Context, req CreateTaxRateRequest
 	if req.Name == "" {
 		return nil, errors.New("business: CreateTaxRateRequest.name is required")
 	}
+	if len(req.Name) < 1 {
+		return nil, errors.New("business: CreateTaxRateRequest.name must be at least 1 characters")
+	}
+	if len(req.Name) > 20 {
+		return nil, errors.New("business: CreateTaxRateRequest.name must be at most 20 characters")
+	}
 	if req.Percentage == "" {
 		return nil, errors.New("business: CreateTaxRateRequest.percentage is required")
 	}
@@ -481,6 +544,12 @@ func (s *Accounting) UpdateTaxRate(ctx context.Context, taxRateID string, req Up
 	}
 	if !isUUID(taxRateID) {
 		return errors.New("business: tax_rate_id must be a valid UUID")
+	}
+	if req.Name != "" && len(req.Name) < 1 {
+		return errors.New("business: UpdateTaxRateRequest.name must be at least 1 characters")
+	}
+	if req.Name != "" && len(req.Name) > 20 {
+		return errors.New("business: UpdateTaxRateRequest.name must be at most 20 characters")
 	}
 	return s.t.Do(ctx, http.MethodPatch, "tax-rates/"+url.PathEscape(taxRateID), req, nil)
 }

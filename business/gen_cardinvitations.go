@@ -75,11 +75,23 @@ func (s *CardInvitations) ListAll(ctx context.Context, opts *GetCardInvitationsP
 // Docs: https://developer.revolut.com/docs/business/create-card-invitation
 // Required scopes: WRITE
 func (s *CardInvitations) Create(ctx context.Context, req CardInvitationsBody) (*CardInvitationCreatedResponse, error) {
+	if req.ExpiryPeriod != "" && !mustMatchPattern("^P\\d+D$", req.ExpiryPeriod) {
+		return nil, errors.New("business: CardInvitationsBody.expiry_period must match pattern ^P\\d+D$")
+	}
 	if req.HolderID == "" {
 		return nil, errors.New("business: CardInvitationsBody.holder_id is required")
 	}
+	if req.Label != "" && len(req.Label) < 1 {
+		return nil, errors.New("business: CardInvitationsBody.label must be at least 1 characters")
+	}
+	if req.Label != "" && len(req.Label) > 30 {
+		return nil, errors.New("business: CardInvitationsBody.label must be at most 30 characters")
+	}
 	if req.RequestID == "" {
 		return nil, errors.New("business: CardInvitationsBody.request_id is required")
+	}
+	if len(req.RequestID) > 40 {
+		return nil, errors.New("business: CardInvitationsBody.request_id must be at most 40 characters")
 	}
 	var out CardInvitationCreatedResponse
 	if err := s.t.Do(ctx, http.MethodPost, "card-invitations", req, &out); err != nil {
@@ -131,11 +143,23 @@ func (s *CardInvitations) Update(ctx context.Context, cardInvitationID string, r
 	if !isUUID(cardInvitationID) {
 		return nil, errors.New("business: card_invitation_id must be a valid UUID")
 	}
+	if req.ExpiryPeriod != "" && !mustMatchPattern("^P\\d+D$", req.ExpiryPeriod) {
+		return nil, errors.New("business: CardInvitationsBody.expiry_period must match pattern ^P\\d+D$")
+	}
 	if req.HolderID == "" {
 		return nil, errors.New("business: CardInvitationsBody.holder_id is required")
 	}
+	if req.Label != "" && len(req.Label) < 1 {
+		return nil, errors.New("business: CardInvitationsBody.label must be at least 1 characters")
+	}
+	if req.Label != "" && len(req.Label) > 30 {
+		return nil, errors.New("business: CardInvitationsBody.label must be at most 30 characters")
+	}
 	if req.RequestID == "" {
 		return nil, errors.New("business: CardInvitationsBody.request_id is required")
+	}
+	if len(req.RequestID) > 40 {
+		return nil, errors.New("business: CardInvitationsBody.request_id must be at most 40 characters")
 	}
 	var out CardInvitationUpdatedResponse
 	if err := s.t.Do(ctx, http.MethodPatch, "card-invitations/"+url.PathEscape(cardInvitationID), req, &out); err != nil {

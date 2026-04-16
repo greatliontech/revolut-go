@@ -1,7 +1,9 @@
 package lower
 
 import (
+	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/greatliontech/revolut-go/cmd/revogen/ir"
@@ -82,17 +84,22 @@ func walkValidators(d *ir.Decl, exprPrefix, jsonPathPrefix string, declByName ma
 		out = append(out, anyOfGroupValidator(d, exprPrefix, jsonPathPrefix, errPrefix)...)
 	}
 	for _, f := range d.Fields {
-		if !f.Required {
-			continue
-		}
 		expr := exprPrefix + "." + f.GoName
 		jsonPath := jsonPathPrefix + "." + f.JSONName
-		cond := unsetCond(f.Type, expr, declByName)
-		if cond != "" {
-			out = append(out, ir.Validator{
-				Cond:    cond,
-				Message: errPrefix + ": " + jsonPath + " is required",
-			})
+		if f.Required {
+			if cond := unsetCond(f.Type, expr, declByName); cond != "" {
+				out = append(out, ir.Validator{
+					Cond:    cond,
+					Message: errPrefix + ": " + jsonPath + " is required",
+				})
+			}
+		}
+		// Value-range / length / pattern checks fire on any set
+		// value. Optional fields contribute a "set" guard so
+		// unset-equals-unset doesn't falsely trigger.
+		out = append(out, constraintValidators(f, expr, jsonPath, errPrefix, declByName)...)
+		if !f.Required {
+			continue
 		}
 		nestedName, isPointer := nestedStructName(f.Type)
 		if nestedName == "" || visited[nestedName] {
@@ -117,6 +124,253 @@ func walkValidators(d *ir.Decl, exprPrefix, jsonPathPrefix string, declByName ma
 		}
 	}
 	return out
+}
+
+// constraintValidators emits one ir.Validator per spec-declared
+// value-range, length, or pattern constraint on f. Optional fields
+// get a "present" guard so unset isn't treated as invalid.
+func constraintValidators(f *ir.Field, expr, jsonPath, errPrefix string, declByName map[string]*ir.Decl) []ir.Validator {
+	if f == nil || f.Type == nil {
+		return nil
+	}
+	var out []ir.Validator
+	present := presentGuard(f, expr)
+	// String length + pattern. Only apply to plain string / json.Number /
+	// string-backed named types whose wire shape is a string.
+	switch {
+	case isStringLike(f.Type) && !isNamedMapOrStruct(f.Type, declByName):
+		base := stringAccess(f.Type, expr)
+		if f.MinLength > 0 {
+			out = append(out, wrapGuard(ir.Validator{
+				Cond:    "len(" + base + ") < " + strconv.FormatUint(f.MinLength, 10),
+				Message: fmt.Sprintf("%s: %s must be at least %d characters", errPrefix, jsonPath, f.MinLength),
+			}, present))
+		}
+		if f.MaxLength > 0 {
+			out = append(out, wrapGuard(ir.Validator{
+				Cond:    "len(" + base + ") > " + strconv.FormatUint(f.MaxLength, 10),
+				Message: fmt.Sprintf("%s: %s must be at most %d characters", errPrefix, jsonPath, f.MaxLength),
+			}, present))
+		}
+		if f.Pattern != "" {
+			out = append(out, wrapGuard(ir.Validator{
+				Cond:    "!mustMatchPattern(" + strconv.Quote(f.Pattern) + ", " + base + ")",
+				Message: fmt.Sprintf("%s: %s must match pattern %s", errPrefix, jsonPath, f.Pattern),
+			}, present))
+		}
+	case isNumericLike(f.Type):
+		base := numericAccess(f.Type, expr)
+		if f.Minimum != nil {
+			op := "<"
+			if f.ExclusiveMin {
+				op = "<="
+			}
+			out = append(out, wrapGuard(ir.Validator{
+				Cond:    base + " " + op + " " + formatNumericLiteral(*f.Minimum, f.Type),
+				Message: fmt.Sprintf("%s: %s must be %s %s", errPrefix, jsonPath, boundWord("minimum", f.ExclusiveMin), formatNumericLiteral(*f.Minimum, f.Type)),
+			}, numericPresentGuard(f, expr)))
+		}
+		if f.Maximum != nil {
+			op := ">"
+			if f.ExclusiveMax {
+				op = ">="
+			}
+			out = append(out, wrapGuard(ir.Validator{
+				Cond:    base + " " + op + " " + formatNumericLiteral(*f.Maximum, f.Type),
+				Message: fmt.Sprintf("%s: %s must be %s %s", errPrefix, jsonPath, boundWord("maximum", f.ExclusiveMax), formatNumericLiteral(*f.Maximum, f.Type)),
+			}, numericPresentGuard(f, expr)))
+		}
+	case f.Type.IsSlice():
+		if f.MinItems > 0 {
+			out = append(out, ir.Validator{
+				Cond:    "len(" + expr + ") > 0 && uint64(len(" + expr + ")) < " + strconv.FormatUint(f.MinItems, 10),
+				Message: fmt.Sprintf("%s: %s must contain at least %d items", errPrefix, jsonPath, f.MinItems),
+			})
+			if f.Required {
+				out = append(out, ir.Validator{
+					Cond:    "uint64(len(" + expr + ")) < " + strconv.FormatUint(f.MinItems, 10),
+					Message: fmt.Sprintf("%s: %s must contain at least %d items", errPrefix, jsonPath, f.MinItems),
+				})
+			}
+		}
+		if f.MaxItems > 0 {
+			out = append(out, ir.Validator{
+				Cond:    "uint64(len(" + expr + ")) > " + strconv.FormatUint(f.MaxItems, 10),
+				Message: fmt.Sprintf("%s: %s must contain at most %d items", errPrefix, jsonPath, f.MaxItems),
+			})
+		}
+	}
+	return out
+}
+
+// wrapGuard prefixes v.Cond with a "field is set" guard so an
+// optional field at its zero value doesn't fail the value check.
+// When guard is empty the validator is unchanged (required fields
+// fire unconditionally).
+func wrapGuard(v ir.Validator, guard string) ir.Validator {
+	if guard == "" {
+		return v
+	}
+	v.Cond = guard + " && " + v.Cond
+	return v
+}
+
+// presentGuard returns the "set" condition for an optional field,
+// matching the inverse of unsetCond. Required fields return "".
+func presentGuard(f *ir.Field, expr string) string {
+	if f.Required {
+		return ""
+	}
+	if f.Type.IsPointer() {
+		return expr + " != nil"
+	}
+	if f.Type.IsSlice() {
+		return "len(" + expr + ") > 0"
+	}
+	if isStringLike(f.Type) {
+		return expr + ` != ""`
+	}
+	if isNumericLike(f.Type) {
+		return expr + ` != 0`
+	}
+	return ""
+}
+
+// numericPresentGuard returns a guard that only fires when a
+// numeric optional field is "set". For json.Number (a string
+// underneath), that means the string is non-empty; for real
+// numeric types, zero is treated as unset — a caller that
+// explicitly wants 0 can still submit it, the server applies the
+// bound check.
+func numericPresentGuard(f *ir.Field, expr string) string {
+	if f.Required {
+		return ""
+	}
+	if f.Type.IsPointer() {
+		return expr + " != nil"
+	}
+	if f.Type.Kind == ir.KindPrim && f.Type.Name == "json.Number" {
+		return expr + ` != ""`
+	}
+	return expr + " != 0"
+}
+
+// stringAccess yields the Go expression for the string payload of a
+// string-like field. Pointer-wrapped values are dereferenced; named
+// string-backed types are cast back to string so len() works.
+func stringAccess(t *ir.Type, expr string) string {
+	if t.IsPointer() {
+		return "*" + expr
+	}
+	if t.IsNamed() || t.Kind == ir.KindPrim && t.Name == "json.Number" || t.Kind == ir.KindPrim && t.Name == "core.Currency" {
+		return "string(" + expr + ")"
+	}
+	return expr
+}
+
+// numericAccess yields the Go expression for the numeric payload.
+// json.Number requires a conversion helper (parseNumberForValidation)
+// injected at the resource level so the bound check works.
+func numericAccess(t *ir.Type, expr string) string {
+	if t.IsPointer() {
+		return "*" + expr
+	}
+	if t.Kind == ir.KindPrim && t.Name == "json.Number" {
+		return "parseNumberForValidation(" + expr + ")"
+	}
+	return expr
+}
+
+func isStringLike(t *ir.Type) bool {
+	if t == nil {
+		return false
+	}
+	if t.IsPointer() {
+		return isStringLike(t.Elem)
+	}
+	if t.Kind == ir.KindPrim {
+		switch t.Name {
+		case "string", "json.Number", "core.Currency":
+			return true
+		}
+		return false
+	}
+	return t.IsNamed()
+}
+
+// isNamedMapOrStruct peels named types back to their underlying
+// Decl kind. Structs and map-typed aliases aren't string-like even
+// though t.IsNamed() is true.
+func isNamedMapOrStruct(t *ir.Type, declByName map[string]*ir.Decl) bool {
+	if t == nil || declByName == nil {
+		return false
+	}
+	for t.IsPointer() {
+		t = t.Elem
+	}
+	if !t.IsNamed() {
+		return false
+	}
+	d := declByName[t.Name]
+	if d == nil {
+		return false
+	}
+	switch d.Kind {
+	case ir.DeclStruct:
+		return true
+	case ir.DeclAlias:
+		// Alias-to-map → not string-like. Alias-to-string → still OK.
+		if d.AliasTarget != nil {
+			if d.AliasTarget.Kind == ir.KindMap {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func isNumericLike(t *ir.Type) bool {
+	if t == nil {
+		return false
+	}
+	if t.IsPointer() {
+		return isNumericLike(t.Elem)
+	}
+	if t.Kind == ir.KindPrim {
+		switch t.Name {
+		case "int", "int32", "int64", "float32", "float64", "json.Number":
+			return true
+		}
+	}
+	return false
+}
+
+func formatNumericLiteral(v float64, t *ir.Type) string {
+	if t == nil {
+		return strconv.FormatFloat(v, 'g', -1, 64)
+	}
+	target := t
+	for target.IsPointer() {
+		target = target.Elem
+	}
+	if target.Kind == ir.KindPrim {
+		switch target.Name {
+		case "int", "int32", "int64":
+			return strconv.FormatInt(int64(v), 10)
+		case "float32", "float64":
+			return strconv.FormatFloat(v, 'g', -1, 64)
+		case "json.Number":
+			return strconv.FormatFloat(v, 'g', -1, 64)
+		}
+	}
+	return strconv.FormatFloat(v, 'g', -1, 64)
+}
+
+func boundWord(base string, exclusive bool) string {
+	if exclusive {
+		return "strictly " + base[:len(base)-4]
+	}
+	return "at " + base
 }
 
 // anyOfGroupValidator produces "at least one of (group A) OR

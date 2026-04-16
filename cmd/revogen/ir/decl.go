@@ -103,6 +103,25 @@ type Field struct {
 	// instead of repeated entries (key=a&key=b&key=c). Zero value
 	// keeps the default explode=true behaviour.
 	ExplodeFalse bool
+
+	// Minimum / Maximum are OpenAPI numeric bounds. Nil when the
+	// spec doesn't declare one. ExclusiveMin / ExclusiveMax turn
+	// `>=` into `>` (respectively `<=` into `<`). Apply only to
+	// numeric-typed fields.
+	Minimum      *float64
+	Maximum      *float64
+	ExclusiveMin bool
+	ExclusiveMax bool
+
+	// MinLength / MaxLength bound a string field's length.
+	// MinItems / MaxItems bound an array field's length.
+	MinLength uint64
+	MaxLength uint64
+	MinItems  uint64
+	MaxItems  uint64
+
+	// Pattern is a regex the string field must match when non-empty.
+	Pattern string
 }
 
 // EnumValue is one entry in an enum.

@@ -34,11 +34,29 @@ func (s *DomesticStandingOrder) CreateConsents(ctx context.Context, xFAPIFinanci
 	if req.Data.Initiation.CreditorAccount.Identification == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.Identification is required")
 	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.Identification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) > 256 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.Identification must be at most 256 characters")
+	}
 	if req.Data.Initiation.CreditorAccount.Name == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.Name is required")
 	}
+	if len(req.Data.Initiation.CreditorAccount.Name) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.Name must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Name) > 70 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.Name must be at most 70 characters")
+	}
 	if req.Data.Initiation.CreditorAccount.SchemeName == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.SchemeName is required")
+	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at least 1 characters")
+	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) > 34 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at most 34 characters")
 	}
 	if req.Data.Initiation.FirstPaymentAmount == nil {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount is required")
@@ -46,14 +64,38 @@ func (s *DomesticStandingOrder) CreateConsents(ctx context.Context, xFAPIFinanci
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Amount == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Amount is required")
 	}
+	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.FirstPaymentAmount.Amount)) {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
+	}
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Currency == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Currency is required")
+	}
+	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.FirstPaymentAmount.Currency) {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Currency must match pattern ^[A-Z]{3,3}$")
 	}
 	if req.Data.Initiation.FirstPaymentDateTime.IsZero() {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentDateTime is required")
 	}
 	if req.Data.Initiation.Frequency == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.Frequency is required")
+	}
+	if len(req.Data.Initiation.Frequency) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.Frequency must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.Frequency) > 35 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.Frequency must be at most 35 characters")
+	}
+	if req.Data.Initiation.NumberOfPayments != "" && len(req.Data.Initiation.NumberOfPayments) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.NumberOfPayments must be at least 1 characters")
+	}
+	if req.Data.Initiation.NumberOfPayments != "" && len(req.Data.Initiation.NumberOfPayments) > 35 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.NumberOfPayments must be at most 35 characters")
+	}
+	if req.Data.Initiation.Reference != "" && len(req.Data.Initiation.Reference) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.Reference must be at least 1 characters")
+	}
+	if req.Data.Initiation.Reference != "" && len(req.Data.Initiation.Reference) > 35 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.Reference must be at most 35 characters")
 	}
 	if req.Data.Permission == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Permission is required")
@@ -112,11 +154,29 @@ func (s *DomesticStandingOrder) CreateConsentsSigned(ctx context.Context, xFAPIF
 	if req.Data.Initiation.CreditorAccount.Identification == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.Identification is required")
 	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) < 1 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.Identification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) > 256 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.Identification must be at most 256 characters")
+	}
 	if req.Data.Initiation.CreditorAccount.Name == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.Name is required")
 	}
+	if len(req.Data.Initiation.CreditorAccount.Name) < 1 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.Name must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Name) > 70 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.Name must be at most 70 characters")
+	}
 	if req.Data.Initiation.CreditorAccount.SchemeName == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.SchemeName is required")
+	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) < 1 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at least 1 characters")
+	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) > 34 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at most 34 characters")
 	}
 	if req.Data.Initiation.FirstPaymentAmount == nil {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount is required")
@@ -124,14 +184,38 @@ func (s *DomesticStandingOrder) CreateConsentsSigned(ctx context.Context, xFAPIF
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Amount == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Amount is required")
 	}
+	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.FirstPaymentAmount.Amount)) {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
+	}
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Currency == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Currency is required")
+	}
+	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.FirstPaymentAmount.Currency) {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Currency must match pattern ^[A-Z]{3,3}$")
 	}
 	if req.Data.Initiation.FirstPaymentDateTime.IsZero() {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentDateTime is required")
 	}
 	if req.Data.Initiation.Frequency == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.Frequency is required")
+	}
+	if len(req.Data.Initiation.Frequency) < 1 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.Frequency must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.Frequency) > 35 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.Frequency must be at most 35 characters")
+	}
+	if req.Data.Initiation.NumberOfPayments != "" && len(req.Data.Initiation.NumberOfPayments) < 1 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.NumberOfPayments must be at least 1 characters")
+	}
+	if req.Data.Initiation.NumberOfPayments != "" && len(req.Data.Initiation.NumberOfPayments) > 35 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.NumberOfPayments must be at most 35 characters")
+	}
+	if req.Data.Initiation.Reference != "" && len(req.Data.Initiation.Reference) < 1 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.Reference must be at least 1 characters")
+	}
+	if req.Data.Initiation.Reference != "" && len(req.Data.Initiation.Reference) > 35 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.Reference must be at most 35 characters")
 	}
 	if req.Data.Permission == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Permission is required")
@@ -272,14 +356,38 @@ func (s *DomesticStandingOrder) Create(ctx context.Context, xFAPIFinancialID str
 	if req.Data.ConsentID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.ConsentId is required")
 	}
+	if len(req.Data.ConsentID) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.ConsentId must be at least 1 characters")
+	}
+	if len(req.Data.ConsentID) > 128 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.ConsentId must be at most 128 characters")
+	}
 	if req.Data.Initiation.CreditorAccount.Identification == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.Identification is required")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.Identification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) > 256 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.Identification must be at most 256 characters")
 	}
 	if req.Data.Initiation.CreditorAccount.Name == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.Name is required")
 	}
+	if len(req.Data.Initiation.CreditorAccount.Name) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.Name must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Name) > 70 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.Name must be at most 70 characters")
+	}
 	if req.Data.Initiation.CreditorAccount.SchemeName == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.SchemeName is required")
+	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at least 1 characters")
+	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) > 34 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at most 34 characters")
 	}
 	if req.Data.Initiation.FirstPaymentAmount == nil {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount is required")
@@ -287,14 +395,38 @@ func (s *DomesticStandingOrder) Create(ctx context.Context, xFAPIFinancialID str
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Amount == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Amount is required")
 	}
+	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.FirstPaymentAmount.Amount)) {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
+	}
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Currency == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Currency is required")
+	}
+	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.FirstPaymentAmount.Currency) {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Currency must match pattern ^[A-Z]{3,3}$")
 	}
 	if req.Data.Initiation.FirstPaymentDateTime.IsZero() {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentDateTime is required")
 	}
 	if req.Data.Initiation.Frequency == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.Frequency is required")
+	}
+	if len(req.Data.Initiation.Frequency) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.Frequency must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.Frequency) > 35 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.Frequency must be at most 35 characters")
+	}
+	if req.Data.Initiation.NumberOfPayments != "" && len(req.Data.Initiation.NumberOfPayments) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.NumberOfPayments must be at least 1 characters")
+	}
+	if req.Data.Initiation.NumberOfPayments != "" && len(req.Data.Initiation.NumberOfPayments) > 35 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.NumberOfPayments must be at most 35 characters")
+	}
+	if req.Data.Initiation.Reference != "" && len(req.Data.Initiation.Reference) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.Reference must be at least 1 characters")
+	}
+	if req.Data.Initiation.Reference != "" && len(req.Data.Initiation.Reference) > 35 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.Reference must be at most 35 characters")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -350,14 +482,38 @@ func (s *DomesticStandingOrder) CreateSigned(ctx context.Context, xFAPIFinancial
 	if req.Data.ConsentID == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.ConsentId is required")
 	}
+	if len(req.Data.ConsentID) < 1 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.ConsentId must be at least 1 characters")
+	}
+	if len(req.Data.ConsentID) > 128 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.ConsentId must be at most 128 characters")
+	}
 	if req.Data.Initiation.CreditorAccount.Identification == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.Identification is required")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) < 1 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.Identification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) > 256 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.Identification must be at most 256 characters")
 	}
 	if req.Data.Initiation.CreditorAccount.Name == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.Name is required")
 	}
+	if len(req.Data.Initiation.CreditorAccount.Name) < 1 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.Name must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Name) > 70 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.Name must be at most 70 characters")
+	}
 	if req.Data.Initiation.CreditorAccount.SchemeName == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.SchemeName is required")
+	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) < 1 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at least 1 characters")
+	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) > 34 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at most 34 characters")
 	}
 	if req.Data.Initiation.FirstPaymentAmount == nil {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount is required")
@@ -365,14 +521,38 @@ func (s *DomesticStandingOrder) CreateSigned(ctx context.Context, xFAPIFinancial
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Amount == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Amount is required")
 	}
+	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.FirstPaymentAmount.Amount)) {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
+	}
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Currency == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Currency is required")
+	}
+	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.FirstPaymentAmount.Currency) {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Currency must match pattern ^[A-Z]{3,3}$")
 	}
 	if req.Data.Initiation.FirstPaymentDateTime.IsZero() {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentDateTime is required")
 	}
 	if req.Data.Initiation.Frequency == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.Frequency is required")
+	}
+	if len(req.Data.Initiation.Frequency) < 1 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.Frequency must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.Frequency) > 35 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.Frequency must be at most 35 characters")
+	}
+	if req.Data.Initiation.NumberOfPayments != "" && len(req.Data.Initiation.NumberOfPayments) < 1 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.NumberOfPayments must be at least 1 characters")
+	}
+	if req.Data.Initiation.NumberOfPayments != "" && len(req.Data.Initiation.NumberOfPayments) > 35 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.NumberOfPayments must be at most 35 characters")
+	}
+	if req.Data.Initiation.Reference != "" && len(req.Data.Initiation.Reference) < 1 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.Reference must be at least 1 characters")
+	}
+	if req.Data.Initiation.Reference != "" && len(req.Data.Initiation.Reference) > 35 {
+		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.Reference must be at most 35 characters")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,

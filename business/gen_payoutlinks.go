@@ -87,8 +87,17 @@ func (s *PayoutLinks) Create(ctx context.Context, req CreatePayoutLinkRequest) (
 	if req.Currency == "" {
 		return nil, errors.New("business: CreatePayoutLinkRequest.currency is required")
 	}
+	if !mustMatchPattern("^[A-Z]{3}$", string(req.Currency)) {
+		return nil, errors.New("business: CreatePayoutLinkRequest.currency must match pattern ^[A-Z]{3}$")
+	}
 	if req.Reference == "" {
 		return nil, errors.New("business: CreatePayoutLinkRequest.reference is required")
+	}
+	if len(req.Reference) < 1 {
+		return nil, errors.New("business: CreatePayoutLinkRequest.reference must be at least 1 characters")
+	}
+	if len(req.Reference) > 100 {
+		return nil, errors.New("business: CreatePayoutLinkRequest.reference must be at most 100 characters")
 	}
 	if req.RequestID == "" {
 		return nil, errors.New("business: CreatePayoutLinkRequest.request_id is required")

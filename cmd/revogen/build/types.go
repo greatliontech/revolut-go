@@ -207,9 +207,19 @@ func (b *Builder) resolveIntegerType(s *openapi3.Schema) *ir.Type {
 }
 
 func (b *Builder) resolveNumberType(s *openapi3.Schema) *ir.Type {
+	// `type: number, format: integer` is Revolut's quirky way of
+	// typing limits / page counts that are conceptually ints — the
+	// caller would resent getting a json.Number for a 1-100 bound.
+	// Honour the format hint and return int.
+	switch strings.ToLower(s.Format) {
+	case "integer", "int", "int32":
+		return ir.Prim("int")
+	case "int64":
+		return ir.Prim("int64")
+	}
 	// JSON numbers with arbitrary precision (currency amounts) must
 	// stay as strings so we don't lose precision when the spec
-	// declares `type: number`.
+	// declares `type: number` without a format hint.
 	return ir.Prim("json.Number", "encoding/json")
 }
 

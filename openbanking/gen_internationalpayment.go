@@ -34,17 +34,44 @@ func (s *InternationalPayment) CreateConsents(ctx context.Context, xFAPIFinancia
 	if req.Data.Initiation.CreditorAccount.Identification == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.Identification is required")
 	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.Identification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) > 256 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.Identification must be at most 256 characters")
+	}
 	if req.Data.Initiation.CreditorAccount.Name == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.Name is required")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Name) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.Name must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Name) > 70 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.Name must be at most 70 characters")
 	}
 	if req.Data.Initiation.CreditorAccount.SchemeName == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.SchemeName is required")
 	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at least 1 characters")
+	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) > 34 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at most 34 characters")
+	}
 	if req.Data.Initiation.CurrencyOfTransfer == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CurrencyOfTransfer is required")
 	}
+	if !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.CurrencyOfTransfer) {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CurrencyOfTransfer must match pattern ^[A-Z]{3,3}$")
+	}
 	if req.Data.Initiation.EndToEndIdentification == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.EndToEndIdentification is required")
+	}
+	if len(req.Data.Initiation.EndToEndIdentification) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.EndToEndIdentification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.EndToEndIdentification) > 35 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.EndToEndIdentification must be at most 35 characters")
 	}
 	if req.Data.Initiation.InstructedAmount == nil {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructedAmount is required")
@@ -52,11 +79,23 @@ func (s *InternationalPayment) CreateConsents(ctx context.Context, xFAPIFinancia
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Amount == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructedAmount.Amount is required")
 	}
+	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.InstructedAmount.Amount)) {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructedAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
+	}
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Currency == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructedAmount.Currency is required")
 	}
+	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.InstructedAmount.Currency) {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructedAmount.Currency must match pattern ^[A-Z]{3,3}$")
+	}
 	if req.Data.Initiation.InstructionIdentification == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructionIdentification is required")
+	}
+	if len(req.Data.Initiation.InstructionIdentification) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructionIdentification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.InstructionIdentification) > 35 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructionIdentification must be at most 35 characters")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -112,17 +151,44 @@ func (s *InternationalPayment) CreateConsentsSigned(ctx context.Context, xFAPIFi
 	if req.Data.Initiation.CreditorAccount.Identification == "" {
 		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.Identification is required")
 	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) < 1 {
+		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.Identification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) > 256 {
+		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.Identification must be at most 256 characters")
+	}
 	if req.Data.Initiation.CreditorAccount.Name == "" {
 		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.Name is required")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Name) < 1 {
+		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.Name must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Name) > 70 {
+		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.Name must be at most 70 characters")
 	}
 	if req.Data.Initiation.CreditorAccount.SchemeName == "" {
 		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.SchemeName is required")
 	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) < 1 {
+		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at least 1 characters")
+	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) > 34 {
+		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at most 34 characters")
+	}
 	if req.Data.Initiation.CurrencyOfTransfer == "" {
 		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CurrencyOfTransfer is required")
 	}
+	if !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.CurrencyOfTransfer) {
+		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.CurrencyOfTransfer must match pattern ^[A-Z]{3,3}$")
+	}
 	if req.Data.Initiation.EndToEndIdentification == "" {
 		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.EndToEndIdentification is required")
+	}
+	if len(req.Data.Initiation.EndToEndIdentification) < 1 {
+		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.EndToEndIdentification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.EndToEndIdentification) > 35 {
+		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.EndToEndIdentification must be at most 35 characters")
 	}
 	if req.Data.Initiation.InstructedAmount == nil {
 		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructedAmount is required")
@@ -130,11 +196,23 @@ func (s *InternationalPayment) CreateConsentsSigned(ctx context.Context, xFAPIFi
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Amount == "" {
 		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructedAmount.Amount is required")
 	}
+	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.InstructedAmount.Amount)) {
+		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructedAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
+	}
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Currency == "" {
 		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructedAmount.Currency is required")
 	}
+	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.InstructedAmount.Currency) {
+		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructedAmount.Currency must match pattern ^[A-Z]{3,3}$")
+	}
 	if req.Data.Initiation.InstructionIdentification == "" {
 		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructionIdentification is required")
+	}
+	if len(req.Data.Initiation.InstructionIdentification) < 1 {
+		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructionIdentification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.InstructionIdentification) > 35 {
+		return nil, errors.New("openbanking: ObwriteInternationalConsent2.Data.Initiation.InstructionIdentification must be at most 35 characters")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -353,20 +431,53 @@ func (s *InternationalPayment) Create(ctx context.Context, xFAPIFinancialID stri
 	if req.Data.ConsentID == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.ConsentId is required")
 	}
+	if len(req.Data.ConsentID) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.ConsentId must be at least 1 characters")
+	}
+	if len(req.Data.ConsentID) > 128 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.ConsentId must be at most 128 characters")
+	}
 	if req.Data.Initiation.CreditorAccount.Identification == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.Identification is required")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.Identification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) > 256 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.Identification must be at most 256 characters")
 	}
 	if req.Data.Initiation.CreditorAccount.Name == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.Name is required")
 	}
+	if len(req.Data.Initiation.CreditorAccount.Name) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.Name must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Name) > 70 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.Name must be at most 70 characters")
+	}
 	if req.Data.Initiation.CreditorAccount.SchemeName == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.SchemeName is required")
+	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at least 1 characters")
+	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) > 34 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at most 34 characters")
 	}
 	if req.Data.Initiation.CurrencyOfTransfer == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CurrencyOfTransfer is required")
 	}
+	if !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.CurrencyOfTransfer) {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CurrencyOfTransfer must match pattern ^[A-Z]{3,3}$")
+	}
 	if req.Data.Initiation.EndToEndIdentification == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.EndToEndIdentification is required")
+	}
+	if len(req.Data.Initiation.EndToEndIdentification) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.EndToEndIdentification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.EndToEndIdentification) > 35 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.EndToEndIdentification must be at most 35 characters")
 	}
 	if req.Data.Initiation.InstructedAmount == nil {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructedAmount is required")
@@ -374,11 +485,23 @@ func (s *InternationalPayment) Create(ctx context.Context, xFAPIFinancialID stri
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Amount == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructedAmount.Amount is required")
 	}
+	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.InstructedAmount.Amount)) {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructedAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
+	}
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Currency == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructedAmount.Currency is required")
 	}
+	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.InstructedAmount.Currency) {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructedAmount.Currency must match pattern ^[A-Z]{3,3}$")
+	}
 	if req.Data.Initiation.InstructionIdentification == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructionIdentification is required")
+	}
+	if len(req.Data.Initiation.InstructionIdentification) < 1 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructionIdentification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.InstructionIdentification) > 35 {
+		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructionIdentification must be at most 35 characters")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,
@@ -434,20 +557,53 @@ func (s *InternationalPayment) CreateSigned(ctx context.Context, xFAPIFinancialI
 	if req.Data.ConsentID == "" {
 		return nil, errors.New("openbanking: ObwriteInternational2.Data.ConsentId is required")
 	}
+	if len(req.Data.ConsentID) < 1 {
+		return nil, errors.New("openbanking: ObwriteInternational2.Data.ConsentId must be at least 1 characters")
+	}
+	if len(req.Data.ConsentID) > 128 {
+		return nil, errors.New("openbanking: ObwriteInternational2.Data.ConsentId must be at most 128 characters")
+	}
 	if req.Data.Initiation.CreditorAccount.Identification == "" {
 		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.Identification is required")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) < 1 {
+		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.Identification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Identification) > 256 {
+		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.Identification must be at most 256 characters")
 	}
 	if req.Data.Initiation.CreditorAccount.Name == "" {
 		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.Name is required")
 	}
+	if len(req.Data.Initiation.CreditorAccount.Name) < 1 {
+		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.Name must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.CreditorAccount.Name) > 70 {
+		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.Name must be at most 70 characters")
+	}
 	if req.Data.Initiation.CreditorAccount.SchemeName == "" {
 		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.SchemeName is required")
+	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) < 1 {
+		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at least 1 characters")
+	}
+	if req.Data.Initiation.CreditorAccount.SecondaryIdentification != "" && len(req.Data.Initiation.CreditorAccount.SecondaryIdentification) > 34 {
+		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CreditorAccount.SecondaryIdentification must be at most 34 characters")
 	}
 	if req.Data.Initiation.CurrencyOfTransfer == "" {
 		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CurrencyOfTransfer is required")
 	}
+	if !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.CurrencyOfTransfer) {
+		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.CurrencyOfTransfer must match pattern ^[A-Z]{3,3}$")
+	}
 	if req.Data.Initiation.EndToEndIdentification == "" {
 		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.EndToEndIdentification is required")
+	}
+	if len(req.Data.Initiation.EndToEndIdentification) < 1 {
+		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.EndToEndIdentification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.EndToEndIdentification) > 35 {
+		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.EndToEndIdentification must be at most 35 characters")
 	}
 	if req.Data.Initiation.InstructedAmount == nil {
 		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructedAmount is required")
@@ -455,11 +611,23 @@ func (s *InternationalPayment) CreateSigned(ctx context.Context, xFAPIFinancialI
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Amount == "" {
 		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructedAmount.Amount is required")
 	}
+	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.InstructedAmount.Amount)) {
+		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructedAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
+	}
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Currency == "" {
 		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructedAmount.Currency is required")
 	}
+	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.InstructedAmount.Currency) {
+		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructedAmount.Currency must match pattern ^[A-Z]{3,3}$")
+	}
 	if req.Data.Initiation.InstructionIdentification == "" {
 		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructionIdentification is required")
+	}
+	if len(req.Data.Initiation.InstructionIdentification) < 1 {
+		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructionIdentification must be at least 1 characters")
+	}
+	if len(req.Data.Initiation.InstructionIdentification) > 35 {
+		return nil, errors.New("openbanking: ObwriteInternational2.Data.Initiation.InstructionIdentification must be at most 35 characters")
 	}
 	r := transport.RawRequest{
 		JSONBody: req,

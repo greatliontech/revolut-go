@@ -9,7 +9,9 @@ import (
 	"io"
 	"mime/multipart"
 	"net/url"
+	"regexp"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -5418,6 +5420,22 @@ func isUUID(s string) bool {
 		}
 	}
 	return true
+}
+
+// mustMatchPattern reports whether s matches the regex re. The
+// regex is compiled once per call site via regexp.MustCompile;
+// bad spec patterns crash the program on first use rather than
+// silently let malformed input through. re is a spec literal,
+// not user input.
+var patternCache sync.Map
+
+func mustMatchPattern(pattern, s string) bool {
+	v, ok := patternCache.Load(pattern)
+	if !ok {
+		re := regexp.MustCompile(pattern)
+		v, _ = patternCache.LoadOrStore(pattern, re)
+	}
+	return v.(*regexp.Regexp).MatchString(s)
 }
 
 // DecodeSendWebhookEvent decodes the JSON body of an incoming SendWebhookEvent callback into a typed payload.

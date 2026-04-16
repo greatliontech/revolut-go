@@ -37,6 +37,12 @@ func (s *Other) RegisterAddressValidationEndpoint(ctx context.Context, req Synch
 	if req.URL == "" {
 		return nil, errors.New("merchant: SynchronousWebhookCreation.url is required")
 	}
+	if len(req.URL) > 2000 {
+		return nil, errors.New("merchant: SynchronousWebhookCreation.url must be at most 2000 characters")
+	}
+	if !mustMatchPattern("^https:\\/{2}.+/gi", req.URL) {
+		return nil, errors.New("merchant: SynchronousWebhookCreation.url must match pattern ^https:\\/{2}.+/gi")
+	}
 	var out SynchronousWebhook
 	if err := s.t.Do(ctx, http.MethodPost, "api/synchronous-webhooks", req, &out); err != nil {
 		return nil, err

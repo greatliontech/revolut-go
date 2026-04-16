@@ -1,7 +1,6 @@
 package business
 
 import (
-	"encoding/json"
 	"testing"
 )
 
@@ -30,13 +29,14 @@ func TestApplyDefaults_NilReceiverIsNoop(t *testing.T) {
 	p.ApplyDefaults() // must not panic
 }
 
-// TestApplyDefaults_JSONNumberField verifies the json.Number path:
-// the default literal wraps the integer in json.Number so the
-// assignment type-checks and the wire encoding stays integer.
-func TestApplyDefaults_JSONNumberField(t *testing.T) {
+// TestApplyDefaults_IntField verifies the `type: number,
+// format: integer` quirk: Revolut types limits as number-with-int
+// format, which the generator now maps to Go int rather than the
+// less ergonomic json.Number.
+func TestApplyDefaults_IntField(t *testing.T) {
 	p := &GetCardInvitationsParams{}
 	p.ApplyDefaults()
-	if p.Limit != json.Number("100") {
-		t.Errorf("Limit=%q; want 100", p.Limit)
+	if p.Limit != 100 {
+		t.Errorf("Limit=%d; want 100", p.Limit)
 	}
 }

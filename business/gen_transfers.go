@@ -26,11 +26,20 @@ func (s *Transfers) CreatePayment(ctx context.Context, req TransactionPaymentReq
 	if req.Amount == "" {
 		return nil, errors.New("business: TransactionPaymentRequest.amount is required")
 	}
+	if req.Currency != "" && !mustMatchPattern("^[A-Z]{3}$", string(req.Currency)) {
+		return nil, errors.New("business: TransactionPaymentRequest.currency must match pattern ^[A-Z]{3}$")
+	}
 	if req.Receiver.CounterpartyID == "" {
 		return nil, errors.New("business: TransactionPaymentRequest.receiver.counterparty_id is required")
 	}
+	if req.Reference != "" && len(req.Reference) > 140 {
+		return nil, errors.New("business: TransactionPaymentRequest.reference must be at most 140 characters")
+	}
 	if req.RequestID == "" {
 		return nil, errors.New("business: TransactionPaymentRequest.request_id is required")
+	}
+	if len(req.RequestID) > 40 {
+		return nil, errors.New("business: TransactionPaymentRequest.request_id must be at most 40 characters")
 	}
 	var out TransferResponse
 	if err := s.t.Do(ctx, http.MethodPost, "pay", req, &out); err != nil {
@@ -50,8 +59,14 @@ func (s *Transfers) Create(ctx context.Context, req TransferRequest) (*TransferR
 	if req.Currency == "" {
 		return nil, errors.New("business: TransferRequest.currency is required")
 	}
+	if !mustMatchPattern("^[A-Z]{3}$", string(req.Currency)) {
+		return nil, errors.New("business: TransferRequest.currency must match pattern ^[A-Z]{3}$")
+	}
 	if req.RequestID == "" {
 		return nil, errors.New("business: TransferRequest.request_id is required")
+	}
+	if len(req.RequestID) > 40 {
+		return nil, errors.New("business: TransferRequest.request_id must be at most 40 characters")
 	}
 	if req.SourceAccountID == "" {
 		return nil, errors.New("business: TransferRequest.source_account_id is required")

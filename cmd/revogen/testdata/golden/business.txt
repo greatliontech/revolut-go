@@ -519,8 +519,8 @@ type Fee struct { Amount json.Number `json:"amount,omitempty"` Currency Currency
 type ForeignExchange struct { t *transport.Transport }
 type GetAccountingCategoriesParams struct { Limit int `json:"limit,omitempty"` PageToken PageToken `json:"page_token,omitempty"` }
 type GetAccountingCategoriesResponse struct { AccountingCategories []AccountingCategoryResponse `json:"accounting_categories"` NextPageToken PageToken `json:"next_page_token,omitempty"` }
-type GetCardInvitationsParams struct { CreatedBefore time.Time `json:"created_before,omitempty"` Limit json.Number `json:"limit,omitempty"` State []CardInvitationState `json:"state,omitempty"` }
-type GetCardsParams struct { CreatedBefore time.Time `json:"created_before,omitempty"` Limit json.Number `json:"limit,omitempty"` }
+type GetCardInvitationsParams struct { CreatedBefore time.Time `json:"created_before,omitempty"` Limit int `json:"limit,omitempty"` State []CardInvitationState `json:"state,omitempty"` }
+type GetCardsParams struct { CreatedBefore time.Time `json:"created_before,omitempty"` Limit int `json:"limit,omitempty"` }
 type GetCounterpartiesParams struct { Name string `json:"name,omitempty"` AccountNo string `json:"account_no,omitempty"` SortCode string `json:"sort_code,omitempty"` IBAN string `json:"iban,omitempty"` BIC string `json:"bic,omitempty"` CreatedBefore time.Time `json:"created_before,omitempty"` Limit int `json:"limit,omitempty"` }
 type GetExpensesParams struct { From time.Time `json:"from,omitempty"` To time.Time `json:"to,omitempty"` Count int `json:"count,omitempty"` State ExpensesState `json:"state,omitempty"` TransactionType ExpensesTransactionType `json:"transaction_type,omitempty"` }
 type GetFailedWebhookEventsParams struct { Limit int `json:"limit,omitempty"` CreatedBefore time.Time `json:"created_before,omitempty"` }
@@ -530,11 +530,11 @@ type GetLabelsParams struct { Limit int `json:"limit,omitempty"` PageToken PageT
 type GetLabelsResponse struct { Labels []LabelResponse `json:"labels"` NextPageToken PageToken `json:"next_page_token,omitempty"` }
 type GetPayoutLinksParams struct { State []PayoutLinkState `json:"state,omitempty"` CreatedBefore time.Time `json:"created_before,omitempty"` Limit int `json:"limit,omitempty"` }
 type GetRateParams struct { From Currency `json:"from"` Amount json.Number `json:"amount,omitempty"` To Currency `json:"to"` }
-type GetRolesParams struct { CreatedBefore time.Time `json:"created_before,omitempty"` Limit json.Number `json:"limit,omitempty"` }
+type GetRolesParams struct { CreatedBefore time.Time `json:"created_before,omitempty"` Limit int `json:"limit,omitempty"` }
 type GetSensitiveCardDetailsResponse struct { Cvv string `json:"cvv"` Expiry string `json:"expiry"` Pan string `json:"pan"` }
 type GetTaxRatesParams struct { Limit int `json:"limit,omitempty"` PageToken PageToken `json:"page_token,omitempty"` }
 type GetTaxRatesResponse struct { NextPageToken PageToken `json:"next_page_token,omitempty"` TaxRates []TaxRateResponse `json:"tax_rates"` }
-type GetTeamMembersParams struct { CreatedBefore time.Time `json:"created_before,omitempty"` Limit json.Number `json:"limit,omitempty"` }
+type GetTeamMembersParams struct { CreatedBefore time.Time `json:"created_before,omitempty"` Limit int `json:"limit,omitempty"` }
 type GetTransactionParams struct { IDType TransactionsIDType `json:"id_type,omitempty"` }
 type GetTransactionsParams struct { From time.Time `json:"from,omitempty"` To time.Time `json:"to,omitempty"` Account string `json:"account,omitempty"` Count int `json:"count,omitempty"` Type TransactionType `json:"type,omitempty"` }
 type IndividualName struct { FirstName string `json:"first_name,omitempty"` LastName string `json:"last_name,omitempty"` }

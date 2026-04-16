@@ -5,8 +5,10 @@ package business
 import (
 	"encoding/json"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/greatliontech/revolut-go/internal/core"
@@ -3072,7 +3074,7 @@ type GetCardInvitationsParams struct {
 	// The maximum number of card invitations to return per page.
 	//
 	// Default: 100.
-	Limit json.Number `json:"limit,omitempty"`
+	Limit int `json:"limit,omitempty"`
 
 	// Retrieves card invitations filtered by the specified state(s).
 	State []CardInvitationState `json:"state,omitempty"`
@@ -3087,10 +3089,10 @@ func (p *GetCardInvitationsParams) encode() url.Values {
 	if !p.CreatedBefore.IsZero() {
 		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
 	}
-	if p.Limit != "" {
-		q.Set("limit", string(p.Limit))
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
 	} else {
-		q.Set("limit", string((json.Number("100"))))
+		q.Set("limit", strconv.FormatInt(int64((100)), 10))
 	}
 	if len(p.State) > 0 {
 		parts := make([]string, 0, len(p.State))
@@ -3111,8 +3113,8 @@ func (p *GetCardInvitationsParams) ApplyDefaults() {
 	if p == nil {
 		return
 	}
-	if p.Limit == "" {
-		p.Limit = json.Number("100")
+	if p.Limit == 0 {
+		p.Limit = 100
 	}
 }
 
@@ -3191,7 +3193,7 @@ type GetCardsParams struct {
 	// The maximum number of cards to return per page.
 	//
 	// Default: 100.
-	Limit json.Number `json:"limit,omitempty"`
+	Limit int `json:"limit,omitempty"`
 }
 
 // encode serializes GetCardsParams into a URL query.
@@ -3203,10 +3205,10 @@ func (p *GetCardsParams) encode() url.Values {
 	if !p.CreatedBefore.IsZero() {
 		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
 	}
-	if p.Limit != "" {
-		q.Set("limit", string(p.Limit))
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
 	} else {
-		q.Set("limit", string((json.Number("100"))))
+		q.Set("limit", strconv.FormatInt(int64((100)), 10))
 	}
 	return q
 }
@@ -3220,8 +3222,8 @@ func (p *GetCardsParams) ApplyDefaults() {
 	if p == nil {
 		return
 	}
-	if p.Limit == "" {
-		p.Limit = json.Number("100")
+	if p.Limit == 0 {
+		p.Limit = 100
 	}
 }
 
@@ -3681,7 +3683,7 @@ type GetRolesParams struct {
 	// The maximum number of roles returned per page.
 	//
 	// Default: 100.
-	Limit json.Number `json:"limit,omitempty"`
+	Limit int `json:"limit,omitempty"`
 }
 
 // encode serializes GetRolesParams into a URL query.
@@ -3693,10 +3695,10 @@ func (p *GetRolesParams) encode() url.Values {
 	if !p.CreatedBefore.IsZero() {
 		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
 	}
-	if p.Limit != "" {
-		q.Set("limit", string(p.Limit))
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
 	} else {
-		q.Set("limit", string((json.Number("100"))))
+		q.Set("limit", strconv.FormatInt(int64((100)), 10))
 	}
 	return q
 }
@@ -3710,8 +3712,8 @@ func (p *GetRolesParams) ApplyDefaults() {
 	if p == nil {
 		return
 	}
-	if p.Limit == "" {
-		p.Limit = json.Number("100")
+	if p.Limit == 0 {
+		p.Limit = 100
 	}
 }
 
@@ -3856,7 +3858,7 @@ type GetTeamMembersParams struct {
 	// The maximum number of team members returned per page.
 	//
 	// Default: 100.
-	Limit json.Number `json:"limit,omitempty"`
+	Limit int `json:"limit,omitempty"`
 }
 
 // encode serializes GetTeamMembersParams into a URL query.
@@ -3868,10 +3870,10 @@ func (p *GetTeamMembersParams) encode() url.Values {
 	if !p.CreatedBefore.IsZero() {
 		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))
 	}
-	if p.Limit != "" {
-		q.Set("limit", string(p.Limit))
+	if p.Limit != 0 {
+		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
 	} else {
-		q.Set("limit", string((json.Number("100"))))
+		q.Set("limit", strconv.FormatInt(int64((100)), 10))
 	}
 	return q
 }
@@ -3885,8 +3887,8 @@ func (p *GetTeamMembersParams) ApplyDefaults() {
 	if p == nil {
 		return
 	}
-	if p.Limit == "" {
-		p.Limit = json.Number("100")
+	if p.Limit == 0 {
+		p.Limit = 100
 	}
 }
 
@@ -4069,4 +4071,20 @@ func isUUID(s string) bool {
 		}
 	}
 	return true
+}
+
+// mustMatchPattern reports whether s matches the regex re. The
+// regex is compiled once per call site via regexp.MustCompile;
+// bad spec patterns crash the program on first use rather than
+// silently let malformed input through. re is a spec literal,
+// not user input.
+var patternCache sync.Map
+
+func mustMatchPattern(pattern, s string) bool {
+	v, ok := patternCache.Load(pattern)
+	if !ok {
+		re := regexp.MustCompile(pattern)
+		v, _ = patternCache.LoadOrStore(pattern, re)
+	}
+	return v.(*regexp.Regexp).MatchString(s)
 }

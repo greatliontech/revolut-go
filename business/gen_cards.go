@@ -75,8 +75,26 @@ func (s *Cards) ListAll(ctx context.Context, opts *GetCardsParams) iter.Seq2[Car
 // Docs: https://developer.revolut.com/docs/business/create-card
 // Required scopes: WRITE
 func (s *Cards) Create(ctx context.Context, req CardsBody) (*CardCreatedResponse, error) {
+	if len(req.ContactIds) > 0 && uint64(len(req.ContactIds)) < 1 {
+		return nil, errors.New("business: CardsBody.contact_ids must contain at least 1 items")
+	}
+	if uint64(len(req.ContactIds)) > 5 {
+		return nil, errors.New("business: CardsBody.contact_ids must contain at most 5 items")
+	}
+	if req.Label != "" && len(req.Label) > 30 {
+		return nil, errors.New("business: CardsBody.label must be at most 30 characters")
+	}
+	if len(req.References) > 0 && uint64(len(req.References)) < 1 {
+		return nil, errors.New("business: CardsBody.references must contain at least 1 items")
+	}
+	if uint64(len(req.References)) > 5 {
+		return nil, errors.New("business: CardsBody.references must contain at most 5 items")
+	}
 	if req.RequestID == "" {
 		return nil, errors.New("business: CardsBody.request_id is required")
+	}
+	if len(req.RequestID) > 40 {
+		return nil, errors.New("business: CardsBody.request_id must be at most 40 characters")
 	}
 	var out CardCreatedResponse
 	if err := s.t.Do(ctx, http.MethodPost, "cards", req, &out); err != nil {
@@ -114,8 +132,26 @@ func (s *Cards) Update(ctx context.Context, cardID string, req CardsBody) (*Card
 	if !isUUID(cardID) {
 		return nil, errors.New("business: card_id must be a valid UUID")
 	}
+	if len(req.ContactIds) > 0 && uint64(len(req.ContactIds)) < 1 {
+		return nil, errors.New("business: CardsBody.contact_ids must contain at least 1 items")
+	}
+	if uint64(len(req.ContactIds)) > 5 {
+		return nil, errors.New("business: CardsBody.contact_ids must contain at most 5 items")
+	}
+	if req.Label != "" && len(req.Label) > 30 {
+		return nil, errors.New("business: CardsBody.label must be at most 30 characters")
+	}
+	if len(req.References) > 0 && uint64(len(req.References)) < 1 {
+		return nil, errors.New("business: CardsBody.references must contain at least 1 items")
+	}
+	if uint64(len(req.References)) > 5 {
+		return nil, errors.New("business: CardsBody.references must contain at most 5 items")
+	}
 	if req.RequestID == "" {
 		return nil, errors.New("business: CardsBody.request_id is required")
+	}
+	if len(req.RequestID) > 40 {
+		return nil, errors.New("business: CardsBody.request_id must be at most 40 characters")
 	}
 	var out CardResponse
 	if err := s.t.Do(ctx, http.MethodPatch, "cards/"+url.PathEscape(cardID), req, &out); err != nil {
