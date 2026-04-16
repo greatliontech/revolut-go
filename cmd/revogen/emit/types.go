@@ -295,10 +295,17 @@ func writeStruct(w *fileWriter, d *ir.Decl) {
 	for _, union := range d.ImplementsUnions {
 		w.printf("func (%s) is%s() {}\n\n", d.Name, union)
 	}
-	if d.UnionDispatch != nil {
+	switch {
+	case d.UnionDispatch != nil && d.ExtraMap != nil:
+		// Would emit two MarshalJSON methods on the same receiver.
+		// Pick the union-dispatch form — it's the one the server
+		// dispatches on. A future spec that combines both shapes
+		// would need a merged codec; surface the gap here rather
+		// than silently emit uncompilable code.
+		panic("revogen: struct " + d.Name + " has both UnionDispatch and ExtraMap set; codegen would produce conflicting MarshalJSON methods")
+	case d.UnionDispatch != nil:
 		writeWireTaggedMarshal(w, d)
-	}
-	if d.ExtraMap != nil {
+	case d.ExtraMap != nil:
 		writeExtraMapCodec(w, d)
 	}
 	if d.FormEncoder {
@@ -528,12 +535,18 @@ func writeWireTaggedMarshal(w *fileWriter, d *ir.Decl) {
 
 // writeWireTaggedDecoder emits decode<Union>(data) helper for a
 // wire-tagged union. Reads the discriminator property, looks up
-// the matching variant, and decodes into it.
+// the matching variant, and decodes into it. Literal `null` returns
+// a nil variant with no error — a server that omits a
+// nullable-union field shouldn't look like a protocol error.
 func writeWireTaggedDecoder(w *fileWriter, d *ir.Decl) {
 	link := d.Discriminator
 	w.printf("// decode%s reads the %q discriminator and decodes into the\n", d.Name, link.PropertyName)
-	w.write("// matching variant.\n")
+	w.write("// matching variant. JSON null returns (nil, nil) so\n")
+	w.write("// nullable-union response fields don't masquerade as errors.\n")
 	w.printf("func decode%s(data []byte) (%s, error) {\n", d.Name, d.Name)
+	w.write("\tif len(data) == 0 || string(data) == \"null\" {\n")
+	w.write("\t\treturn nil, nil\n")
+	w.write("\t}\n")
 	w.write("\tvar tag struct {\n")
 	w.printf("\t\tT string `json:%q`\n", link.PropertyName)
 	w.write("\t}\n")

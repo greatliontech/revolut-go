@@ -433,7 +433,7 @@ type AddressV4 struct { City string `json:"city"` CountryCode string `json:"coun
 type AirlineDataV2 struct { BookingID BookingID `json:"booking_id"` BookingURL string `json:"booking_url,omitempty"` CrsCode string `json:"crs_code,omitempty"` FulfillmentDate *time.Time `json:"fulfillment_date,omitempty"` JourneyLegs []JourneyLeg `json:"journey_legs,omitempty"` Passengers []Passenger `json:"passengers,omitempty"` Refundability Refundability `json:"refundability,omitempty"` TicketChangeIndicator AirlineDataV2TicketChangeIndicator `json:"ticket_change_indicator,omitempty"` TicketType AirlineDataV2TicketType `json:"ticket_type,omitempty"` TicketsPurchase bool `json:"tickets_purchase,omitempty"` }
 type AirlineDataV2TicketChangeIndicator string
 type AirlineDataV2TicketType string
-type ApplePay struct { Arn Arn `json:"arn,omitempty"` AuthorisationCode AuthorisationCode `json:"authorisation_code,omitempty"` CaptureDeadline CaptureDeadline `json:"capture_deadline,omitempty"` CardBin string `json:"card_bin,omitempty"` CardBrand ApplePayCardBrand `json:"card_brand,omitempty"` CardCountryCode string `json:"card_country_code,omitempty"` CardExpiry string `json:"card_expiry,omitempty"` CardLastFour string `json:"card_last_four,omitempty"` CardholderName string `json:"cardholder_name,omitempty"` Checks CardChecksV2 `json:"checks,omitempty"` Fingerprint Fingerprint `json:"fingerprint,omitempty"` Funding ApplePayFunding `json:"funding,omitempty"` ID string `json:"id,omitempty"` NetworkTransactionID NetworkTransactionID `json:"network_transaction_id,omitempty"` Type PaymentMethodType `json:"type"` }
+type ApplePay struct { Arn Arn `json:"arn,omitempty"` AuthorisationCode AuthorisationCode `json:"authorisation_code,omitempty"` CaptureDeadline CaptureDeadline `json:"capture_deadline,omitempty"` CardBin string `json:"card_bin,omitempty"` CardBrand ApplePayCardBrand `json:"card_brand,omitempty"` CardCountryCode string `json:"card_country_code,omitempty"` CardExpiry string `json:"card_expiry,omitempty"` CardLastFour string `json:"card_last_four,omitempty"` CardholderName string `json:"cardholder_name,omitempty"` Checks CardChecksV2 `json:"checks,omitempty"` Fingerprint Fingerprint `json:"fingerprint,omitempty"` Funding ApplePayFunding `json:"funding,omitempty"` ID string `json:"id,omitempty"` NetworkTransactionID NetworkTransactionID `json:"network_transaction_id,omitempty"` }
 type ApplePayCardBrand string
 type ApplePayFunding string
 type ApplePayMerchantRegistration struct { t *transport.Transport }
@@ -445,7 +445,7 @@ type AuthorisationType string
 type BankMessage string
 type BillingAddress struct { City string `json:"city,omitempty"` CountryCode string `json:"country_code"` Postcode string `json:"postcode"` Region string `json:"region,omitempty"` StreetLine1 string `json:"street_line_1,omitempty"` StreetLine2 string `json:"street_line_2,omitempty"` }
 type BookingID string
-type BrowserEnvironment struct { BrowserURL string `json:"browser_url,omitempty"` ChallengeWindowWidth int `json:"challenge_window_width,omitempty"` ColorDepth int `json:"color_depth"` JavaEnabled bool `json:"java_enabled"` ScreenHeight int `json:"screen_height"` ScreenWidth int `json:"screen_width"` TimeZoneUtcOffset int `json:"time_zone_utc_offset"` Type BrowserEnvironmentType `json:"type"` }
+type BrowserEnvironment struct { BrowserURL string `json:"browser_url,omitempty"` ChallengeWindowWidth int `json:"challenge_window_width,omitempty"` ColorDepth int `json:"color_depth"` JavaEnabled bool `json:"java_enabled"` ScreenHeight int `json:"screen_height"` ScreenWidth int `json:"screen_width"` TimeZoneUtcOffset int `json:"time_zone_utc_offset"` }
 type BrowserEnvironmentType string
 type CancelAuthorisedAfter string
 type CaptureDeadline time.Time
@@ -454,7 +454,7 @@ type CarRentalV2 struct { BookingID BookingID `json:"booking_id"` DistanceLimit 
 type CarRentalV2DistanceLimit struct { AdditionalDistanceCost *CarRentalV2distanceLimitAdditionalDistanceCost `json:"additional_distance_cost,omitempty"` Limit int `json:"limit,omitempty"` Unit CarRentalV2distanceLimitUnit `json:"unit,omitempty"` }
 type CarRentalV2distanceLimitAdditionalDistanceCost struct { Amount int `json:"amount,omitempty"` Currency Currency `json:"currency,omitempty"` }
 type CarRentalV2distanceLimitUnit string
-type Card struct { Arn Arn `json:"arn,omitempty"` AuthorisationCode AuthorisationCode `json:"authorisation_code,omitempty"` CaptureDeadline CaptureDeadline `json:"capture_deadline,omitempty"` CardBin string `json:"card_bin,omitempty"` CardBrand CardCardBrand `json:"card_brand,omitempty"` CardCountryCode string `json:"card_country_code,omitempty"` CardExpiry string `json:"card_expiry,omitempty"` CardLastFour string `json:"card_last_four,omitempty"` CardholderName string `json:"cardholder_name,omitempty"` Checks CardChecksV2 `json:"checks,omitempty"` Fingerprint Fingerprint `json:"fingerprint,omitempty"` Funding CardFunding `json:"funding,omitempty"` ID string `json:"id,omitempty"` NetworkTransactionID NetworkTransactionID `json:"network_transaction_id,omitempty"` Type PaymentMethodType `json:"type"` }
+type Card struct { Arn Arn `json:"arn,omitempty"` AuthorisationCode AuthorisationCode `json:"authorisation_code,omitempty"` CaptureDeadline CaptureDeadline `json:"capture_deadline,omitempty"` CardBin string `json:"card_bin,omitempty"` CardBrand CardCardBrand `json:"card_brand,omitempty"` CardCountryCode string `json:"card_country_code,omitempty"` CardExpiry string `json:"card_expiry,omitempty"` CardLastFour string `json:"card_last_four,omitempty"` CardholderName string `json:"cardholder_name,omitempty"` Checks CardChecksV2 `json:"checks,omitempty"` Fingerprint Fingerprint `json:"fingerprint,omitempty"` Funding CardFunding `json:"funding,omitempty"` ID string `json:"id,omitempty"` NetworkTransactionID NetworkTransactionID `json:"network_transaction_id,omitempty"` }
 type CardBin string
 type CardBrandV2 string
 type CardCardBrand string
@@ -474,7 +474,7 @@ type CardFundingV2 string
 type CardIssuer string
 type CardIssuerCountry string
 type CardLastFour string
-type CardV2 struct { BillingAddress BillingAddress `json:"billing_address,omitempty"` Bin CardBin `json:"bin,omitempty"` Brand CardBrandV2 `json:"brand,omitempty"` CardholderName CardholderName `json:"cardholder_name,omitempty"` CreatedAt PaymentMethodCreatedAt `json:"created_at"` ExpiryMonth CardExpiryMonth `json:"expiry_month,omitempty"` ExpiryYear CardExpiryYear `json:"expiry_year,omitempty"` Funding CardFundingV2 `json:"funding,omitempty"` ID PaymentMethodID `json:"id"` Issuer CardIssuer `json:"issuer,omitempty"` IssuerCountry CardIssuerCountry `json:"issuer_country,omitempty"` LastFour CardLastFour `json:"last_four,omitempty"` SavedFor SavedFor `json:"saved_for,omitempty"` Type PaymentMethodTypeV2 `json:"type"` }
+type CardV2 struct { BillingAddress BillingAddress `json:"billing_address,omitempty"` Bin CardBin `json:"bin,omitempty"` Brand CardBrandV2 `json:"brand,omitempty"` CardholderName CardholderName `json:"cardholder_name,omitempty"` CreatedAt PaymentMethodCreatedAt `json:"created_at"` ExpiryMonth CardExpiryMonth `json:"expiry_month,omitempty"` ExpiryYear CardExpiryYear `json:"expiry_year,omitempty"` Funding CardFundingV2 `json:"funding,omitempty"` ID PaymentMethodID `json:"id"` Issuer CardIssuer `json:"issuer,omitempty"` IssuerCountry CardIssuerCountry `json:"issuer_country,omitempty"` LastFour CardLastFour `json:"last_four,omitempty"` SavedFor SavedFor `json:"saved_for,omitempty"` }
 type CardholderName string
 type CheckoutURL string
 type Client struct { transport *transport.Transport ApplePayMerchantRegistration *ApplePayMerchantRegistration Customers *Customers Disputes *Disputes Locations *Locations Orders *Orders PaymentIntents *PaymentIntents Payments *Payments Payouts *Payouts ReportRuns *ReportRuns Subscriptions *Subscriptions Other *Other Terminals *Terminals Webhooks *Webhooks }
@@ -531,7 +531,7 @@ type FeeType string
 type Fingerprint string
 type FullName string
 type GeoLocation struct { Lat json.Number `json:"lat"` Lon json.Number `json:"lon"` }
-type GooglePay struct { Arn Arn `json:"arn,omitempty"` AuthorisationCode AuthorisationCode `json:"authorisation_code,omitempty"` CaptureDeadline CaptureDeadline `json:"capture_deadline,omitempty"` CardBin string `json:"card_bin,omitempty"` CardBrand GooglePayCardBrand `json:"card_brand,omitempty"` CardCountryCode string `json:"card_country_code,omitempty"` CardExpiry string `json:"card_expiry,omitempty"` CardLastFour string `json:"card_last_four,omitempty"` CardholderName string `json:"cardholder_name,omitempty"` Checks CardChecksV2 `json:"checks,omitempty"` Fingerprint Fingerprint `json:"fingerprint,omitempty"` Funding GooglePayFunding `json:"funding,omitempty"` ID string `json:"id,omitempty"` NetworkTransactionID NetworkTransactionID `json:"network_transaction_id,omitempty"` Type PaymentMethodType `json:"type"` }
+type GooglePay struct { Arn Arn `json:"arn,omitempty"` AuthorisationCode AuthorisationCode `json:"authorisation_code,omitempty"` CaptureDeadline CaptureDeadline `json:"capture_deadline,omitempty"` CardBin string `json:"card_bin,omitempty"` CardBrand GooglePayCardBrand `json:"card_brand,omitempty"` CardCountryCode string `json:"card_country_code,omitempty"` CardExpiry string `json:"card_expiry,omitempty"` CardLastFour string `json:"card_last_four,omitempty"` CardholderName string `json:"cardholder_name,omitempty"` Checks CardChecksV2 `json:"checks,omitempty"` Fingerprint Fingerprint `json:"fingerprint,omitempty"` Funding GooglePayFunding `json:"funding,omitempty"` ID string `json:"id,omitempty"` NetworkTransactionID NetworkTransactionID `json:"network_transaction_id,omitempty"` }
 type GooglePayCardBrand string
 type GooglePayFunding string
 type Guest struct { FirstName string `json:"first_name"` LastName string `json:"last_name"` }
@@ -548,13 +548,13 @@ type LineItem struct { Description string `json:"description,omitempty"` Discoun
 type LineItemType string
 type Location interface { isLocation() }
 type LocationCreation interface { isLocationCreation() }
-type LocationCreationOnline struct { Details LocationOnlineDetails `json:"details"` Name LocationName `json:"name"` Type LocationType `json:"type"` }
-type LocationCreationPhysical struct { Details LocationPhysicalDetails `json:"details"` Name LocationName `json:"name"` Type LocationType `json:"type"` }
+type LocationCreationOnline struct { Details LocationOnlineDetails `json:"details"` Name LocationName `json:"name"` }
+type LocationCreationPhysical struct { Details LocationPhysicalDetails `json:"details"` Name LocationName `json:"name"` }
 type LocationID string
 type LocationName string
-type LocationOnline struct { Details LocationOnlineDetails `json:"details"` ID LocationID `json:"id"` Name LocationName `json:"name"` Type LocationType `json:"type"` }
+type LocationOnline struct { Details LocationOnlineDetails `json:"details"` ID LocationID `json:"id"` Name LocationName `json:"name"` }
 type LocationOnlineDetails struct { Domain string `json:"domain"` }
-type LocationPhysical struct { Details LocationPhysicalDetails `json:"details"` ID LocationID `json:"id"` Name LocationName `json:"name"` Type LocationType `json:"type"` }
+type LocationPhysical struct { Details LocationPhysicalDetails `json:"details"` ID LocationID `json:"id"` Name LocationName `json:"name"` }
 type LocationPhysicalDetails struct { Address AddressV3 `json:"address"` GeoLocation GeoLocation `json:"geo_location"` OpeningHours OpeningHours `json:"opening_hours"` }
 type LocationType string
 type LocationUpdate interface { isLocationUpdate() }
@@ -683,13 +683,13 @@ type RevolutAPIVersion string
 type RevolutAPIVersion20240901Min string
 type RevolutAPIVersionOptional string
 type RevolutPay struct { ID string `json:"id,omitempty"` Subtype RevolutPaySubtype `json:"subtype,omitempty"` Type RevolutPayType `json:"type,omitempty"` Brand string `json:"brand,omitempty"` LastFour string `json:"last_four,omitempty"` }
-type RevolutPayAccount struct { Fingerprint Fingerprint `json:"fingerprint,omitempty"` ID string `json:"id,omitempty"` Type PaymentMethodType `json:"type"` }
-type RevolutPayCard struct { Arn Arn `json:"arn,omitempty"` AuthorisationCode AuthorisationCode `json:"authorisation_code,omitempty"` CaptureDeadline CaptureDeadline `json:"capture_deadline,omitempty"` CardBin string `json:"card_bin,omitempty"` CardBrand RevolutPayCardCardBrand `json:"card_brand,omitempty"` CardCountryCode string `json:"card_country_code,omitempty"` CardExpiry string `json:"card_expiry,omitempty"` CardLastFour string `json:"card_last_four,omitempty"` CardholderName string `json:"cardholder_name,omitempty"` Checks CardChecksV2 `json:"checks,omitempty"` Fingerprint Fingerprint `json:"fingerprint,omitempty"` Funding RevolutPayCardFunding `json:"funding,omitempty"` ID string `json:"id,omitempty"` NetworkTransactionID NetworkTransactionID `json:"network_transaction_id,omitempty"` Type PaymentMethodType `json:"type"` }
+type RevolutPayAccount struct { Fingerprint Fingerprint `json:"fingerprint,omitempty"` ID string `json:"id,omitempty"` }
+type RevolutPayCard struct { Arn Arn `json:"arn,omitempty"` AuthorisationCode AuthorisationCode `json:"authorisation_code,omitempty"` CaptureDeadline CaptureDeadline `json:"capture_deadline,omitempty"` CardBin string `json:"card_bin,omitempty"` CardBrand RevolutPayCardCardBrand `json:"card_brand,omitempty"` CardCountryCode string `json:"card_country_code,omitempty"` CardExpiry string `json:"card_expiry,omitempty"` CardLastFour string `json:"card_last_four,omitempty"` CardholderName string `json:"cardholder_name,omitempty"` Checks CardChecksV2 `json:"checks,omitempty"` Fingerprint Fingerprint `json:"fingerprint,omitempty"` Funding RevolutPayCardFunding `json:"funding,omitempty"` ID string `json:"id,omitempty"` NetworkTransactionID NetworkTransactionID `json:"network_transaction_id,omitempty"` }
 type RevolutPayCardCardBrand string
 type RevolutPayCardFunding string
 type RevolutPaySubtype string
 type RevolutPayType string
-type RevolutPayV2 struct { CreatedAt PaymentMethodCreatedAt `json:"created_at"` ID PaymentMethodID `json:"id"` SavedFor SavedFor `json:"saved_for,omitempty"` Type PaymentMethodTypeV2 `json:"type"` }
+type RevolutPayV2 struct { CreatedAt PaymentMethodCreatedAt `json:"created_at"` ID PaymentMethodID `json:"id"` SavedFor SavedFor `json:"saved_for,omitempty"` }
 type RpayAccount struct { ID string `json:"id,omitempty"` Subtype RpayAccountSubtype `json:"subtype"` Type RpayAccountType `json:"type"` }
 type RpayAccountSubtype string
 type RpayAccountType string
@@ -763,8 +763,8 @@ type TerminalSerialNumber string
 type TerminalType string
 type Terminals struct { t *transport.Transport }
 type TerminalsResponse struct { Terminals []Terminal `json:"terminals"` }
-type ThreeDs struct { AcsURL string `json:"acs_url"` Type ThreeDsType `json:"type"` }
-type ThreeDsFingerprint struct { FingerprintData string `json:"fingerprint_data"` FingerprintURL string `json:"fingerprint_url"` Type ThreeDsFingerprintType `json:"type"` }
+type ThreeDs struct { AcsURL string `json:"acs_url"` }
+type ThreeDsFingerprint struct { FingerprintData string `json:"fingerprint_data"` FingerprintURL string `json:"fingerprint_url"` }
 type ThreeDsFingerprintType string
 type ThreeDsType string
 type Ticket struct { ID string `json:"id"` Refundability Refundability `json:"refundability,omitempty"` Transferable bool `json:"transferable,omitempty"` }

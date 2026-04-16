@@ -101,8 +101,27 @@ func Unions(spec *ir.Spec) {
 	for name, link := range dispatch {
 		if d := declByName[name]; d != nil {
 			d.UnionDispatch = link
+			// Drop any explicit field whose JSON name is the
+			// discriminator property. The emitter's MarshalJSON
+			// always injects the tag; a struct field named the same
+			// would shadow-compete on decode and is a lie to callers
+			// (the Go depth rule makes their value silently ignored).
+			// Decode still picks up the tag via the
+			// dispatch-only decoder.
+			d.Fields = dropFieldByJSONName(d.Fields, link.PropertyName)
 		}
 	}
+}
+
+func dropFieldByJSONName(fields []*ir.Field, jsonName string) []*ir.Field {
+	out := fields[:0]
+	for _, f := range fields {
+		if f.JSONName == jsonName {
+			continue
+		}
+		out = append(out, f)
+	}
+	return out
 }
 
 func indexDecls(decls []*ir.Decl) map[string]*ir.Decl {

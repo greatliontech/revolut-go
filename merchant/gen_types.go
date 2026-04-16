@@ -224,9 +224,6 @@ type ApplePay struct {
 
 	// The Network Transaction ID (NTI) is a unique identifier assigned by the card scheme (e.g., Visa or Mastercard) to a card transaction.
 	NetworkTransactionID NetworkTransactionID `json:"network_transaction_id,omitempty"`
-
-	// The type of payment method used to pay for the order.
-	Type PaymentMethodType `json:"type"`
 }
 
 func (ApplePay) isPaymentMethodV2() {}
@@ -262,8 +259,12 @@ type AuthenticationChallenge interface {
 }
 
 // decodeAuthenticationChallenge reads the "type" discriminator and decodes into the
-// matching variant.
+// matching variant. JSON null returns (nil, nil) so
+// nullable-union response fields don't masquerade as errors.
 func decodeAuthenticationChallenge(data []byte) (AuthenticationChallenge, error) {
+	if len(data) == 0 || string(data) == "null" {
+		return nil, nil
+	}
 	var tag struct {
 		T string `json:"type"`
 	}
@@ -375,9 +376,6 @@ type BrowserEnvironment struct {
 
 	// Defines the offset to UTC in minutes.
 	TimeZoneUtcOffset int `json:"time_zone_utc_offset"`
-
-	// Type of environment where the payment was made.
-	Type BrowserEnvironmentType `json:"type"`
 }
 
 func (BrowserEnvironment) isEnvironment() {}
@@ -593,9 +591,6 @@ type Card struct {
 
 	// The Network Transaction ID (NTI) is a unique identifier assigned by the card scheme (e.g., Visa or Mastercard) to a card transaction.
 	NetworkTransactionID NetworkTransactionID `json:"network_transaction_id,omitempty"`
-
-	// The type of payment method used to pay for the order.
-	Type PaymentMethodType `json:"type"`
 }
 
 func (Card) isPaymentMethodV2() {}
@@ -805,9 +800,6 @@ type CardV2 struct {
 
 	// Indicates in which case this saved payment method can be used for payments.
 	SavedFor SavedFor `json:"saved_for,omitempty"`
-
-	// The type of the payment method.
-	Type PaymentMethodTypeV2 `json:"type"`
 }
 
 func (CardV2) isPaymentMethodV4() {}
@@ -1417,8 +1409,12 @@ type Environment interface {
 }
 
 // decodeEnvironment reads the "type" discriminator and decodes into the
-// matching variant.
+// matching variant. JSON null returns (nil, nil) so
+// nullable-union response fields don't masquerade as errors.
 func decodeEnvironment(data []byte) (Environment, error) {
+	if len(data) == 0 || string(data) == "null" {
+		return nil, nil
+	}
 	var tag struct {
 		T string `json:"type"`
 	}
@@ -1682,9 +1678,6 @@ type GooglePay struct {
 
 	// The Network Transaction ID (NTI) is a unique identifier assigned by the card scheme (e.g., Visa or Mastercard) to a card transaction.
 	NetworkTransactionID NetworkTransactionID `json:"network_transaction_id,omitempty"`
-
-	// The type of payment method used to pay for the order.
-	Type PaymentMethodType `json:"type"`
 }
 
 func (GooglePay) isPaymentMethodV2() {}
@@ -1916,8 +1909,12 @@ type Location interface {
 }
 
 // decodeLocation reads the "type" discriminator and decodes into the
-// matching variant.
+// matching variant. JSON null returns (nil, nil) so
+// nullable-union response fields don't masquerade as errors.
 func decodeLocation(data []byte) (Location, error) {
+	if len(data) == 0 || string(data) == "null" {
+		return nil, nil
+	}
 	var tag struct {
 		T string `json:"type"`
 	}
@@ -1950,8 +1947,12 @@ type LocationCreation interface {
 }
 
 // decodeLocationCreation reads the "type" discriminator and decodes into the
-// matching variant.
+// matching variant. JSON null returns (nil, nil) so
+// nullable-union response fields don't masquerade as errors.
 func decodeLocationCreation(data []byte) (LocationCreation, error) {
+	if len(data) == 0 || string(data) == "null" {
+		return nil, nil
+	}
 	var tag struct {
 		T string `json:"type"`
 	}
@@ -1981,9 +1982,6 @@ type LocationCreationOnline struct {
 
 	// Name of the location.
 	Name LocationName `json:"name"`
-
-	// Type of the location.
-	Type LocationType `json:"type"`
 }
 
 func (LocationCreationOnline) isLocationCreation() {}
@@ -2007,9 +2005,6 @@ type LocationCreationPhysical struct {
 
 	// Name of the location.
 	Name LocationName `json:"name"`
-
-	// Type of the location.
-	Type LocationType `json:"type"`
 }
 
 func (LocationCreationPhysical) isLocationCreation() {}
@@ -2050,9 +2045,6 @@ type LocationOnline struct {
 
 	// Name of the location.
 	Name LocationName `json:"name"`
-
-	// Type of the location.
-	Type LocationType `json:"type"`
 }
 
 func (LocationOnline) isLocation() {}
@@ -2089,9 +2081,6 @@ type LocationPhysical struct {
 
 	// Name of the location.
 	Name LocationName `json:"name"`
-
-	// Type of the location.
-	Type LocationType `json:"type"`
 }
 
 func (LocationPhysical) isLocation() {}
@@ -2147,8 +2136,12 @@ type LocationUpdate interface {
 }
 
 // decodeLocationUpdate reads the "type" discriminator and decodes into the
-// matching variant.
+// matching variant. JSON null returns (nil, nil) so
+// nullable-union response fields don't masquerade as errors.
 func decodeLocationUpdate(data []byte) (LocationUpdate, error) {
+	if len(data) == 0 || string(data) == "null" {
+		return nil, nil
+	}
 	var tag struct {
 		T string `json:"type"`
 	}
@@ -2205,8 +2198,12 @@ type LocationUpdatePhysical interface {
 }
 
 // decodeLocationUpdatePhysical reads the "type" discriminator and decodes into the
-// matching variant.
+// matching variant. JSON null returns (nil, nil) so
+// nullable-union response fields don't masquerade as errors.
 func decodeLocationUpdatePhysical(data []byte) (LocationUpdatePhysical, error) {
+	if len(data) == 0 || string(data) == "null" {
+		return nil, nil
+	}
 	var tag struct {
 		T string `json:"type"`
 	}
@@ -3047,8 +3044,12 @@ type PaymentMethodV2 interface {
 }
 
 // decodePaymentMethodV2 reads the "type" discriminator and decodes into the
-// matching variant.
+// matching variant. JSON null returns (nil, nil) so
+// nullable-union response fields don't masquerade as errors.
 func decodePaymentMethodV2(data []byte) (PaymentMethodV2, error) {
+	if len(data) == 0 || string(data) == "null" {
+		return nil, nil
+	}
 	var tag struct {
 		T string `json:"type"`
 	}
@@ -3107,8 +3108,12 @@ type PaymentMethodV4 interface {
 }
 
 // decodePaymentMethodV4 reads the "type" discriminator and decodes into the
-// matching variant.
+// matching variant. JSON null returns (nil, nil) so
+// nullable-union response fields don't masquerade as errors.
 func decodePaymentMethodV4(data []byte) (PaymentMethodV4, error) {
+	if len(data) == 0 || string(data) == "null" {
+		return nil, nil
+	}
 	var tag struct {
 		T string `json:"type"`
 	}
@@ -3793,9 +3798,6 @@ type RevolutPayAccount struct {
 
 	// ID of the saved payment method.
 	ID string `json:"id,omitempty"`
-
-	// The type of payment method used to pay for the order.
-	Type PaymentMethodType `json:"type"`
 }
 
 func (RevolutPayAccount) isPaymentMethodV2() {}
@@ -3874,9 +3876,6 @@ type RevolutPayCard struct {
 
 	// The Network Transaction ID (NTI) is a unique identifier assigned by the card scheme (e.g., Visa or Mastercard) to a card transaction.
 	NetworkTransactionID NetworkTransactionID `json:"network_transaction_id,omitempty"`
-
-	// The type of payment method used to pay for the order.
-	Type PaymentMethodType `json:"type"`
 }
 
 func (RevolutPayCard) isPaymentMethodV2() {}
@@ -3910,9 +3909,6 @@ type RevolutPayV2 struct {
 
 	// Indicates in which case this saved payment method can be used for payments.
 	SavedFor SavedFor `json:"saved_for,omitempty"`
-
-	// The type of the payment method.
-	Type PaymentMethodTypeV2 `json:"type"`
 }
 
 func (RevolutPayV2) isPaymentMethodV4() {}
@@ -4603,9 +4599,6 @@ const (
 type ThreeDs struct {
 	// The URL of the authentication challenge.
 	AcsURL string `json:"acs_url"`
-
-	// Type of the authentication challenge the payment triggers.
-	Type ThreeDsType `json:"type"`
 }
 
 func (ThreeDs) isAuthenticationChallenge() {}
@@ -4638,9 +4631,6 @@ type ThreeDsFingerprint struct {
 
 	// The URL of the fingerprint. (Used only internally by Revolut.)
 	FingerprintURL string `json:"fingerprint_url"`
-
-	// Type of the authentication challenge the payment triggers.
-	Type ThreeDsFingerprintType `json:"type"`
 }
 
 func (ThreeDsFingerprint) isAuthenticationChallenge() {}
