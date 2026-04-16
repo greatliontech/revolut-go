@@ -1,8 +1,6 @@
 package build
 
 import (
-	"strings"
-
 	"github.com/greatliontech/revolut-go/cmd/revogen/ir"
 )
 
@@ -292,18 +290,6 @@ func isIntType(t *ir.Type) bool {
 		return true
 	}
 	return false
-}
-
-// isTimeType tests whether a Type expresses a time value (plain or
-// pointer-wrapped).
-func isTimeType(t *ir.Type) bool {
-	if t == nil {
-		return false
-	}
-	if t.IsPointer() {
-		t = t.Elem
-	}
-	return t != nil && strings.HasSuffix(t.GoExpr(), "time.Time")
 }
 
 // finalizePagination is the buildOperations hook that annotates

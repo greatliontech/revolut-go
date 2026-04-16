@@ -262,20 +262,54 @@ func writeSensitiveRedaction(w *fileWriter, d *ir.Decl) {
 		if !f.Sensitive {
 			continue
 		}
-		switch {
-		case f.Type.Kind == ir.KindPrim && f.Type.Name == "string":
-			w.printf("\tif clone.%s != \"\" { clone.%s = \"[REDACTED]\" }\n", f.GoName, f.GoName)
-		case f.Type.IsNamed():
-			w.printf("\tif clone.%s != \"\" { clone.%s = \"[REDACTED]\" }\n", f.GoName, f.GoName)
-		case f.Type.IsPointer() && f.Type.Elem != nil && f.Type.Elem.Kind == ir.KindPrim && f.Type.Elem.Name == "string":
-			w.printf("\tif clone.%s != nil { redacted := \"[REDACTED]\"; clone.%s = &redacted }\n",
-				f.GoName, f.GoName)
-		}
+		writeSensitiveFieldRedact(w, f, "clone."+f.GoName, f.Type)
 	}
 	w.printf("\treturn fmt.Sprintf(\"%%+v\", %s(clone))\n", d.Name)
 	w.write("}\n\n")
 	w.printf("// GoString mirrors String so %%#v and slog.Value both redact.\n")
 	w.printf("func (v %s) GoString() string { return v.String() }\n\n", d.Name)
+}
+
+// writeSensitiveFieldRedact emits the in-place replacement line for
+// one sensitive field. Dispatch covers the shapes a credential can
+// realistically take: bare string / json.Number / named string /
+// pointer to any of the above. Other shapes (slices, maps, structs)
+// skip — the credential-name heuristic wouldn't flag them.
+func writeSensitiveFieldRedact(w *fileWriter, f *ir.Field, expr string, t *ir.Type) {
+	switch t.Shape() {
+	case ir.ShapeString, ir.ShapeJSONNumber, ir.ShapeCurrency, ir.ShapeNamedString:
+		w.printf("\tif %s != \"\" { %s = \"[REDACTED]\" }\n", expr, expr)
+	case ir.ShapePointer:
+		if t.Elem == nil {
+			return
+		}
+		inner := t.Elem.Shape()
+		switch inner {
+		case ir.ShapeString, ir.ShapeJSONNumber, ir.ShapeCurrency, ir.ShapeNamedString:
+			redacted := redactedLiteralFor(t.Elem)
+			w.printf("\tif %s != nil { redacted := %s; %s = &redacted }\n",
+				expr, redacted, expr)
+		}
+	}
+	_ = f
+}
+
+// redactedLiteralFor returns a Go literal of the correct type to
+// replace a sensitive pointer's target. A *string gets "[REDACTED]";
+// a named-string type is cast-constructed.
+func redactedLiteralFor(t *ir.Type) string {
+	if t == nil {
+		return `"[REDACTED]"`
+	}
+	switch t.Shape() {
+	case ir.ShapeNamedString:
+		return t.Name + `("[REDACTED]")`
+	case ir.ShapeJSONNumber:
+		return `json.Number("0")`
+	case ir.ShapeCurrency:
+		return `core.Currency("")`
+	}
+	return `"[REDACTED]"`
 }
 
 // writeApplyDefaults emits ApplyDefaults on a Params struct when
@@ -756,11 +790,3 @@ func writeFieldDoc(w *fileWriter, f *ir.Field) {
 	}
 }
 
-// sortDeclsForEmit returns Decls in stable emit order. Currently
-// the Spec already sorts them; this exists so future ordering
-// changes are localised.
-func sortDeclsForEmit(decls []*ir.Decl) []*ir.Decl {
-	out := append([]*ir.Decl(nil), decls...)
-	sort.SliceStable(out, func(i, j int) bool { return out[i].Name < out[j].Name })
-	return out
-}

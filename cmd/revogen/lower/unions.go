@@ -30,8 +30,8 @@ func Unions(spec *ir.Spec) {
 	markerImpls := map[string][]string{}
 	dispatch := map[string]*ir.UnionLink{}
 
-	var propagate func(unionName string, parentMarkers []string, parentDisc *ir.Discriminator, parentTag string)
-	propagate = func(unionName string, parentMarkers []string, parentDisc *ir.Discriminator, parentTag string) {
+	var propagate func(unionName string, parentMarkers []string)
+	propagate = func(unionName string, parentMarkers []string) {
 		union := declByName[unionName]
 		if union == nil || union.Kind != ir.DeclInterface {
 			return
@@ -66,7 +66,7 @@ func Unions(spec *ir.Spec) {
 				for _, m := range myMarkers {
 					variant.ImplementsUnions = appendUnique(variant.ImplementsUnions, m)
 				}
-				propagate(v.GoName, myMarkers, parentDisc, parentTag)
+				propagate(v.GoName, myMarkers)
 			}
 		}
 	}
@@ -86,7 +86,7 @@ func Unions(spec *ir.Spec) {
 		if d.Kind != ir.DeclInterface || isVariant[d.Name] {
 			continue
 		}
-		propagate(d.Name, nil, nil, "")
+		propagate(d.Name, nil)
 	}
 
 	for name, markers := range markerImpls {

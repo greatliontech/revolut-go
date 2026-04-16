@@ -119,6 +119,15 @@ func verifyDetachedJWS(sig string, payload []byte, resolver KeyResolver) error {
 	if h.Alg == "" {
 		return errors.New("openbanking: JWS header missing alg")
 	}
+	// RFC 7515 §4.1.11: if crit is present, the verifier MUST
+	// understand every listed extension or reject the JWS. Only the
+	// OBIE-specific claim names below are recognised here; anything
+	// else is treated as an unknown extension and rejected.
+	for _, c := range h.Crit {
+		if !isUnderstoodCrit(c) {
+			return fmt.Errorf("openbanking: JWS header has unknown crit extension %q", c)
+		}
+	}
 	sigBytes, err := base64.RawURLEncoding.DecodeString(sigEnc)
 	if err != nil {
 		return fmt.Errorf("openbanking: decode JWS signature: %w", err)
@@ -130,6 +139,22 @@ func verifyDetachedJWS(sig string, payload []byte, resolver KeyResolver) error {
 	payloadEnc := base64.RawURLEncoding.EncodeToString(payload)
 	signingInput := []byte(headerEnc + "." + payloadEnc)
 	return verifyAlg(h.Alg, signingInput, sigBytes, pubKey)
+}
+
+// isUnderstoodCrit reports whether a crit entry is one the verifier
+// recognises. OBIE defines several vendor-specific claims; we
+// accept the common set by URI so TPPs issuing spec-compliant
+// signatures validate cleanly. Unknown entries are rejected.
+func isUnderstoodCrit(c string) bool {
+	switch c {
+	case
+		"http://openbanking.org.uk/iat",
+		"http://openbanking.org.uk/iss",
+		"http://openbanking.org.uk/tan",
+		"b64":
+		return true
+	}
+	return false
 }
 
 func splitDetached(sig string) (string, string, bool) {

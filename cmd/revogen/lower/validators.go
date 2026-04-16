@@ -81,7 +81,7 @@ func optsValidators(optsType *ir.Type, declByName map[string]*ir.Decl, errPrefix
 func walkValidators(d *ir.Decl, exprPrefix, jsonPathPrefix string, declByName map[string]*ir.Decl, visited map[string]bool, errPrefix string) []ir.Validator {
 	var out []ir.Validator
 	if len(d.AnyOfRequiredGroups) > 0 {
-		out = append(out, anyOfGroupValidator(d, exprPrefix, jsonPathPrefix, errPrefix)...)
+		out = append(out, anyOfGroupValidator(d, exprPrefix, jsonPathPrefix, errPrefix, declByName)...)
 	}
 	for _, f := range d.Fields {
 		expr := exprPrefix + "." + f.GoName
@@ -382,8 +382,11 @@ func boundWord(base string, exclusive bool) string {
 
 // anyOfGroupValidator produces "at least one of (group A) OR
 // (group B)" checks. The error message lists the JSON field names
-// of every group so the failure is actionable.
-func anyOfGroupValidator(d *ir.Decl, exprPrefix, jsonPath, errPrefix string) []ir.Validator {
+// of every group so the failure is actionable. declByName is
+// forwarded so named-type fields (enums, aliases) resolve through
+// unsetCond — without it, named fields silently fall through and
+// would be missing from the OR-check.
+func anyOfGroupValidator(d *ir.Decl, exprPrefix, jsonPath, errPrefix string, declByName map[string]*ir.Decl) []ir.Validator {
 	jsonByName := map[string]*ir.Field{}
 	for _, f := range d.Fields {
 		jsonByName[f.JSONName] = f
@@ -398,7 +401,7 @@ func anyOfGroupValidator(d *ir.Decl, exprPrefix, jsonPath, errPrefix string) []i
 			if f == nil {
 				continue
 			}
-			cond := unsetCond(f.Type, exprPrefix+"."+f.GoName, nil)
+			cond := unsetCond(f.Type, exprPrefix+"."+f.GoName, declByName)
 			if cond == "" {
 				continue
 			}

@@ -12,19 +12,36 @@ import (
 )
 
 // WebhookVerificationOptions tunes the behaviour of VerifyWebhook.
-// The zero value is a sensible default: v1 signatures, a 5-minute
-// tolerance window against the current wall clock.
+// The zero value is a sensible default: v1 signatures, 5 minutes
+// of past-age tolerance, and 30 seconds of forward clock-skew
+// tolerance.
 type WebhookVerificationOptions struct {
 	// MaxAge rejects webhook events whose Revolut-Request-Timestamp
-	// is further than this in the past. Zero uses DefaultWebhookMaxAge.
+	// is more than this far in the past. Zero uses DefaultWebhookMaxAge.
 	// A negative value disables the check.
 	MaxAge time.Duration
+
+	// FutureSkew is the maximum amount of forward clock drift the
+	// verifier tolerates — the webhook's timestamp is allowed to sit
+	// up to this far in the future of the verifier's clock before
+	// being rejected. Revolut stamps on send, so a real delivery's
+	// timestamp is always in the past; this knob only absorbs clock
+	// drift. Zero uses DefaultWebhookFutureSkew. A negative value
+	// disables forward-skew tolerance entirely (any future timestamp
+	// is rejected).
+	FutureSkew time.Duration
+
 	// Now lets tests inject a clock. Nil uses time.Now().UTC().
 	Now func() time.Time
 }
 
 // DefaultWebhookMaxAge matches Revolut's documented replay window.
 const DefaultWebhookMaxAge = 5 * time.Minute
+
+// DefaultWebhookFutureSkew is the forward clock-drift tolerance.
+// Keeps the verifier strictly past-oriented while absorbing a
+// modest amount of client/server clock mismatch.
+const DefaultWebhookFutureSkew = 30 * time.Second
 
 // VerifyWebhook authenticates an incoming webhook delivery using the
 // merchant / business / crypto-ramp signing secret. It checks:
@@ -100,8 +117,20 @@ func checkTimestamp(raw string, opts WebhookVerificationOptions) error {
 	if opts.Now != nil {
 		now = opts.Now()
 	}
-	if delta := now.Sub(when); delta > maxAge || delta < -maxAge {
-		return fmt.Errorf("revolut: webhook timestamp %s outside +/- %s window", when.Format(time.RFC3339), maxAge)
+	// Replay protection: the timestamp must be in the past (Revolut
+	// stamps at send-time) within maxAge. A small forward drift is
+	// tolerated via FutureSkew; a legitimate delivery's timestamp
+	// can't be hours in the future.
+	futureSkew := opts.FutureSkew
+	if futureSkew == 0 {
+		futureSkew = DefaultWebhookFutureSkew
+	}
+	delta := now.Sub(when)
+	if futureSkew >= 0 && delta < -futureSkew {
+		return fmt.Errorf("revolut: webhook timestamp %s is in the future beyond clock-skew tolerance (%s)", when.Format(time.RFC3339), futureSkew)
+	}
+	if delta > maxAge {
+		return fmt.Errorf("revolut: webhook timestamp %s older than %s window", when.Format(time.RFC3339), maxAge)
 	}
 	return nil
 }
