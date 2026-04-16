@@ -382,7 +382,7 @@ func TestEmit_ProbeDecoderForUntaggedUnion(t *testing.T) {
 		"type Event interface",
 		"isEvent()",
 		"func decodeEvent(data []byte) (Event, error)",
-		"hasJSONKey(m",
+		"validate.HasJSONKey(probe",
 		"func (Click) isEvent()",
 		"func (Scroll) isEvent()",
 	} {

@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Webhooks groups the Webhooks endpoints.
@@ -73,7 +74,7 @@ func (s *Webhooks) Create(ctx context.Context, revolutAPIVersion RevolutAPIVersi
 	if len(string(req.URL)) > 2000 {
 		return nil, errors.New("merchant: WebhookCreation.url must be at most 2000 characters")
 	}
-	if !mustMatchPattern("^https?:\\/{2}.+/gi", string(req.URL)) {
+	if !validate.MatchPattern("^https?:\\/{2}.+/gi", string(req.URL)) {
 		return nil, errors.New("merchant: WebhookCreation.url must match pattern ^https?:\\/{2}.+/gi")
 	}
 	r := transport.RawRequest{
@@ -105,7 +106,7 @@ func (s *Webhooks) Get(ctx context.Context, webhookID string, revolutAPIVersion 
 	if webhookID == "" {
 		return nil, errors.New("merchant: webhook_id is required")
 	}
-	if !isUUID(webhookID) {
+	if !validate.IsUUID(webhookID) {
 		return nil, errors.New("merchant: webhook_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -140,7 +141,7 @@ func (s *Webhooks) Update(ctx context.Context, webhookID string, revolutAPIVersi
 	if webhookID == "" {
 		return nil, errors.New("merchant: webhook_id is required")
 	}
-	if !isUUID(webhookID) {
+	if !validate.IsUUID(webhookID) {
 		return nil, errors.New("merchant: webhook_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -152,7 +153,7 @@ func (s *Webhooks) Update(ctx context.Context, webhookID string, revolutAPIVersi
 	if req.URL != "" && len(string(req.URL)) > 2000 {
 		return nil, errors.New("merchant: WebhookUpdate.url must be at most 2000 characters")
 	}
-	if req.URL != "" && !mustMatchPattern("^https?:\\/{2}.+/gi", string(req.URL)) {
+	if req.URL != "" && !validate.MatchPattern("^https?:\\/{2}.+/gi", string(req.URL)) {
 		return nil, errors.New("merchant: WebhookUpdate.url must match pattern ^https?:\\/{2}.+/gi")
 	}
 	r := transport.RawRequest{
@@ -184,7 +185,7 @@ func (s *Webhooks) Delete(ctx context.Context, webhookID string, revolutAPIVersi
 	if webhookID == "" {
 		return errors.New("merchant: webhook_id is required")
 	}
-	if !isUUID(webhookID) {
+	if !validate.IsUUID(webhookID) {
 		return errors.New("merchant: webhook_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -218,7 +219,7 @@ func (s *Webhooks) RotateWebhookSigningSecret(ctx context.Context, webhookID str
 	if webhookID == "" {
 		return nil, errors.New("merchant: webhook_id is required")
 	}
-	if !isUUID(webhookID) {
+	if !validate.IsUUID(webhookID) {
 		return nil, errors.New("merchant: webhook_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {

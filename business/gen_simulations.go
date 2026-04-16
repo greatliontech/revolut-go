@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Simulations groups the Simulations endpoints.
@@ -36,7 +37,7 @@ func (s *Simulations) SimulateTopUp(ctx context.Context, req SimulationsBody) (*
 	if req.Currency == "" {
 		return nil, errors.New("business: SimulationsBody.currency is required")
 	}
-	if !mustMatchPattern("^[A-Z]{3}$", string(req.Currency)) {
+	if !validate.MatchPattern("^[A-Z]{3}$", string(req.Currency)) {
 		return nil, errors.New("business: SimulationsBody.currency must match pattern ^[A-Z]{3}$")
 	}
 	var out SimulateTopUpResponse
@@ -60,7 +61,7 @@ func (s *Simulations) SimulateTransferStateUpdate(ctx context.Context, id string
 	if id == "" {
 		return nil, errors.New("business: id is required")
 	}
-	if !isUUID(id) {
+	if !validate.IsUUID(id) {
 		return nil, errors.New("business: id must be a valid UUID")
 	}
 	if action == "" {

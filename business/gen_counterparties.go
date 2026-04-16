@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Counterparties groups the Counterparties endpoints.
@@ -191,10 +192,10 @@ func (s *Counterparties) ListAll(ctx context.Context, opts *GetCounterpartiesPar
 // Docs: https://developer.revolut.com/docs/business/add-counterparty
 // Required scopes: READ, WRITE
 func (s *Counterparties) Create(ctx context.Context, req CreateCounterpartyRequest) (*Counterparty, error) {
-	if req.BankCountry != "" && !mustMatchPattern("^[A-Z]{2}$", string(req.BankCountry)) {
+	if req.BankCountry != "" && !validate.MatchPattern("^[A-Z]{2}$", string(req.BankCountry)) {
 		return nil, errors.New("business: CreateCounterpartyRequest.bank_country must match pattern ^[A-Z]{2}$")
 	}
-	if req.Currency != "" && !mustMatchPattern("^[A-Z]{3}$", string(req.Currency)) {
+	if req.Currency != "" && !validate.MatchPattern("^[A-Z]{3}$", string(req.Currency)) {
 		return nil, errors.New("business: CreateCounterpartyRequest.currency must match pattern ^[A-Z]{3}$")
 	}
 	var out Counterparty
@@ -214,7 +215,7 @@ func (s *Counterparties) Get(ctx context.Context, counterpartyID string) (*Count
 	if counterpartyID == "" {
 		return nil, errors.New("business: counterparty_id is required")
 	}
-	if !isUUID(counterpartyID) {
+	if !validate.IsUUID(counterpartyID) {
 		return nil, errors.New("business: counterparty_id must be a valid UUID")
 	}
 	var out Counterparty
@@ -234,7 +235,7 @@ func (s *Counterparties) Delete(ctx context.Context, counterpartyID string) erro
 	if counterpartyID == "" {
 		return errors.New("business: counterparty_id is required")
 	}
-	if !isUUID(counterpartyID) {
+	if !validate.IsUUID(counterpartyID) {
 		return errors.New("business: counterparty_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodDelete, "counterparty/"+url.PathEscape(counterpartyID), nil, nil)

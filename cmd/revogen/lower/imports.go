@@ -24,6 +24,7 @@ func FileImports(spec *ir.Spec) map[string][]string {
 	out := map[string][]string{}
 
 	const transportPkg = "github.com/greatliontech/revolut-go/internal/transport"
+	const validatePkg = "github.com/greatliontech/revolut-go/internal/validate"
 
 	// gen_types.go
 	typesSet := map[string]struct{}{}
@@ -47,8 +48,10 @@ func FileImports(spec *ir.Spec) map[string][]string {
 			typesSet["time"] = struct{}{}
 		}
 		if d.Kind == ir.DeclInterface && d.Discriminator == nil && len(d.Variants) > 0 {
-			// Probe decoder uses encoding/json + json.RawMessage.
+			// Probe decoder uses encoding/json + json.RawMessage
+			// and the shared validate.HasJSONKey helper.
 			typesSet["encoding/json"] = struct{}{}
+			typesSet[validatePkg] = struct{}{}
 		}
 		if d.Kind == ir.DeclInterface && d.Discriminator != nil {
 			// Wire-tagged unions need encoding/json for MarshalJSON
@@ -89,15 +92,6 @@ func FileImports(spec *ir.Spec) map[string][]string {
 	if specUsesResponseMetadata(spec) {
 		typesSet["net/http"] = struct{}{}
 	}
-	// Pattern / number helpers emitted alongside isUUID in
-	// gen_types.go pull in regexp + sync + encoding/json.
-	if specUsesPatternValidatorLower(spec) {
-		typesSet["regexp"] = struct{}{}
-		typesSet["sync"] = struct{}{}
-	}
-	if specUsesNumberValidatorLower(spec) {
-		typesSet["encoding/json"] = struct{}{}
-	}
 	out["gen_types.go"] = ir.SortedImports(typesSet)
 
 	// gen_<resource>.go: per-resource set.
@@ -111,15 +105,27 @@ func FileImports(spec *ir.Spec) map[string][]string {
 		needsURL := false
 		needsJSON := false
 		needsIter := false
+		needsValidate := false
 		for _, m := range r.Methods {
 			if len(m.PathParams) > 0 {
 				// renderPathExpr emits url.PathEscape(...) for each
 				// path param.
 				needsURL = true
 				needsErrors = true
+				// Any UUID-formatted path param calls validate.IsUUID.
+				for _, p := range m.PathParams {
+					if p.Format == "uuid" {
+						needsValidate = true
+					}
+				}
 			}
 			if len(m.Validators) > 0 {
 				needsErrors = true
+				for _, v := range m.Validators {
+					if v.Uses.Has(ir.UsesPattern) || v.Uses.Has(ir.UsesNumberAsFloat) {
+						needsValidate = true
+					}
+				}
 			}
 			for _, hp := range m.HeaderParams {
 				if hp.Required {
@@ -161,6 +167,9 @@ func FileImports(spec *ir.Spec) map[string][]string {
 		if needsIter {
 			set["iter"] = struct{}{}
 		}
+		if needsValidate {
+			set[validatePkg] = struct{}{}
+		}
 		out["gen_"+lowerASCII(r.Name)+".go"] = ir.SortedImports(set)
 	}
 
@@ -190,44 +199,6 @@ func headerSetImport(t *ir.Type) string {
 		return ""
 	}
 	return "fmt"
-}
-
-// specUsesPatternValidatorLower mirrors the emit-side checker — we
-// can't import the emit package without a cycle, so duplicate the
-// condition (walks Validators for the helper call).
-func specUsesPatternValidatorLower(spec *ir.Spec) bool {
-	for _, r := range spec.Resources {
-		for _, m := range r.Methods {
-			for _, v := range m.Validators {
-				if containsFn(v.Cond, "mustMatchPattern(") {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
-func specUsesNumberValidatorLower(spec *ir.Spec) bool {
-	for _, r := range spec.Resources {
-		for _, m := range r.Methods {
-			for _, v := range m.Validators {
-				if containsFn(v.Cond, "parseNumberForValidation(") {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
-func containsFn(s, sub string) bool {
-	for i := 0; i+len(sub) <= len(s); i++ {
-		if s[i:i+len(sub)] == sub {
-			return true
-		}
-	}
-	return false
 }
 
 // specUsesResponseMetadata reports whether any method in spec

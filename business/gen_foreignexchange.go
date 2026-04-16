@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // ForeignExchange groups the ForeignExchange endpoints.
@@ -47,7 +48,7 @@ func (s *ForeignExchange) ExchangeMoney(ctx context.Context, req ExchangeRequest
 	if req.From.Currency == "" {
 		return nil, errors.New("business: ExchangeRequest.from.currency is required")
 	}
-	if !mustMatchPattern("^[A-Z]{3}$", string(req.From.Currency)) {
+	if !validate.MatchPattern("^[A-Z]{3}$", string(req.From.Currency)) {
 		return nil, errors.New("business: ExchangeRequest.from.currency must match pattern ^[A-Z]{3}$")
 	}
 	if req.RequestID == "" {
@@ -62,7 +63,7 @@ func (s *ForeignExchange) ExchangeMoney(ctx context.Context, req ExchangeRequest
 	if req.To.Currency == "" {
 		return nil, errors.New("business: ExchangeRequest.to.currency is required")
 	}
-	if !mustMatchPattern("^[A-Z]{3}$", string(req.To.Currency)) {
+	if !validate.MatchPattern("^[A-Z]{3}$", string(req.To.Currency)) {
 		return nil, errors.New("business: ExchangeRequest.to.currency must match pattern ^[A-Z]{3}$")
 	}
 	var out ExchangeResponse
@@ -107,13 +108,13 @@ func (s *ForeignExchange) GetRate(ctx context.Context, opts *GetRateParams) (*Ex
 	if opts.From == "" {
 		return nil, errors.New("business: GetRateParams.from is required")
 	}
-	if !mustMatchPattern("^[A-Z]{3}$", string(opts.From)) {
+	if !validate.MatchPattern("^[A-Z]{3}$", string(opts.From)) {
 		return nil, errors.New("business: GetRateParams.from must match pattern ^[A-Z]{3}$")
 	}
 	if opts.To == "" {
 		return nil, errors.New("business: GetRateParams.to is required")
 	}
-	if !mustMatchPattern("^[A-Z]{3}$", string(opts.To)) {
+	if !validate.MatchPattern("^[A-Z]{3}$", string(opts.To)) {
 		return nil, errors.New("business: GetRateParams.to must match pattern ^[A-Z]{3}$")
 	}
 	path := "rate"

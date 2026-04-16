@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // WebhooksV2 groups the WebhooksV2 endpoints.
@@ -65,7 +66,7 @@ func (s *WebhooksV2) Get(ctx context.Context, webhookID string) (*WebhookV2, err
 	if webhookID == "" {
 		return nil, errors.New("business: webhook_id is required")
 	}
-	if !isUUID(webhookID) {
+	if !validate.IsUUID(webhookID) {
 		return nil, errors.New("business: webhook_id must be a valid UUID")
 	}
 	var out WebhookV2
@@ -89,7 +90,7 @@ func (s *WebhooksV2) Update(ctx context.Context, webhookID string, req UpdateWeb
 	if webhookID == "" {
 		return nil, errors.New("business: webhook_id is required")
 	}
-	if !isUUID(webhookID) {
+	if !validate.IsUUID(webhookID) {
 		return nil, errors.New("business: webhook_id must be a valid UUID")
 	}
 	var out WebhookV2Basic
@@ -113,7 +114,7 @@ func (s *WebhooksV2) Delete(ctx context.Context, webhookID string) error {
 	if webhookID == "" {
 		return errors.New("business: webhook_id is required")
 	}
-	if !isUUID(webhookID) {
+	if !validate.IsUUID(webhookID) {
 		return errors.New("business: webhook_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodDelete, "https://b2b.revolut.com/api/2.0/"+"webhooks/"+url.PathEscape(webhookID), nil, nil)
@@ -137,7 +138,7 @@ func (s *WebhooksV2) GetFailedWebhookEvents(ctx context.Context, webhookID strin
 	if webhookID == "" {
 		return nil, errors.New("business: webhook_id is required")
 	}
-	if !isUUID(webhookID) {
+	if !validate.IsUUID(webhookID) {
 		return nil, errors.New("business: webhook_id must be a valid UUID")
 	}
 	path := "https://b2b.revolut.com/api/2.0/" + "webhooks/" + url.PathEscape(webhookID) + "/failed-events"
@@ -205,7 +206,7 @@ func (s *WebhooksV2) RotateWebhookSigningSecret(ctx context.Context, webhookID s
 	if webhookID == "" {
 		return nil, errors.New("business: webhook_id is required")
 	}
-	if !isUUID(webhookID) {
+	if !validate.IsUUID(webhookID) {
 		return nil, errors.New("business: webhook_id must be a valid UUID")
 	}
 	var out WebhookV2

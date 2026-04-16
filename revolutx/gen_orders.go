@@ -12,6 +12,7 @@ import (
 	"strconv"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Orders groups the Orders endpoints.
@@ -172,7 +173,7 @@ func (s *Orders) GetFills(ctx context.Context, venueOrderID string, xRevxTimesta
 	if venueOrderID == "" {
 		return nil, errors.New("revolutx: venue_order_id is required")
 	}
-	if !isUUID(venueOrderID) {
+	if !validate.IsUUID(venueOrderID) {
 		return nil, errors.New("revolutx: venue_order_id must be a valid UUID")
 	}
 	if xRevxSignature == "" {
@@ -280,7 +281,7 @@ func (s *Orders) Get(ctx context.Context, venueOrderID string, xRevxTimestamp in
 	if venueOrderID == "" {
 		return nil, errors.New("revolutx: venue_order_id is required")
 	}
-	if !isUUID(venueOrderID) {
+	if !validate.IsUUID(venueOrderID) {
 		return nil, errors.New("revolutx: venue_order_id must be a valid UUID")
 	}
 	if xRevxSignature == "" {
@@ -314,7 +315,7 @@ func (s *Orders) CancelOrder(ctx context.Context, venueOrderID string, xRevxTime
 	if venueOrderID == "" {
 		return errors.New("revolutx: venue_order_id is required")
 	}
-	if !isUUID(venueOrderID) {
+	if !validate.IsUUID(venueOrderID) {
 		return errors.New("revolutx: venue_order_id must be a valid UUID")
 	}
 	if xRevxSignature == "" {

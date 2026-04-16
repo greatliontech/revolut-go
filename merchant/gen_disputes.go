@@ -11,6 +11,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Disputes groups the Disputes endpoints.
@@ -107,7 +108,7 @@ func (s *Disputes) Get(ctx context.Context, disputeID string, revolutAPIVersion 
 	if disputeID == "" {
 		return nil, errors.New("merchant: dispute_id is required")
 	}
-	if !isUUID(disputeID) {
+	if !validate.IsUUID(disputeID) {
 		return nil, errors.New("merchant: dispute_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -146,7 +147,7 @@ func (s *Disputes) AcceptDispute(ctx context.Context, disputeID string, revolutA
 	if disputeID == "" {
 		return errors.New("merchant: dispute_id is required")
 	}
-	if !isUUID(disputeID) {
+	if !validate.IsUUID(disputeID) {
 		return errors.New("merchant: dispute_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -182,7 +183,7 @@ func (s *Disputes) ChallengeDispute(ctx context.Context, disputeID string, revol
 	if disputeID == "" {
 		return errors.New("merchant: dispute_id is required")
 	}
-	if !isUUID(disputeID) {
+	if !validate.IsUUID(disputeID) {
 		return errors.New("merchant: dispute_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -244,7 +245,7 @@ func (s *Disputes) UploadDisputeEvidence(ctx context.Context, disputeID string, 
 	if disputeID == "" {
 		return nil, errors.New("merchant: dispute_id is required")
 	}
-	if !isUUID(disputeID) {
+	if !validate.IsUUID(disputeID) {
 		return nil, errors.New("merchant: dispute_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {

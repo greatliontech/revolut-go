@@ -11,6 +11,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Payouts groups the Payouts endpoints.
@@ -97,7 +98,7 @@ func (s *Payouts) Get(ctx context.Context, payoutID string, revolutAPIVersion Re
 	if payoutID == "" {
 		return nil, errors.New("merchant: payout_id is required")
 	}
-	if !isUUID(payoutID) {
+	if !validate.IsUUID(payoutID) {
 		return nil, errors.New("merchant: payout_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {

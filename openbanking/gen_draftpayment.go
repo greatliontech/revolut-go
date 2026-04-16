@@ -11,6 +11,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // DraftPayment groups the DraftPayment endpoints.
@@ -102,7 +103,7 @@ func (s *DraftPayment) FindDraftPayment(ctx context.Context, draftPaymentID stri
 	if draftPaymentID == "" {
 		return nil, errors.New("openbanking: DraftPaymentId is required")
 	}
-	if !isUUID(draftPaymentID) {
+	if !validate.IsUUID(draftPaymentID) {
 		return nil, errors.New("openbanking: DraftPaymentId must be a valid UUID")
 	}
 	var out DraftPaymentResponse
@@ -125,7 +126,7 @@ func (s *DraftPayment) Delete(ctx context.Context, draftPaymentID string) (io.Re
 	if draftPaymentID == "" {
 		return nil, errors.New("openbanking: DraftPaymentId is required")
 	}
-	if !isUUID(draftPaymentID) {
+	if !validate.IsUUID(draftPaymentID) {
 		return nil, errors.New("openbanking: DraftPaymentId must be a valid UUID")
 	}
 	r := transport.RawRequest{
@@ -151,13 +152,13 @@ func (s *DraftPayment) DeleteTransfer(ctx context.Context, draftPaymentID string
 	if draftPaymentID == "" {
 		return nil, errors.New("openbanking: DraftPaymentId is required")
 	}
-	if !isUUID(draftPaymentID) {
+	if !validate.IsUUID(draftPaymentID) {
 		return nil, errors.New("openbanking: DraftPaymentId must be a valid UUID")
 	}
 	if draftPaymentTransferID == "" {
 		return nil, errors.New("openbanking: DraftPaymentTransferId is required")
 	}
-	if !isUUID(draftPaymentTransferID) {
+	if !validate.IsUUID(draftPaymentTransferID) {
 		return nil, errors.New("openbanking: DraftPaymentTransferId must be a valid UUID")
 	}
 	r := transport.RawRequest{

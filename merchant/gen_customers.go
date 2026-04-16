@@ -11,6 +11,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Customers groups the Customers endpoints.
@@ -155,7 +156,7 @@ func (s *Customers) Get(ctx context.Context, customerID string, revolutAPIVersio
 	if customerID == "" {
 		return nil, errors.New("merchant: customer_id is required")
 	}
-	if !isUUID(customerID) {
+	if !validate.IsUUID(customerID) {
 		return nil, errors.New("merchant: customer_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -190,7 +191,7 @@ func (s *Customers) Update(ctx context.Context, customerID string, revolutAPIVer
 	if customerID == "" {
 		return nil, errors.New("merchant: customer_id is required")
 	}
-	if !isUUID(customerID) {
+	if !validate.IsUUID(customerID) {
 		return nil, errors.New("merchant: customer_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -225,7 +226,7 @@ func (s *Customers) Delete(ctx context.Context, customerID string, revolutAPIVer
 	if customerID == "" {
 		return errors.New("merchant: customer_id is required")
 	}
-	if !isUUID(customerID) {
+	if !validate.IsUUID(customerID) {
 		return errors.New("merchant: customer_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -257,7 +258,7 @@ func (s *Customers) GetPaymentMethodList(ctx context.Context, customerID string,
 	if customerID == "" {
 		return nil, errors.New("merchant: customer_id is required")
 	}
-	if !isUUID(customerID) {
+	if !validate.IsUUID(customerID) {
 		return nil, errors.New("merchant: customer_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -294,13 +295,13 @@ func (s *Customers) GetPaymentMethod(ctx context.Context, customerID string, pay
 	if customerID == "" {
 		return nil, errors.New("merchant: customer_id is required")
 	}
-	if !isUUID(customerID) {
+	if !validate.IsUUID(customerID) {
 		return nil, errors.New("merchant: customer_id must be a valid UUID")
 	}
 	if paymentMethodID == "" {
 		return nil, errors.New("merchant: payment_method_id is required")
 	}
-	if !isUUID(paymentMethodID) {
+	if !validate.IsUUID(paymentMethodID) {
 		return nil, errors.New("merchant: payment_method_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -343,13 +344,13 @@ func (s *Customers) UpdatePaymentMethod(ctx context.Context, customerID string, 
 	if customerID == "" {
 		return nil, errors.New("merchant: customer_id is required")
 	}
-	if !isUUID(customerID) {
+	if !validate.IsUUID(customerID) {
 		return nil, errors.New("merchant: customer_id must be a valid UUID")
 	}
 	if paymentMethodID == "" {
 		return nil, errors.New("merchant: payment_method_id is required")
 	}
-	if !isUUID(paymentMethodID) {
+	if !validate.IsUUID(paymentMethodID) {
 		return nil, errors.New("merchant: payment_method_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -386,13 +387,13 @@ func (s *Customers) DeletePaymentMethod(ctx context.Context, customerID string, 
 	if customerID == "" {
 		return errors.New("merchant: customer_id is required")
 	}
-	if !isUUID(customerID) {
+	if !validate.IsUUID(customerID) {
 		return errors.New("merchant: customer_id must be a valid UUID")
 	}
 	if paymentMethodID == "" {
 		return errors.New("merchant: payment_method_id is required")
 	}
-	if !isUUID(paymentMethodID) {
+	if !validate.IsUUID(paymentMethodID) {
 		return errors.New("merchant: payment_method_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {

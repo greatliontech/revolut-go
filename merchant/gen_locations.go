@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Locations groups the Locations endpoints.
@@ -59,7 +60,7 @@ func (s *Locations) Get(ctx context.Context, locationID string) (*Location, erro
 	if locationID == "" {
 		return nil, errors.New("merchant: location_id is required")
 	}
-	if !isUUID(locationID) {
+	if !validate.IsUUID(locationID) {
 		return nil, errors.New("merchant: location_id must be a valid UUID")
 	}
 	var out Location
@@ -84,7 +85,7 @@ func (s *Locations) Update(ctx context.Context, locationID string, req LocationU
 	if locationID == "" {
 		return nil, errors.New("merchant: location_id is required")
 	}
-	if !isUUID(locationID) {
+	if !validate.IsUUID(locationID) {
 		return nil, errors.New("merchant: location_id must be a valid UUID")
 	}
 	var out Location
@@ -103,7 +104,7 @@ func (s *Locations) Delete(ctx context.Context, locationID string) error {
 	if locationID == "" {
 		return errors.New("merchant: location_id is required")
 	}
-	if !isUUID(locationID) {
+	if !validate.IsUUID(locationID) {
 		return errors.New("merchant: location_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodDelete, "api/locations/"+url.PathEscape(locationID), nil, nil)

@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Orders groups the Orders endpoints.
@@ -125,7 +126,7 @@ func (s *Orders) Create(ctx context.Context, revolutAPIVersion RevolutAPIVersion
 	if req.RedirectURL != "" && len(string(req.RedirectURL)) > 2000 {
 		return nil, errors.New("merchant: OrderCreationV6.redirect_url must be at most 2000 characters")
 	}
-	if req.RedirectURL != "" && !mustMatchPattern("^https?:\\/{2}.+/gi", string(req.RedirectURL)) {
+	if req.RedirectURL != "" && !validate.MatchPattern("^https?:\\/{2}.+/gi", string(req.RedirectURL)) {
 		return nil, errors.New("merchant: OrderCreationV6.redirect_url must match pattern ^https?:\\/{2}.+/gi")
 	}
 	if req.StatementDescriptorSuffix != "" && len(string(req.StatementDescriptorSuffix)) < 1 {
@@ -134,7 +135,7 @@ func (s *Orders) Create(ctx context.Context, revolutAPIVersion RevolutAPIVersion
 	if req.StatementDescriptorSuffix != "" && len(string(req.StatementDescriptorSuffix)) > 19 {
 		return nil, errors.New("merchant: OrderCreationV6.statement_descriptor_suffix must be at most 19 characters")
 	}
-	if req.StatementDescriptorSuffix != "" && !mustMatchPattern("^[^*\\n\\r\\\\]+$", string(req.StatementDescriptorSuffix)) {
+	if req.StatementDescriptorSuffix != "" && !validate.MatchPattern("^[^*\\n\\r\\\\]+$", string(req.StatementDescriptorSuffix)) {
 		return nil, errors.New("merchant: OrderCreationV6.statement_descriptor_suffix must match pattern ^[^*\\n\\r\\\\]+$")
 	}
 	r := transport.RawRequest{
@@ -167,7 +168,7 @@ func (s *Orders) Get(ctx context.Context, orderID string, revolutAPIVersion Revo
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
-	if !isUUID(orderID) {
+	if !validate.IsUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -213,7 +214,7 @@ func (s *Orders) Update(ctx context.Context, orderID string, revolutAPIVersion R
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
-	if !isUUID(orderID) {
+	if !validate.IsUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -262,7 +263,7 @@ func (s *Orders) CancelOrder(ctx context.Context, orderID string, revolutAPIVers
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
-	if !isUUID(orderID) {
+	if !validate.IsUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
 	r := transport.RawRequest{}
@@ -373,7 +374,7 @@ func (s *Orders) CaptureOrder(ctx context.Context, orderID string, revolutAPIVer
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
-	if !isUUID(orderID) {
+	if !validate.IsUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -443,7 +444,7 @@ func (s *Orders) IncrementAuthorisation(ctx context.Context, orderID string, rev
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
-	if !isUUID(orderID) {
+	if !validate.IsUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -495,7 +496,7 @@ func (s *Orders) GetPaymentList(ctx context.Context, orderID string) ([]PaymentR
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
-	if !isUUID(orderID) {
+	if !validate.IsUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
 	var out []PaymentRetrieval
@@ -537,7 +538,7 @@ func (s *Orders) PayOrder(ctx context.Context, orderID string, req SavedPaymentM
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
-	if !isUUID(orderID) {
+	if !validate.IsUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
 	if req.SavedPaymentMethod == nil {
@@ -584,7 +585,7 @@ func (s *Orders) RefundOrder(ctx context.Context, orderID string, revolutAPIVers
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
-	if !isUUID(orderID) {
+	if !validate.IsUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {

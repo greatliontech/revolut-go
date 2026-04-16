@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Cards groups the Cards endpoints.
@@ -143,7 +144,7 @@ func (s *Cards) Get(ctx context.Context, cardID string) (*CardResponse, error) {
 	if cardID == "" {
 		return nil, errors.New("business: card_id is required")
 	}
-	if !isUUID(cardID) {
+	if !validate.IsUUID(cardID) {
 		return nil, errors.New("business: card_id must be a valid UUID")
 	}
 	var out CardResponse
@@ -175,7 +176,7 @@ func (s *Cards) Update(ctx context.Context, cardID string, req CardsBody) (*Card
 	if cardID == "" {
 		return nil, errors.New("business: card_id is required")
 	}
-	if !isUUID(cardID) {
+	if !validate.IsUUID(cardID) {
 		return nil, errors.New("business: card_id must be a valid UUID")
 	}
 	if len(req.ContactIds) > 0 && uint64(len(req.ContactIds)) < 1 {
@@ -227,7 +228,7 @@ func (s *Cards) Delete(ctx context.Context, cardID string) error {
 	if cardID == "" {
 		return errors.New("business: card_id is required")
 	}
-	if !isUUID(cardID) {
+	if !validate.IsUUID(cardID) {
 		return errors.New("business: card_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodDelete, "cards/"+url.PathEscape(cardID), nil, nil)
@@ -262,7 +263,7 @@ func (s *Cards) UpdateContacts(ctx context.Context, cardID string, req []CardCon
 	if cardID == "" {
 		return nil, errors.New("business: card_id is required")
 	}
-	if !isUUID(cardID) {
+	if !validate.IsUUID(cardID) {
 		return nil, errors.New("business: card_id must be a valid UUID")
 	}
 	var out []CardContact
@@ -292,7 +293,7 @@ func (s *Cards) FreezeCard(ctx context.Context, cardID string) error {
 	if cardID == "" {
 		return errors.New("business: card_id is required")
 	}
-	if !isUUID(cardID) {
+	if !validate.IsUUID(cardID) {
 		return errors.New("business: card_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodPost, "cards/"+url.PathEscape(cardID)+"/freeze", nil, nil)
@@ -317,7 +318,7 @@ func (s *Cards) LockCard(ctx context.Context, cardID string) error {
 	if cardID == "" {
 		return errors.New("business: card_id is required")
 	}
-	if !isUUID(cardID) {
+	if !validate.IsUUID(cardID) {
 		return errors.New("business: card_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodPost, "cards/"+url.PathEscape(cardID)+"/lock", nil, nil)
@@ -361,7 +362,7 @@ func (s *Cards) UpdateReferences(ctx context.Context, cardID string, req []CardR
 	if cardID == "" {
 		return nil, errors.New("business: card_id is required")
 	}
-	if !isUUID(cardID) {
+	if !validate.IsUUID(cardID) {
 		return nil, errors.New("business: card_id must be a valid UUID")
 	}
 	var out []CardReference
@@ -390,7 +391,7 @@ func (s *Cards) GetSensitiveCardDetails(ctx context.Context, cardID string) (*Ge
 	if cardID == "" {
 		return nil, errors.New("business: card_id is required")
 	}
-	if !isUUID(cardID) {
+	if !validate.IsUUID(cardID) {
 		return nil, errors.New("business: card_id must be a valid UUID")
 	}
 	var out GetSensitiveCardDetailsResponse
@@ -420,7 +421,7 @@ func (s *Cards) UnfreezeCard(ctx context.Context, cardID string) error {
 	if cardID == "" {
 		return errors.New("business: card_id is required")
 	}
-	if !isUUID(cardID) {
+	if !validate.IsUUID(cardID) {
 		return errors.New("business: card_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodPost, "cards/"+url.PathEscape(cardID)+"/unfreeze", nil, nil)
@@ -459,7 +460,7 @@ func (s *Cards) UnlockCard(ctx context.Context, cardID string) error {
 	if cardID == "" {
 		return errors.New("business: card_id is required")
 	}
-	if !isUUID(cardID) {
+	if !validate.IsUUID(cardID) {
 		return errors.New("business: card_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodPost, "cards/"+url.PathEscape(cardID)+"/unlock", nil, nil)

@@ -117,6 +117,7 @@ func walkValidators(d *ir.Decl, exprPrefix, jsonPathPrefix string, declByName ma
 				out = append(out, ir.Validator{
 					Cond:    expr + " != nil && " + v.Cond,
 					Message: v.Message,
+					Uses:    v.Uses,
 				})
 			}
 		} else {
@@ -154,12 +155,17 @@ func constraintValidators(f *ir.Field, expr, jsonPath, errPrefix string, declByN
 		}
 		if f.Pattern != "" {
 			out = append(out, wrapGuard(ir.Validator{
-				Cond:    "!mustMatchPattern(" + strconv.Quote(f.Pattern) + ", " + base + ")",
+				Cond:    "!validate.MatchPattern(" + strconv.Quote(f.Pattern) + ", " + base + ")",
 				Message: fmt.Sprintf("%s: %s must match pattern %s", errPrefix, jsonPath, f.Pattern),
+				Uses:    ir.UsesPattern,
 			}, present))
 		}
 	case isNumericLike(f.Type):
 		base := numericAccess(f.Type, expr)
+		numericUses := ir.ValidatorUses(0)
+		if isJSONNumber(f.Type) {
+			numericUses |= ir.UsesNumberAsFloat
+		}
 		if f.Minimum != nil {
 			op := "<"
 			if f.ExclusiveMin {
@@ -168,6 +174,7 @@ func constraintValidators(f *ir.Field, expr, jsonPath, errPrefix string, declByN
 			out = append(out, wrapGuard(ir.Validator{
 				Cond:    base + " " + op + " " + formatNumericLiteral(*f.Minimum, f.Type),
 				Message: fmt.Sprintf("%s: %s must be %s %s", errPrefix, jsonPath, boundWord("minimum", f.ExclusiveMin), formatNumericLiteral(*f.Minimum, f.Type)),
+				Uses:    numericUses,
 			}, numericPresentGuard(f, expr)))
 		}
 		if f.Maximum != nil {
@@ -178,6 +185,7 @@ func constraintValidators(f *ir.Field, expr, jsonPath, errPrefix string, declByN
 			out = append(out, wrapGuard(ir.Validator{
 				Cond:    base + " " + op + " " + formatNumericLiteral(*f.Maximum, f.Type),
 				Message: fmt.Sprintf("%s: %s must be %s %s", errPrefix, jsonPath, boundWord("maximum", f.ExclusiveMax), formatNumericLiteral(*f.Maximum, f.Type)),
+				Uses:    numericUses,
 			}, numericPresentGuard(f, expr)))
 		}
 	case f.Type.IsSlice():
@@ -206,13 +214,24 @@ func constraintValidators(f *ir.Field, expr, jsonPath, errPrefix string, declByN
 // wrapGuard prefixes v.Cond with a "field is set" guard so an
 // optional field at its zero value doesn't fail the value check.
 // When guard is empty the validator is unchanged (required fields
-// fire unconditionally).
+// fire unconditionally). The Uses bitfield is preserved so the
+// import-computation pass still sees the helper references.
 func wrapGuard(v ir.Validator, guard string) ir.Validator {
 	if guard == "" {
 		return v
 	}
 	v.Cond = guard + " && " + v.Cond
 	return v
+}
+
+// isJSONNumber reports whether t (possibly pointer-wrapped) is the
+// encoding/json.Number type. Used to decide whether a numeric bound
+// check needs the validate.NumberAsFloat helper.
+func isJSONNumber(t *ir.Type) bool {
+	for t != nil && t.IsPointer() {
+		t = t.Elem
+	}
+	return t != nil && t.Kind == ir.KindPrim && t.Name == "json.Number"
 }
 
 // presentGuard returns the "set" condition for an optional field,
@@ -269,14 +288,14 @@ func stringAccess(t *ir.Type, expr string) string {
 }
 
 // numericAccess yields the Go expression for the numeric payload.
-// json.Number requires a conversion helper (parseNumberForValidation)
-// injected at the resource level so the bound check works.
+// json.Number requires a conversion helper (validate.NumberAsFloat)
+// so the bound check has a float64 to compare against.
 func numericAccess(t *ir.Type, expr string) string {
 	if t.IsPointer() {
 		return "*" + expr
 	}
 	if t.Kind == ir.KindPrim && t.Name == "json.Number" {
-		return "parseNumberForValidation(" + expr + ")"
+		return "validate.NumberAsFloat(" + expr + ")"
 	}
 	return expr
 }

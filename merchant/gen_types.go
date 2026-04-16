@@ -10,21 +10,12 @@ import (
 	"mime/multipart"
 	"net/textproto"
 	"net/url"
-	"regexp"
 	"strconv"
-	"sync"
 	"time"
 )
 
 // APIVersion is the OpenAPI info.version this client was generated against.
 const APIVersion = "2025-12-04"
-
-// hasJSONKey reports whether key is present on the wire.
-// Used by generated union probe decoders.
-func hasJSONKey(m map[string]json.RawMessage, key string) bool {
-	_, ok := m[key]
-	return ok
-}
 
 // AddressV2 object containing address details.
 type AddressV2 struct {
@@ -5428,48 +5419,6 @@ type SendWebhookEventPayload struct {
 
 	// The ID of the subscription the event is related to.
 	SubscriptionID string `json:"subscription_id,omitempty"`
-}
-
-// isUUID reports whether s matches the RFC 4122 canonical form
-// (8-4-4-4-12 hex digits). Used by generated path-param validators
-// to reject malformed IDs before issuing the HTTP call.
-func isUUID(s string) bool {
-	if len(s) != 36 {
-		return false
-	}
-	for i, r := range s {
-		switch i {
-		case 8, 13, 18, 23:
-			if r != '-' {
-				return false
-			}
-		default:
-			switch {
-			case r >= '0' && r <= '9':
-			case r >= 'a' && r <= 'f':
-			case r >= 'A' && r <= 'F':
-			default:
-				return false
-			}
-		}
-	}
-	return true
-}
-
-// mustMatchPattern reports whether s matches the regex re. The
-// regex is compiled once per call site via regexp.MustCompile;
-// bad spec patterns crash the program on first use rather than
-// silently let malformed input through. re is a spec literal,
-// not user input.
-var patternCache sync.Map
-
-func mustMatchPattern(pattern, s string) bool {
-	v, ok := patternCache.Load(pattern)
-	if !ok {
-		re := regexp.MustCompile(pattern)
-		v, _ = patternCache.LoadOrStore(pattern, re)
-	}
-	return v.(*regexp.Regexp).MatchString(s)
 }
 
 // DecodeSendWebhookEvent decodes the JSON body of an incoming SendWebhookEvent callback into a typed payload.

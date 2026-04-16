@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Payments groups the Payments endpoints.
@@ -30,7 +31,7 @@ func (s *Payments) GetDetails(ctx context.Context, paymentID string, revolutAPIV
 	if paymentID == "" {
 		return nil, errors.New("merchant: payment_id is required")
 	}
-	if !isUUID(paymentID) {
+	if !validate.IsUUID(paymentID) {
 		return nil, errors.New("merchant: payment_id must be a valid UUID")
 	}
 	r := transport.RawRequest{}

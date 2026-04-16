@@ -11,6 +11,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Partners groups the Partners endpoints.
@@ -53,7 +54,7 @@ func (s *Partners) GetBuy(ctx context.Context, xAPIKey string, opts *GetBuyParam
 	if opts.Wallet == "" {
 		return nil, errors.New("cryptoramp: GetBuyParams.wallet is required")
 	}
-	if opts.AdditionalProperties != "" && !mustMatchPattern("additionalProperties.[key]=[value]", opts.AdditionalProperties) {
+	if opts.AdditionalProperties != "" && !validate.MatchPattern("additionalProperties.[key]=[value]", opts.AdditionalProperties) {
 		return nil, errors.New("cryptoramp: GetBuyParams.additionalProperties must match pattern additionalProperties.[key]=[value]")
 	}
 	path := "buy"

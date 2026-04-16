@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Accounting groups the Accounting endpoints.
@@ -137,7 +138,7 @@ func (s *Accounting) GetCategory(ctx context.Context, accountingCategoryID strin
 	if accountingCategoryID == "" {
 		return nil, errors.New("business: accounting_category_id is required")
 	}
-	if !isUUID(accountingCategoryID) {
+	if !validate.IsUUID(accountingCategoryID) {
 		return nil, errors.New("business: accounting_category_id must be a valid UUID")
 	}
 	var out AccountingCategoryResponse
@@ -163,7 +164,7 @@ func (s *Accounting) UpdateCategory(ctx context.Context, accountingCategoryID st
 	if accountingCategoryID == "" {
 		return errors.New("business: accounting_category_id is required")
 	}
-	if !isUUID(accountingCategoryID) {
+	if !validate.IsUUID(accountingCategoryID) {
 		return errors.New("business: accounting_category_id must be a valid UUID")
 	}
 	if req.Code != "" && len(req.Code) < 1 {
@@ -204,7 +205,7 @@ func (s *Accounting) DeleteCategory(ctx context.Context, accountingCategoryID st
 	if accountingCategoryID == "" {
 		return errors.New("business: accounting_category_id is required")
 	}
-	if !isUUID(accountingCategoryID) {
+	if !validate.IsUUID(accountingCategoryID) {
 		return errors.New("business: accounting_category_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodDelete, "accounting-categories/"+url.PathEscape(accountingCategoryID), nil, nil)
@@ -325,7 +326,7 @@ func (s *Accounting) GetLabelGroup(ctx context.Context, groupID string) (*LabelG
 	if groupID == "" {
 		return nil, errors.New("business: group_id is required")
 	}
-	if !isUUID(groupID) {
+	if !validate.IsUUID(groupID) {
 		return nil, errors.New("business: group_id must be a valid UUID")
 	}
 	var out LabelGroupResponse
@@ -351,7 +352,7 @@ func (s *Accounting) UpdateLabelGroup(ctx context.Context, groupID string, req U
 	if groupID == "" {
 		return errors.New("business: group_id is required")
 	}
-	if !isUUID(groupID) {
+	if !validate.IsUUID(groupID) {
 		return errors.New("business: group_id must be a valid UUID")
 	}
 	if req.Name == "" {
@@ -389,7 +390,7 @@ func (s *Accounting) DeleteLabelGroup(ctx context.Context, groupID string) error
 	if groupID == "" {
 		return errors.New("business: group_id is required")
 	}
-	if !isUUID(groupID) {
+	if !validate.IsUUID(groupID) {
 		return errors.New("business: group_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodDelete, "label-groups/"+url.PathEscape(groupID), nil, nil)
@@ -418,7 +419,7 @@ func (s *Accounting) GetLabels(ctx context.Context, groupID string, opts *GetLab
 	if groupID == "" {
 		return nil, errors.New("business: group_id is required")
 	}
-	if !isUUID(groupID) {
+	if !validate.IsUUID(groupID) {
 		return nil, errors.New("business: group_id must be a valid UUID")
 	}
 	path := "label-groups/" + url.PathEscape(groupID) + "/labels"
@@ -492,7 +493,7 @@ func (s *Accounting) CreateLabel(ctx context.Context, groupID string, req Create
 	if groupID == "" {
 		return nil, errors.New("business: group_id is required")
 	}
-	if !isUUID(groupID) {
+	if !validate.IsUUID(groupID) {
 		return nil, errors.New("business: group_id must be a valid UUID")
 	}
 	if req.Name == "" {
@@ -527,13 +528,13 @@ func (s *Accounting) UpdateLabel(ctx context.Context, groupID string, labelID st
 	if groupID == "" {
 		return errors.New("business: group_id is required")
 	}
-	if !isUUID(groupID) {
+	if !validate.IsUUID(groupID) {
 		return errors.New("business: group_id must be a valid UUID")
 	}
 	if labelID == "" {
 		return errors.New("business: label_id is required")
 	}
-	if !isUUID(labelID) {
+	if !validate.IsUUID(labelID) {
 		return errors.New("business: label_id must be a valid UUID")
 	}
 	if req.Name == "" {
@@ -571,13 +572,13 @@ func (s *Accounting) DeleteLabel(ctx context.Context, groupID string, labelID st
 	if groupID == "" {
 		return errors.New("business: group_id is required")
 	}
-	if !isUUID(groupID) {
+	if !validate.IsUUID(groupID) {
 		return errors.New("business: group_id must be a valid UUID")
 	}
 	if labelID == "" {
 		return errors.New("business: label_id is required")
 	}
-	if !isUUID(labelID) {
+	if !validate.IsUUID(labelID) {
 		return errors.New("business: label_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodDelete, "label-groups/"+url.PathEscape(groupID)+"/labels/"+url.PathEscape(labelID), nil, nil)
@@ -697,7 +698,7 @@ func (s *Accounting) GetTaxRate(ctx context.Context, taxRateID string) (*TaxRate
 	if taxRateID == "" {
 		return nil, errors.New("business: tax_rate_id is required")
 	}
-	if !isUUID(taxRateID) {
+	if !validate.IsUUID(taxRateID) {
 		return nil, errors.New("business: tax_rate_id must be a valid UUID")
 	}
 	var out TaxRateResponse
@@ -723,7 +724,7 @@ func (s *Accounting) UpdateTaxRate(ctx context.Context, taxRateID string, req Up
 	if taxRateID == "" {
 		return errors.New("business: tax_rate_id is required")
 	}
-	if !isUUID(taxRateID) {
+	if !validate.IsUUID(taxRateID) {
 		return errors.New("business: tax_rate_id must be a valid UUID")
 	}
 	if req.Name != "" && len(req.Name) < 1 {
@@ -758,7 +759,7 @@ func (s *Accounting) DeleteTaxRate(ctx context.Context, taxRateID string) error 
 	if taxRateID == "" {
 		return errors.New("business: tax_rate_id is required")
 	}
-	if !isUUID(taxRateID) {
+	if !validate.IsUUID(taxRateID) {
 		return errors.New("business: tax_rate_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodDelete, "tax-rates/"+url.PathEscape(taxRateID), nil, nil)

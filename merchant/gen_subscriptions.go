@@ -11,6 +11,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Subscriptions groups the Subscriptions endpoints.
@@ -139,7 +140,7 @@ func (s *Subscriptions) CreatePlan(ctx context.Context, revolutAPIVersion Revolu
 	if len(string(req.Name)) > 1024 {
 		return nil, errors.New("merchant: SubscriptionPlanCreation.name must be at most 1024 characters")
 	}
-	if req.TrialDuration != "" && !mustMatchPattern("^P[0-9]+D$", string(req.TrialDuration)) {
+	if req.TrialDuration != "" && !validate.MatchPattern("^P[0-9]+D$", string(req.TrialDuration)) {
 		return nil, errors.New("merchant: SubscriptionPlanCreation.trial_duration must match pattern ^P[0-9]+D$")
 	}
 	if len(req.Variations) == 0 {
@@ -188,7 +189,7 @@ func (s *Subscriptions) GetPlan(ctx context.Context, subscriptionPlanID string, 
 	if subscriptionPlanID == "" {
 		return nil, errors.New("merchant: subscription_plan_id is required")
 	}
-	if !isUUID(subscriptionPlanID) {
+	if !validate.IsUUID(subscriptionPlanID) {
 		return nil, errors.New("merchant: subscription_plan_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -372,10 +373,10 @@ func (s *Subscriptions) Create(ctx context.Context, revolutAPIVersion RevolutAPI
 	if req.SetupOrderRedirectURL != "" && len(string(req.SetupOrderRedirectURL)) > 2000 {
 		return nil, errors.New("merchant: SubscriptionCreation.setup_order_redirect_url must be at most 2000 characters")
 	}
-	if req.SetupOrderRedirectURL != "" && !mustMatchPattern("^https?:\\/{2}.+/gi", string(req.SetupOrderRedirectURL)) {
+	if req.SetupOrderRedirectURL != "" && !validate.MatchPattern("^https?:\\/{2}.+/gi", string(req.SetupOrderRedirectURL)) {
 		return nil, errors.New("merchant: SubscriptionCreation.setup_order_redirect_url must match pattern ^https?:\\/{2}.+/gi")
 	}
-	if req.TrialDuration != "" && !mustMatchPattern("^P[0-9]+D$", string(req.TrialDuration)) {
+	if req.TrialDuration != "" && !validate.MatchPattern("^P[0-9]+D$", string(req.TrialDuration)) {
 		return nil, errors.New("merchant: SubscriptionCreation.trial_duration must match pattern ^P[0-9]+D$")
 	}
 	r := transport.RawRequest{
@@ -412,7 +413,7 @@ func (s *Subscriptions) Get(ctx context.Context, subscriptionID string, revolutA
 	if subscriptionID == "" {
 		return nil, errors.New("merchant: subscription_id is required")
 	}
-	if !isUUID(subscriptionID) {
+	if !validate.IsUUID(subscriptionID) {
 		return nil, errors.New("merchant: subscription_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -455,7 +456,7 @@ func (s *Subscriptions) Update(ctx context.Context, subscriptionID string, revol
 	if subscriptionID == "" {
 		return nil, errors.New("merchant: subscription_id is required")
 	}
-	if !isUUID(subscriptionID) {
+	if !validate.IsUUID(subscriptionID) {
 		return nil, errors.New("merchant: subscription_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -495,7 +496,7 @@ func (s *Subscriptions) CancelSubscription(ctx context.Context, subscriptionID s
 	if subscriptionID == "" {
 		return errors.New("merchant: subscription_id is required")
 	}
-	if !isUUID(subscriptionID) {
+	if !validate.IsUUID(subscriptionID) {
 		return errors.New("merchant: subscription_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -529,7 +530,7 @@ func (s *Subscriptions) GetCycleList(ctx context.Context, subscriptionID string,
 	if subscriptionID == "" {
 		return nil, errors.New("merchant: subscription_id is required")
 	}
-	if !isUUID(subscriptionID) {
+	if !validate.IsUUID(subscriptionID) {
 		return nil, errors.New("merchant: subscription_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {
@@ -610,13 +611,13 @@ func (s *Subscriptions) GetCycle(ctx context.Context, subscriptionID string, cyc
 	if subscriptionID == "" {
 		return nil, errors.New("merchant: subscription_id is required")
 	}
-	if !isUUID(subscriptionID) {
+	if !validate.IsUUID(subscriptionID) {
 		return nil, errors.New("merchant: subscription_id must be a valid UUID")
 	}
 	if cycleID == "" {
 		return nil, errors.New("merchant: cycle_id is required")
 	}
-	if !isUUID(cycleID) {
+	if !validate.IsUUID(cycleID) {
 		return nil, errors.New("merchant: cycle_id must be a valid UUID")
 	}
 	if revolutAPIVersion == "" {

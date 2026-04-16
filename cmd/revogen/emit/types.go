@@ -37,105 +37,11 @@ func writeTypesFile(spec *ir.Spec, imports []string) string {
 	return w.buf.String()
 }
 
-// writeFormatHelpers emits the local format-validation helpers the
-// generated validator pass relies on: isUUID (path params),
-// mustMatchPattern (string-pattern constraints), and
-// parseNumberForValidation (json.Number bound checks). Each is
-// emitted only when at least one generated validator references it.
-func writeFormatHelpers(w *fileWriter, spec *ir.Spec) {
-	if specUsesUUIDValidator(spec) {
-		w.write("\n// isUUID reports whether s matches the RFC 4122 canonical form\n")
-		w.write("// (8-4-4-4-12 hex digits). Used by generated path-param validators\n")
-		w.write("// to reject malformed IDs before issuing the HTTP call.\n")
-		w.write("func isUUID(s string) bool {\n")
-		w.write("\tif len(s) != 36 {\n\t\treturn false\n\t}\n")
-		w.write("\tfor i, r := range s {\n")
-		w.write("\t\tswitch i {\n")
-		w.write("\t\tcase 8, 13, 18, 23:\n")
-		w.write("\t\t\tif r != '-' { return false }\n")
-		w.write("\t\tdefault:\n")
-		w.write("\t\t\tswitch {\n")
-		w.write("\t\t\tcase r >= '0' && r <= '9':\n")
-		w.write("\t\t\tcase r >= 'a' && r <= 'f':\n")
-		w.write("\t\t\tcase r >= 'A' && r <= 'F':\n")
-		w.write("\t\t\tdefault: return false\n")
-		w.write("\t\t\t}\n")
-		w.write("\t\t}\n")
-		w.write("\t}\n")
-		w.write("\treturn true\n")
-		w.write("}\n")
-	}
-	if specUsesPatternValidator(spec) {
-		w.write("\n// mustMatchPattern reports whether s matches the regex re. The\n")
-		w.write("// regex is compiled once per call site via regexp.MustCompile;\n")
-		w.write("// bad spec patterns crash the program on first use rather than\n")
-		w.write("// silently let malformed input through. re is a spec literal,\n")
-		w.write("// not user input.\n")
-		w.write("var patternCache sync.Map\n")
-		w.write("func mustMatchPattern(pattern, s string) bool {\n")
-		w.write("\tv, ok := patternCache.Load(pattern)\n")
-		w.write("\tif !ok {\n")
-		w.write("\t\tre := regexp.MustCompile(pattern)\n")
-		w.write("\t\tv, _ = patternCache.LoadOrStore(pattern, re)\n")
-		w.write("\t}\n")
-		w.write("\treturn v.(*regexp.Regexp).MatchString(s)\n")
-		w.write("}\n")
-	}
-	if specUsesNumberValidator(spec) {
-		w.write("\n// parseNumberForValidation coerces a json.Number into float64\n")
-		w.write("// for spec-declared minimum/maximum bound checks. Non-numeric\n")
-		w.write("// strings return 0 so the guard only fires on true out-of-range\n")
-		w.write("// values; malformed numbers fail server-side.\n")
-		w.write("func parseNumberForValidation(n json.Number) float64 {\n")
-		w.write("\tif n == \"\" {\n\t\treturn 0\n\t}\n")
-		w.write("\tf, err := n.Float64()\n")
-		w.write("\tif err != nil {\n\t\treturn 0\n\t}\n")
-		w.write("\treturn f\n")
-		w.write("}\n")
-	}
-}
-
-func specUsesPatternValidator(spec *ir.Spec) bool {
-	for _, r := range spec.Resources {
-		for _, m := range r.Methods {
-			for _, v := range m.Validators {
-				if strings.Contains(v.Cond, "mustMatchPattern(") {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
-func specUsesNumberValidator(spec *ir.Spec) bool {
-	for _, r := range spec.Resources {
-		for _, m := range r.Methods {
-			for _, v := range m.Validators {
-				if strings.Contains(v.Cond, "parseNumberForValidation(") {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
-// specUsesUUIDValidator reports whether any method in spec has
-// a path param typed `format: uuid`, so writeFormatHelpers knows
-// whether to emit the helper.
-func specUsesUUIDValidator(spec *ir.Spec) bool {
-	for _, r := range spec.Resources {
-		for _, m := range r.Methods {
-			for _, p := range m.PathParams {
-				if p.Format == "uuid" {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
+// writeFormatHelpers is a no-op now that the format-validation
+// helpers live in internal/validate and are imported by generated
+// code directly. Kept as a seam so future per-package helpers can
+// land here without reshaping the caller.
+func writeFormatHelpers(_ *fileWriter, _ *ir.Spec) {}
 
 // writeResponseMetadata emits the per-package ResponseMetadata
 // struct plus the extractResponseMetadata helper that pulls the
@@ -219,16 +125,10 @@ func specNeedsSigned(spec *ir.Spec) bool {
 	return false
 }
 
-// writeUnionHelpers emits the package-level helpers used by
-// generated union code: hasJSONKey for probe decoders.
-func writeUnionHelpers(w *fileWriter) {
-	w.write("// hasJSONKey reports whether key is present on the wire.\n")
-	w.write("// Used by generated union probe decoders.\n")
-	w.write("func hasJSONKey(m map[string]json.RawMessage, key string) bool {\n")
-	w.write("\t_, ok := m[key]\n")
-	w.write("\treturn ok\n")
-	w.write("}\n\n")
-}
+// writeUnionHelpers used to emit a local hasJSONKey helper for
+// probe decoders; it now lives in internal/validate and is
+// referenced directly by generated code.
+func writeUnionHelpers(_ *fileWriter) {}
 
 // writeDecl dispatches to the kind-specific emitter.
 func writeDecl(w *fileWriter, d *ir.Decl) {
@@ -641,7 +541,7 @@ func writeProbeDecoder(w *fileWriter, d *ir.Decl) {
 		}
 		conds := make([]string, 0, len(v.RequiredProbe))
 		for _, k := range v.RequiredProbe {
-			conds = append(conds, fmt.Sprintf("hasJSONKey(probe, %q)", k))
+			conds = append(conds, fmt.Sprintf("validate.HasJSONKey(probe, %q)", k))
 		}
 		w.printf("\tif %s {\n", strings.Join(conds, " && "))
 		w.printf("\t\tvar out %s\n", v.GoName)

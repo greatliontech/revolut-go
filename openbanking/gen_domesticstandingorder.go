@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // DomesticStandingOrder groups the DomesticStandingOrder endpoints.
@@ -90,13 +91,13 @@ func (s *DomesticStandingOrder) CreateConsents(ctx context.Context, xFAPIFinanci
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Amount == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Amount is required")
 	}
-	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.FirstPaymentAmount.Amount)) {
+	if req.Data.Initiation.FirstPaymentAmount != nil && !validate.MatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.FirstPaymentAmount.Amount)) {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
 	}
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Currency == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Currency is required")
 	}
-	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.FirstPaymentAmount.Currency) {
+	if req.Data.Initiation.FirstPaymentAmount != nil && !validate.MatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.FirstPaymentAmount.Currency) {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Currency must match pattern ^[A-Z]{3,3}$")
 	}
 	if req.Data.Initiation.FirstPaymentDateTime.IsZero() {
@@ -210,13 +211,13 @@ func (s *DomesticStandingOrder) CreateConsentsSigned(ctx context.Context, xFAPIF
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Amount == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Amount is required")
 	}
-	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.FirstPaymentAmount.Amount)) {
+	if req.Data.Initiation.FirstPaymentAmount != nil && !validate.MatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.FirstPaymentAmount.Amount)) {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
 	}
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Currency == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Currency is required")
 	}
-	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.FirstPaymentAmount.Currency) {
+	if req.Data.Initiation.FirstPaymentAmount != nil && !validate.MatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.FirstPaymentAmount.Currency) {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrderConsent2.Data.Initiation.FirstPaymentAmount.Currency must match pattern ^[A-Z]{3,3}$")
 	}
 	if req.Data.Initiation.FirstPaymentDateTime.IsZero() {
@@ -433,13 +434,13 @@ func (s *DomesticStandingOrder) Create(ctx context.Context, xFAPIFinancialID str
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Amount == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Amount is required")
 	}
-	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.FirstPaymentAmount.Amount)) {
+	if req.Data.Initiation.FirstPaymentAmount != nil && !validate.MatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.FirstPaymentAmount.Amount)) {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
 	}
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Currency == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Currency is required")
 	}
-	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.FirstPaymentAmount.Currency) {
+	if req.Data.Initiation.FirstPaymentAmount != nil && !validate.MatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.FirstPaymentAmount.Currency) {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Currency must match pattern ^[A-Z]{3,3}$")
 	}
 	if req.Data.Initiation.FirstPaymentDateTime.IsZero() {
@@ -559,13 +560,13 @@ func (s *DomesticStandingOrder) CreateSigned(ctx context.Context, xFAPIFinancial
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Amount == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Amount is required")
 	}
-	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.FirstPaymentAmount.Amount)) {
+	if req.Data.Initiation.FirstPaymentAmount != nil && !validate.MatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.FirstPaymentAmount.Amount)) {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
 	}
 	if req.Data.Initiation.FirstPaymentAmount != nil && req.Data.Initiation.FirstPaymentAmount.Currency == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Currency is required")
 	}
-	if req.Data.Initiation.FirstPaymentAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.FirstPaymentAmount.Currency) {
+	if req.Data.Initiation.FirstPaymentAmount != nil && !validate.MatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.FirstPaymentAmount.Currency) {
 		return nil, errors.New("openbanking: ObwriteDomesticStandingOrder2.Data.Initiation.FirstPaymentAmount.Currency must match pattern ^[A-Z]{3,3}$")
 	}
 	if req.Data.Initiation.FirstPaymentDateTime.IsZero() {

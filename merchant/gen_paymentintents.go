@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // PaymentIntents groups the PaymentIntents endpoints.
@@ -43,7 +44,7 @@ func (s *PaymentIntents) Create(ctx context.Context, orderID string, revolutAPIV
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
-	if !isUUID(orderID) {
+	if !validate.IsUUID(orderID) {
 		return nil, errors.New("merchant: order_id must be a valid UUID")
 	}
 	if req.Amount == 0 {
@@ -102,7 +103,7 @@ func (s *PaymentIntents) Get(ctx context.Context, paymentIntentID string, revolu
 	if paymentIntentID == "" {
 		return nil, errors.New("merchant: payment_intent_id is required")
 	}
-	if !isUUID(paymentIntentID) {
+	if !validate.IsUUID(paymentIntentID) {
 		return nil, errors.New("merchant: payment_intent_id must be a valid UUID")
 	}
 	r := transport.RawRequest{}
@@ -144,7 +145,7 @@ func (s *PaymentIntents) CancelPaymentIntent(ctx context.Context, paymentIntentI
 	if paymentIntentID == "" {
 		return nil, errors.New("merchant: payment_intent_id is required")
 	}
-	if !isUUID(paymentIntentID) {
+	if !validate.IsUUID(paymentIntentID) {
 		return nil, errors.New("merchant: payment_intent_id must be a valid UUID")
 	}
 	r := transport.RawRequest{}

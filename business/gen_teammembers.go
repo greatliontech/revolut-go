@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // TeamMembers groups the TeamMembers endpoints.
@@ -178,7 +179,7 @@ func (s *TeamMembers) Delete(ctx context.Context, teamMemberID string) error {
 	if teamMemberID == "" {
 		return errors.New("business: team_member_id is required")
 	}
-	if !isUUID(teamMemberID) {
+	if !validate.IsUUID(teamMemberID) {
 		return errors.New("business: team_member_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodDelete, "team-members/"+url.PathEscape(teamMemberID), nil, nil)

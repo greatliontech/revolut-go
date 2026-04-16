@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Transfers groups the Transfers endpoints.
@@ -34,7 +35,7 @@ func (s *Transfers) CreatePayment(ctx context.Context, req TransactionPaymentReq
 	if req.Amount == "" {
 		return nil, errors.New("business: TransactionPaymentRequest.amount is required")
 	}
-	if req.Currency != "" && !mustMatchPattern("^[A-Z]{3}$", string(req.Currency)) {
+	if req.Currency != "" && !validate.MatchPattern("^[A-Z]{3}$", string(req.Currency)) {
 		return nil, errors.New("business: TransactionPaymentRequest.currency must match pattern ^[A-Z]{3}$")
 	}
 	if req.Receiver.CounterpartyID == "" {
@@ -73,7 +74,7 @@ func (s *Transfers) Create(ctx context.Context, req TransferRequest) (*TransferR
 	if req.Currency == "" {
 		return nil, errors.New("business: TransferRequest.currency is required")
 	}
-	if !mustMatchPattern("^[A-Z]{3}$", string(req.Currency)) {
+	if !validate.MatchPattern("^[A-Z]{3}$", string(req.Currency)) {
 		return nil, errors.New("business: TransferRequest.currency must match pattern ^[A-Z]{3}$")
 	}
 	if req.RequestID == "" {

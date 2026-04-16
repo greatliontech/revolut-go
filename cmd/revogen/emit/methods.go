@@ -77,7 +77,7 @@ func writePathParamValidatorsSigned(w *fileWriter, spec *ir.Spec, m *ir.Method) 
 		w.printf("\t\treturn nil, errors.New(%q)\n", spec.ErrPrefix+": "+wire+" is required")
 		w.write("\t}\n")
 		if p.Format == "uuid" {
-			w.printf("\tif !isUUID(%s) {\n", p.Name)
+			w.printf("\tif !validate.IsUUID(%s) {\n", p.Name)
 			w.printf("\t\treturn nil, errors.New(%q)\n", spec.ErrPrefix+": "+wire+" must be a valid UUID")
 			w.write("\t}\n")
 		}
@@ -238,7 +238,7 @@ func writePathParamValidators(w *fileWriter, spec *ir.Spec, m *ir.Method) {
 		w.printf("\t\treturn %serrors.New(%q)\n", zero, spec.ErrPrefix+": "+wire+" is required")
 		w.write("\t}\n")
 		if p.Format == "uuid" {
-			w.printf("\tif !isUUID(%s) {\n", p.Name)
+			w.printf("\tif !validate.IsUUID(%s) {\n", p.Name)
 			w.printf("\t\treturn %serrors.New(%q)\n", zero, spec.ErrPrefix+": "+wire+" must be a valid UUID")
 			w.write("\t}\n")
 		}

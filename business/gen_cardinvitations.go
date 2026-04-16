@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // CardInvitations groups the CardInvitations endpoints.
@@ -96,7 +97,7 @@ func (s *CardInvitations) ListAll(ctx context.Context, opts *GetCardInvitationsP
 // Docs: https://developer.revolut.com/docs/business/create-card-invitation
 // Required scopes: WRITE
 func (s *CardInvitations) Create(ctx context.Context, req CardInvitationsBody) (*CardInvitationCreatedResponse, error) {
-	if req.ExpiryPeriod != "" && !mustMatchPattern("^P\\d+D$", req.ExpiryPeriod) {
+	if req.ExpiryPeriod != "" && !validate.MatchPattern("^P\\d+D$", req.ExpiryPeriod) {
 		return nil, errors.New("business: CardInvitationsBody.expiry_period must match pattern ^P\\d+D$")
 	}
 	if req.HolderID == "" {
@@ -144,7 +145,7 @@ func (s *CardInvitations) CancelCardInvitation(ctx context.Context, cardInvitati
 	if cardInvitationID == "" {
 		return errors.New("business: card_invitation_id is required")
 	}
-	if !isUUID(cardInvitationID) {
+	if !validate.IsUUID(cardInvitationID) {
 		return errors.New("business: card_invitation_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodPost, "card-invitations/"+url.PathEscape(cardInvitationID)+"/cancel", nil, nil)
@@ -167,7 +168,7 @@ func (s *CardInvitations) Get(ctx context.Context, cardInvitationID string) (*Ca
 	if cardInvitationID == "" {
 		return nil, errors.New("business: card_invitation_id is required")
 	}
-	if !isUUID(cardInvitationID) {
+	if !validate.IsUUID(cardInvitationID) {
 		return nil, errors.New("business: card_invitation_id must be a valid UUID")
 	}
 	var out CardInvitationResponse
@@ -200,10 +201,10 @@ func (s *CardInvitations) Update(ctx context.Context, cardInvitationID string, r
 	if cardInvitationID == "" {
 		return nil, errors.New("business: card_invitation_id is required")
 	}
-	if !isUUID(cardInvitationID) {
+	if !validate.IsUUID(cardInvitationID) {
 		return nil, errors.New("business: card_invitation_id must be a valid UUID")
 	}
-	if req.ExpiryPeriod != "" && !mustMatchPattern("^P\\d+D$", req.ExpiryPeriod) {
+	if req.ExpiryPeriod != "" && !validate.MatchPattern("^P\\d+D$", req.ExpiryPeriod) {
 		return nil, errors.New("business: CardInvitationsBody.expiry_period must match pattern ^P\\d+D$")
 	}
 	if req.HolderID == "" {

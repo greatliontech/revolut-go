@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // PaymentDrafts groups the PaymentDrafts endpoints.
@@ -80,7 +81,7 @@ func (s *PaymentDrafts) Get(ctx context.Context, paymentDraftID string) (*Paymen
 	if paymentDraftID == "" {
 		return nil, errors.New("business: payment_draft_id is required")
 	}
-	if !isUUID(paymentDraftID) {
+	if !validate.IsUUID(paymentDraftID) {
 		return nil, errors.New("business: payment_draft_id must be a valid UUID")
 	}
 	var out PaymentDraftResponse
@@ -104,7 +105,7 @@ func (s *PaymentDrafts) Delete(ctx context.Context, paymentDraftID string) error
 	if paymentDraftID == "" {
 		return errors.New("business: payment_draft_id is required")
 	}
-	if !isUUID(paymentDraftID) {
+	if !validate.IsUUID(paymentDraftID) {
 		return errors.New("business: payment_draft_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodDelete, "payment-drafts/"+url.PathEscape(paymentDraftID), nil, nil)

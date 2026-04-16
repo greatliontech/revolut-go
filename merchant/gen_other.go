@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Other groups the Other endpoints.
@@ -67,7 +68,7 @@ func (s *Other) RegisterAddressValidationEndpoint(ctx context.Context, req Synch
 	if len(req.URL) > 2000 {
 		return nil, errors.New("merchant: SynchronousWebhookCreation.url must be at most 2000 characters")
 	}
-	if !mustMatchPattern("^https:\\/{2}.+/gi", req.URL) {
+	if !validate.MatchPattern("^https:\\/{2}.+/gi", req.URL) {
 		return nil, errors.New("merchant: SynchronousWebhookCreation.url must match pattern ^https:\\/{2}.+/gi")
 	}
 	var out SynchronousWebhook
@@ -86,7 +87,7 @@ func (s *Other) DeleteSynchronousWebhook(ctx context.Context, synchronousWebhook
 	if synchronousWebhookID == "" {
 		return errors.New("merchant: synchronous_webhook_id is required")
 	}
-	if !isUUID(synchronousWebhookID) {
+	if !validate.IsUUID(synchronousWebhookID) {
 		return errors.New("merchant: synchronous_webhook_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodDelete, "api/synchronous-webhooks/"+url.PathEscape(synchronousWebhookID), nil, nil)

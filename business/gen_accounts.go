@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Accounts groups the Accounts endpoints.
@@ -45,7 +46,7 @@ func (s *Accounts) Get(ctx context.Context, accountID string) (*Account, error) 
 	if accountID == "" {
 		return nil, errors.New("business: account_id is required")
 	}
-	if !isUUID(accountID) {
+	if !validate.IsUUID(accountID) {
 		return nil, errors.New("business: account_id must be a valid UUID")
 	}
 	var out Account
@@ -68,7 +69,7 @@ func (s *Accounts) GetDetails(ctx context.Context, accountID string) ([]AccountB
 	if accountID == "" {
 		return nil, errors.New("business: account_id is required")
 	}
-	if !isUUID(accountID) {
+	if !validate.IsUUID(accountID) {
 		return nil, errors.New("business: account_id must be a valid UUID")
 	}
 	var out []AccountBankDetailsItem

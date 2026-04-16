@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // DomesticPayment groups the DomesticPayment endpoints.
@@ -91,13 +92,13 @@ func (s *DomesticPayment) CreateConsents(ctx context.Context, xFAPIFinancialID s
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Amount == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticConsent2.Data.Initiation.InstructedAmount.Amount is required")
 	}
-	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.InstructedAmount.Amount)) {
+	if req.Data.Initiation.InstructedAmount != nil && !validate.MatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.InstructedAmount.Amount)) {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticConsent2.Data.Initiation.InstructedAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
 	}
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Currency == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticConsent2.Data.Initiation.InstructedAmount.Currency is required")
 	}
-	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.InstructedAmount.Currency) {
+	if req.Data.Initiation.InstructedAmount != nil && !validate.MatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.InstructedAmount.Currency) {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomesticConsent2.Data.Initiation.InstructedAmount.Currency must match pattern ^[A-Z]{3,3}$")
 	}
 	if req.Data.Initiation.InstructionIdentification == "" {
@@ -202,13 +203,13 @@ func (s *DomesticPayment) CreateConsentsSigned(ctx context.Context, xFAPIFinanci
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Amount == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticConsent2.Data.Initiation.InstructedAmount.Amount is required")
 	}
-	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.InstructedAmount.Amount)) {
+	if req.Data.Initiation.InstructedAmount != nil && !validate.MatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.InstructedAmount.Amount)) {
 		return nil, errors.New("openbanking: ObwriteDomesticConsent2.Data.Initiation.InstructedAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
 	}
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Currency == "" {
 		return nil, errors.New("openbanking: ObwriteDomesticConsent2.Data.Initiation.InstructedAmount.Currency is required")
 	}
-	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.InstructedAmount.Currency) {
+	if req.Data.Initiation.InstructedAmount != nil && !validate.MatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.InstructedAmount.Currency) {
 		return nil, errors.New("openbanking: ObwriteDomesticConsent2.Data.Initiation.InstructedAmount.Currency must match pattern ^[A-Z]{3,3}$")
 	}
 	if req.Data.Initiation.InstructionIdentification == "" {
@@ -502,13 +503,13 @@ func (s *DomesticPayment) Create(ctx context.Context, xFAPIFinancialID string, x
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Amount == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomestic2.Data.Initiation.InstructedAmount.Amount is required")
 	}
-	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.InstructedAmount.Amount)) {
+	if req.Data.Initiation.InstructedAmount != nil && !validate.MatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.InstructedAmount.Amount)) {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomestic2.Data.Initiation.InstructedAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
 	}
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Currency == "" {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomestic2.Data.Initiation.InstructedAmount.Currency is required")
 	}
-	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.InstructedAmount.Currency) {
+	if req.Data.Initiation.InstructedAmount != nil && !validate.MatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.InstructedAmount.Currency) {
 		return nil, ResponseMetadata{}, errors.New("openbanking: ObwriteDomestic2.Data.Initiation.InstructedAmount.Currency must match pattern ^[A-Z]{3,3}$")
 	}
 	if req.Data.Initiation.InstructionIdentification == "" {
@@ -622,13 +623,13 @@ func (s *DomesticPayment) CreateSigned(ctx context.Context, xFAPIFinancialID str
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Amount == "" {
 		return nil, errors.New("openbanking: ObwriteDomestic2.Data.Initiation.InstructedAmount.Amount is required")
 	}
-	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.InstructedAmount.Amount)) {
+	if req.Data.Initiation.InstructedAmount != nil && !validate.MatchPattern("^\\d{1,13}\\.\\d{1,5}$", string(req.Data.Initiation.InstructedAmount.Amount)) {
 		return nil, errors.New("openbanking: ObwriteDomestic2.Data.Initiation.InstructedAmount.Amount must match pattern ^\\d{1,13}\\.\\d{1,5}$")
 	}
 	if req.Data.Initiation.InstructedAmount != nil && req.Data.Initiation.InstructedAmount.Currency == "" {
 		return nil, errors.New("openbanking: ObwriteDomestic2.Data.Initiation.InstructedAmount.Currency is required")
 	}
-	if req.Data.Initiation.InstructedAmount != nil && !mustMatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.InstructedAmount.Currency) {
+	if req.Data.Initiation.InstructedAmount != nil && !validate.MatchPattern("^[A-Z]{3,3}$", req.Data.Initiation.InstructedAmount.Currency) {
 		return nil, errors.New("openbanking: ObwriteDomestic2.Data.Initiation.InstructedAmount.Currency must match pattern ^[A-Z]{3,3}$")
 	}
 	if req.Data.Initiation.InstructionIdentification == "" {

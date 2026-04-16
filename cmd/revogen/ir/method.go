@@ -101,13 +101,33 @@ type MetadataField struct {
 	Doc      string // single-line godoc for the field
 }
 
-// Validator is a pre-flight required-field check emitted before the
-// HTTP call. Cond is a Go boolean expression that is true when the
-// field is considered unset.
+// Validator is a pre-flight check emitted before the HTTP call.
+// Cond is a Go boolean expression that is true when the check
+// should reject the call.
 type Validator struct {
 	Cond    string
 	Message string
+	// Uses captures which emit-time helpers the condition references,
+	// so the import computation doesn't have to scan Cond for
+	// identifiers. Set by the lower pass.
+	Uses ValidatorUses
 }
+
+// ValidatorUses is a bitfield of helpers a Validator.Cond refers to.
+// Kept typed so lower/imports.go can decide which stdlib + internal
+// packages the resource file must import without resorting to
+// string-substring detection on Cond.
+type ValidatorUses uint8
+
+const (
+	// UsesPattern: Cond contains a call to validate.MatchPattern.
+	UsesPattern ValidatorUses = 1 << iota
+	// UsesNumberAsFloat: Cond coerces a json.Number via validate.NumberAsFloat.
+	UsesNumberAsFloat
+)
+
+// Has reports whether v includes the given flag.
+func (v ValidatorUses) Has(flag ValidatorUses) bool { return v&flag != 0 }
 
 // HTTPCall fully describes the transport call the method issues so
 // the emitter can wire it up mechanically.

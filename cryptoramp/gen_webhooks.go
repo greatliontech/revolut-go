@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Webhooks groups the Webhooks endpoints.
@@ -88,7 +89,7 @@ func (s *Webhooks) Get(ctx context.Context, webhookID string, xAPIKey string) (*
 	if webhookID == "" {
 		return nil, errors.New("cryptoramp: webhook_id is required")
 	}
-	if !isUUID(webhookID) {
+	if !validate.IsUUID(webhookID) {
 		return nil, errors.New("cryptoramp: webhook_id must be a valid UUID")
 	}
 	if xAPIKey == "" {
@@ -121,7 +122,7 @@ func (s *Webhooks) Update(ctx context.Context, webhookID string, xAPIKey string,
 	if webhookID == "" {
 		return nil, errors.New("cryptoramp: webhook_id is required")
 	}
-	if !isUUID(webhookID) {
+	if !validate.IsUUID(webhookID) {
 		return nil, errors.New("cryptoramp: webhook_id must be a valid UUID")
 	}
 	if xAPIKey == "" {
@@ -156,7 +157,7 @@ func (s *Webhooks) Delete(ctx context.Context, webhookID string, xAPIKey string)
 	if webhookID == "" {
 		return errors.New("cryptoramp: webhook_id is required")
 	}
-	if !isUUID(webhookID) {
+	if !validate.IsUUID(webhookID) {
 		return errors.New("cryptoramp: webhook_id must be a valid UUID")
 	}
 	if xAPIKey == "" {

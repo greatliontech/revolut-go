@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // ReportRuns groups the ReportRuns endpoints.
@@ -55,7 +56,7 @@ func (s *ReportRuns) GetDetails(ctx context.Context, reportRunID string) (*Repor
 	if reportRunID == "" {
 		return nil, errors.New("merchant: report_run_id is required")
 	}
-	if !isUUID(reportRunID) {
+	if !validate.IsUUID(reportRunID) {
 		return nil, errors.New("merchant: report_run_id must be a valid UUID")
 	}
 	var out ReportRunDetails
@@ -74,7 +75,7 @@ func (s *ReportRuns) DownloadReportFile(ctx context.Context, reportRunID string)
 	if reportRunID == "" {
 		return nil, errors.New("merchant: report_run_id is required")
 	}
-	if !isUUID(reportRunID) {
+	if !validate.IsUUID(reportRunID) {
 		return nil, errors.New("merchant: report_run_id must be a valid UUID")
 	}
 	r := transport.RawRequest{

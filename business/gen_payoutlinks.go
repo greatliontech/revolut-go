@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // PayoutLinks groups the PayoutLinks endpoints.
@@ -110,7 +111,7 @@ func (s *PayoutLinks) Create(ctx context.Context, req CreatePayoutLinkRequest) (
 	if req.Currency == "" {
 		return nil, errors.New("business: CreatePayoutLinkRequest.currency is required")
 	}
-	if !mustMatchPattern("^[A-Z]{3}$", string(req.Currency)) {
+	if !validate.MatchPattern("^[A-Z]{3}$", string(req.Currency)) {
 		return nil, errors.New("business: CreatePayoutLinkRequest.currency must match pattern ^[A-Z]{3}$")
 	}
 	if req.Reference == "" {
@@ -148,7 +149,7 @@ func (s *PayoutLinks) Get(ctx context.Context, payoutLinkID string) (*PayoutLink
 	if payoutLinkID == "" {
 		return nil, errors.New("business: payout_link_id is required")
 	}
-	if !isUUID(payoutLinkID) {
+	if !validate.IsUUID(payoutLinkID) {
 		return nil, errors.New("business: payout_link_id must be a valid UUID")
 	}
 	var out PayoutLink
@@ -175,7 +176,7 @@ func (s *PayoutLinks) CancelPayoutLink(ctx context.Context, payoutLinkID string)
 	if payoutLinkID == "" {
 		return errors.New("business: payout_link_id is required")
 	}
-	if !isUUID(payoutLinkID) {
+	if !validate.IsUUID(payoutLinkID) {
 		return errors.New("business: payout_link_id must be a valid UUID")
 	}
 	return s.t.Do(ctx, http.MethodPost, "payout-links/"+url.PathEscape(payoutLinkID)+"/cancel", nil, nil)

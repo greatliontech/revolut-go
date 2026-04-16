@@ -11,6 +11,7 @@ import (
 	"net/url"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
+	"github.com/greatliontech/revolut-go/internal/validate"
 )
 
 // Expenses groups the Expenses endpoints.
@@ -104,7 +105,7 @@ func (s *Expenses) GetExpense(ctx context.Context, expenseID string) (*Expense, 
 	if expenseID == "" {
 		return nil, errors.New("business: expense_id is required")
 	}
-	if !isUUID(expenseID) {
+	if !validate.IsUUID(expenseID) {
 		return nil, errors.New("business: expense_id must be a valid UUID")
 	}
 	var out Expense
@@ -130,13 +131,13 @@ func (s *Expenses) GetExpenseReceipt(ctx context.Context, expenseID string, rece
 	if expenseID == "" {
 		return nil, errors.New("business: expense_id is required")
 	}
-	if !isUUID(expenseID) {
+	if !validate.IsUUID(expenseID) {
 		return nil, errors.New("business: expense_id must be a valid UUID")
 	}
 	if receiptID == "" {
 		return nil, errors.New("business: receipt_id is required")
 	}
-	if !isUUID(receiptID) {
+	if !validate.IsUUID(receiptID) {
 		return nil, errors.New("business: receipt_id must be a valid UUID")
 	}
 	r := transport.RawRequest{
