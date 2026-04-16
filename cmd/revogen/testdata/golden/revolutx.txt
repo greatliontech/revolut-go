@@ -68,13 +68,17 @@ func (*Orders) CancelAllOrders
 func (*Orders) CancelOrder
 func (*Orders) Get
 func (*Orders) GetActiveOrders
+func (*Orders) GetActiveOrdersAll
 func (*Orders) GetFills
 func (*Orders) GetHistoricalOrders
+func (*Orders) GetHistoricalOrdersAll
 func (*Orders) PlaceOrder
 func (*PublicMarketData) GetLastTrades
 func (*PublicMarketData) GetOrderBook
 func (*Trades) GetAllTrades
+func (*Trades) GetAllTradesAll
 func (*Trades) GetPrivateTrades
+func (*Trades) GetPrivateTradesAll
 func New
 type AccountBalanceEntry struct { Available json.Number `json:"available"` Currency string `json:"currency"` Reserved json.Number `json:"reserved"` Staked json.Number `json:"staked,omitempty"` Total json.Number `json:"total"` }
 type ActiveOrdersPaginatedResponse struct { Data []Order `json:"data"` Metadata *ActiveOrdersPaginatedResponseMetadata `json:"metadata"` }

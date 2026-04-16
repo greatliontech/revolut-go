@@ -63,8 +63,9 @@ func (b *Builder) cursorPagination(m *ir.Method, params *ir.Decl) *ir.Pagination
 	}
 	var nextField, itemsField string
 	var nextType, itemType *ir.Type
+	var nestedParent string // non-empty when cursor lives under resp.<parent>.<field>
 	for _, f := range respDecl.Fields {
-		if f.JSONName == "next_page_token" {
+		if isCursorJSONName(f.JSONName) {
 			nextField = f.GoName
 			nextType = f.Type
 			continue
@@ -74,16 +75,56 @@ func (b *Builder) cursorPagination(m *ir.Method, params *ir.Decl) *ir.Pagination
 			itemType = f.Type.Elem
 		}
 	}
+	// If no top-level cursor field, look one level deeper under a
+	// metadata/meta/pagination envelope (revolutx uses this shape:
+	// `{data: [...], metadata: {next_cursor: ...}}`).
+	if nextField == "" {
+		for _, f := range respDecl.Fields {
+			if !isCursorEnvelopeName(f.JSONName) {
+				continue
+			}
+			inner := f.Type
+			if inner.IsPointer() {
+				inner = inner.Elem
+			}
+			if !inner.IsNamed() {
+				continue
+			}
+			innerDecl := b.declByName[inner.Name]
+			if innerDecl == nil || innerDecl.Kind != ir.DeclStruct {
+				continue
+			}
+			for _, ifld := range innerDecl.Fields {
+				if isCursorJSONName(ifld.JSONName) {
+					nestedParent = f.GoName
+					nextField = ifld.GoName
+					nextType = ifld.Type
+					break
+				}
+			}
+			if nextField != "" {
+				break
+			}
+		}
+	}
 	if nextField == "" || itemsField == "" {
 		return nil
 	}
+	// Encode the full accessor into NextTokenField so emit can use
+	// it verbatim ("Metadata.NextCursor" vs "NextPageToken"). The
+	// nil-guard on the parent pointer is the emit's problem to
+	// solve.
+	tokenAccessor := nextField
+	if nestedParent != "" {
+		tokenAccessor = nestedParent + "." + nextField
+	}
 	for _, f := range params.Fields {
-		if f.JSONName == "page_token" {
+		if isCursorParamName(f.JSONName) {
 			return &ir.Pagination{
 				Shape:          ir.PaginationCursor,
 				ItemType:       itemType,
 				ItemsField:     itemsField,
-				NextTokenField: nextField,
+				NextTokenField: tokenAccessor,
 				NextTokenType:  nextType,
 				PageTokenParam: f.GoName,
 				PageTokenType:  f.Type,
@@ -91,6 +132,27 @@ func (b *Builder) cursorPagination(m *ir.Method, params *ir.Decl) *ir.Pagination
 		}
 	}
 	return nil
+}
+
+// isCursorJSONName accepts the spec-side names the generator
+// recognises as "next-cursor-token" fields on a paginated response.
+// Revolut uses `next_page_token` (business) and `next_cursor`
+// (revolutx) for the same semantic.
+func isCursorJSONName(name string) bool {
+	return name == "next_page_token" || name == "next_cursor"
+}
+
+// isCursorParamName accepts the spec-side names for the "echo this
+// cursor back" query param. Revolut uses `page_token` (business),
+// `cursor` (revolutx), or `next_cursor` (rare).
+func isCursorParamName(name string) bool {
+	return name == "page_token" || name == "cursor" || name == "next_cursor"
+}
+
+// isCursorEnvelopeName accepts the spec-side names for an
+// envelope struct that wraps pagination metadata.
+func isCursorEnvelopeName(name string) bool {
+	return name == "metadata" || name == "meta" || name == "pagination"
 }
 
 func (b *Builder) timeWindowPagination(m *ir.Method, params *ir.Decl) *ir.Pagination {

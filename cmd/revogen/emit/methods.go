@@ -584,7 +584,14 @@ func writePaginationMethod(w *fileWriter, spec *ir.Spec, m *ir.Method) {
 	case ir.PaginationCursor:
 		w.printf("\t\t\tfor _, item := range resp.%s {\n", p.ItemsField)
 		w.write("\t\t\t\tif !yield(item, nil) { return }\n\t\t\t}\n")
+		// NextTokenField may be nested: "Metadata.NextCursor".
+		// When it is, guard the first segment for nil (common
+		// shape: response.Metadata is *Metadata).
 		tokenExpr := "resp." + p.NextTokenField
+		if dot := strings.Index(p.NextTokenField, "."); dot > 0 {
+			parent := "resp." + p.NextTokenField[:dot]
+			w.printf("\t\t\tif %s == nil { return }\n", parent)
+		}
 		if p.NextTokenType != nil && p.NextTokenType.IsPointer() {
 			w.printf("\t\t\tif %s == nil || *%s == \"\" { return }\n", tokenExpr, tokenExpr)
 			tokenExpr = "*" + tokenExpr

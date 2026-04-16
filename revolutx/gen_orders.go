@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"iter"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -96,6 +97,37 @@ func (s *Orders) GetActiveOrders(ctx context.Context, xRevxTimestamp int, xRevxS
 	return &out, nil
 }
 
+// GetActiveOrdersAll iterates every page of GetActiveOrders, yielding one Order per
+// step. Break out of the loop to stop early.
+func (s *Orders) GetActiveOrdersAll(ctx context.Context, xRevxTimestamp int, xRevxSignature string, opts *GetActiveOrdersParams) iter.Seq2[Order, error] {
+	return func(yield func(Order, error) bool) {
+		var p GetActiveOrdersParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.GetActiveOrders(ctx, xRevxTimestamp, xRevxSignature, &p)
+			if err != nil {
+				var zero Order
+				yield(zero, err)
+				return
+			}
+			for _, item := range resp.Data {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			if resp.Metadata == nil {
+				return
+			}
+			if resp.Metadata.NextCursor == "" {
+				return
+			}
+			p.Cursor = resp.Metadata.NextCursor
+		}
+	}
+}
+
 // GetFills get fills of order by ID
 //
 // Docs: https://developer.revolut.com/docs/revolutx/get-order-fills
@@ -146,6 +178,37 @@ func (s *Orders) GetHistoricalOrders(ctx context.Context, xRevxTimestamp int, xR
 		return nil, err
 	}
 	return &out, nil
+}
+
+// GetHistoricalOrdersAll iterates every page of GetHistoricalOrders, yielding one Order per
+// step. Break out of the loop to stop early.
+func (s *Orders) GetHistoricalOrdersAll(ctx context.Context, xRevxTimestamp int, xRevxSignature string, opts *GetHistoricalOrdersParams) iter.Seq2[Order, error] {
+	return func(yield func(Order, error) bool) {
+		var p GetHistoricalOrdersParams
+		if opts != nil {
+			p = *opts
+		}
+		for {
+			resp, err := s.GetHistoricalOrders(ctx, xRevxTimestamp, xRevxSignature, &p)
+			if err != nil {
+				var zero Order
+				yield(zero, err)
+				return
+			}
+			for _, item := range resp.Data {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			if resp.Metadata == nil {
+				return
+			}
+			if resp.Metadata.NextCursor == "" {
+				return
+			}
+			p.Cursor = resp.Metadata.NextCursor
+		}
+	}
 }
 
 // Get get order by ID

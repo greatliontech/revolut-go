@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"iter"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -46,6 +47,42 @@ func (s *Trades) GetAllTrades(ctx context.Context, symbol string, xRevxTimestamp
 	return &out, nil
 }
 
+// GetAllTradesAll iterates every page of GetAllTrades, yielding one Trade per
+// step. Break out of the loop to stop early.
+func (s *Trades) GetAllTradesAll(ctx context.Context, symbol string, xRevxTimestamp int, xRevxSignature string, opts *GetAllTradesParams) iter.Seq2[Trade, error] {
+	return func(yield func(Trade, error) bool) {
+		var p GetAllTradesParams
+		if opts != nil {
+			p = *opts
+		}
+		if symbol == "" {
+			var zero Trade
+			yield(zero, errors.New("revolutx: symbol is required"))
+			return
+		}
+		for {
+			resp, err := s.GetAllTrades(ctx, symbol, xRevxTimestamp, xRevxSignature, &p)
+			if err != nil {
+				var zero Trade
+				yield(zero, err)
+				return
+			}
+			for _, item := range resp.Data {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			if resp.Metadata == nil {
+				return
+			}
+			if resp.Metadata.NextCursor == "" {
+				return
+			}
+			p.Cursor = resp.Metadata.NextCursor
+		}
+	}
+}
+
 // GetPrivateTrades get client trades (associated with the provided API key)
 //
 // Docs: https://developer.revolut.com/docs/revolutx/get-private-trades
@@ -72,4 +109,40 @@ func (s *Trades) GetPrivateTrades(ctx context.Context, symbol string, xRevxTimes
 		return nil, err
 	}
 	return &out, nil
+}
+
+// GetPrivateTradesAll iterates every page of GetPrivateTrades, yielding one ClientTrade per
+// step. Break out of the loop to stop early.
+func (s *Trades) GetPrivateTradesAll(ctx context.Context, symbol string, xRevxTimestamp int, xRevxSignature string, opts *GetPrivateTradesParams) iter.Seq2[ClientTrade, error] {
+	return func(yield func(ClientTrade, error) bool) {
+		var p GetPrivateTradesParams
+		if opts != nil {
+			p = *opts
+		}
+		if symbol == "" {
+			var zero ClientTrade
+			yield(zero, errors.New("revolutx: symbol is required"))
+			return
+		}
+		for {
+			resp, err := s.GetPrivateTrades(ctx, symbol, xRevxTimestamp, xRevxSignature, &p)
+			if err != nil {
+				var zero ClientTrade
+				yield(zero, err)
+				return
+			}
+			for _, item := range resp.Data {
+				if !yield(item, nil) {
+					return
+				}
+			}
+			if resp.Metadata == nil {
+				return
+			}
+			if resp.Metadata.NextCursor == "" {
+				return
+			}
+			p.Cursor = resp.Metadata.NextCursor
+		}
+	}
 }
