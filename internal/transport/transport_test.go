@@ -110,8 +110,8 @@ func TestDo_APIErrorOnNon2xx(t *testing.T) {
 	if apiErr.StatusCode != 400 {
 		t.Errorf("status: %d", apiErr.StatusCode)
 	}
-	if apiErr.Code != 1234 || apiErr.Message != "bad input" {
-		t.Errorf("code/message: %d %q", apiErr.Code, apiErr.Message)
+	if apiErr.Code != "1234" || apiErr.Message != "bad input" {
+		t.Errorf("code/message: %q %q", apiErr.Code, apiErr.Message)
 	}
 }
 
@@ -134,8 +134,8 @@ func TestDo_APIErrorWithOpaqueBody(t *testing.T) {
 		t.Errorf("body not preserved: %q", apiErr.Body)
 	}
 	// Message/Code should be zero-value when the body isn't JSON.
-	if apiErr.Message != "" || apiErr.Code != 0 {
-		t.Errorf("non-JSON body polluted Code/Message: %d %q", apiErr.Code, apiErr.Message)
+	if apiErr.Message != "" || apiErr.Code != "" {
+		t.Errorf("non-JSON body polluted Code/Message: %q %q", apiErr.Code, apiErr.Message)
 	}
 }
 
@@ -359,6 +359,150 @@ func TestDo_HostAliasesAreDefensivelyCopied(t *testing.T) {
 	}
 	if resolved.Host != "sandbox-apis.revolut.com" {
 		t.Errorf("transport view shifted after caller mutation: host=%q", resolved.Host)
+	}
+}
+
+// TestAPIError_CapturesRequestContext: APIError carries the method,
+// URL, and server-echoed request-id so a failing call is debuggable
+// from the error message alone.
+func TestAPIError_CapturesRequestContext(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Request-Id", "req-abc")
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"code":"bad_request","message":"nope","error_id":"err-123"}`))
+	}))
+	defer srv.Close()
+	tr := newTransport(t, srv, nil)
+	err := tr.Do(context.Background(), http.MethodPost, "x", nil, nil)
+	apiErr, ok := core.AsAPIError(err)
+	if !ok {
+		t.Fatalf("want APIError, got %v", err)
+	}
+	if apiErr.Method != http.MethodPost {
+		t.Errorf("Method=%q", apiErr.Method)
+	}
+	if !strings.Contains(apiErr.URL, "/api/x") {
+		t.Errorf("URL=%q", apiErr.URL)
+	}
+	if apiErr.Code != "bad_request" {
+		t.Errorf("Code=%q; want bad_request", apiErr.Code)
+	}
+	if apiErr.ErrorID != "err-123" {
+		t.Errorf("ErrorID=%q", apiErr.ErrorID)
+	}
+	if apiErr.RequestID != "req-abc" {
+		t.Errorf("RequestID=%q", apiErr.RequestID)
+	}
+	if !strings.Contains(apiErr.Error(), "POST") || !strings.Contains(apiErr.Error(), "err-123") {
+		t.Errorf("Error() lacks context: %q", apiErr.Error())
+	}
+}
+
+// TestAPIError_IntCodeStringified: business/open-banking emit the
+// error code as an integer. The transport stringifies it so callers
+// have a uniform string type to switch on.
+func TestAPIError_IntCodeStringified(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusForbidden)
+		_, _ = w.Write([]byte(`{"code":2042,"message":"nope"}`))
+	}))
+	defer srv.Close()
+	tr := newTransport(t, srv, nil)
+	err := tr.Do(context.Background(), http.MethodGet, "x", nil, nil)
+	apiErr, _ := core.AsAPIError(err)
+	if apiErr.Code != "2042" {
+		t.Errorf("Code=%q; want 2042", apiErr.Code)
+	}
+}
+
+// TestAPIError_Decode gives callers a typed view of the raw body
+// without having to re-parse it themselves.
+func TestAPIError_Decode(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"code":"x","message":"m","details":{"field":"amount"}}`))
+	}))
+	defer srv.Close()
+	tr := newTransport(t, srv, nil)
+	err := tr.Do(context.Background(), http.MethodGet, "x", nil, nil)
+	apiErr, _ := core.AsAPIError(err)
+	var body struct {
+		Details struct {
+			Field string `json:"field"`
+		} `json:"details"`
+	}
+	if err := apiErr.Decode(&body); err != nil {
+		t.Fatalf("Decode: %v", err)
+	}
+	if body.Details.Field != "amount" {
+		t.Errorf("decoded.field=%q", body.Details.Field)
+	}
+}
+
+// TestAPIError_RetryAfterMilliseconds: revolut-x documents the
+// Retry-After value in milliseconds. RetryAfterUnit lets the
+// transport interpret it correctly.
+func TestAPIError_RetryAfterMilliseconds(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Retry-After", "5000")
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	defer srv.Close()
+	tr, err := New(Config{
+		BaseURL:        srv.URL + "/api/",
+		RetryAfterUnit: time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	callErr := tr.Do(context.Background(), http.MethodGet, "ping", nil, nil)
+	apiErr, _ := core.AsAPIError(callErr)
+	if apiErr.RetryAfter != 5*time.Second {
+		t.Errorf("RetryAfter=%v; want 5s (5000 ms)", apiErr.RetryAfter)
+	}
+}
+
+// TestDo_ChunkedEmpty2xx: a 200 with Transfer-Encoding: chunked
+// and no body should be a clean no-op; json.Decode previously
+// returned io.EOF here.
+func TestDo_ChunkedEmpty2xx(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		// chunked without writing any body
+	}))
+	defer srv.Close()
+	tr := newTransport(t, srv, nil)
+	var out struct {
+		OK bool `json:"ok"`
+	}
+	if err := tr.Do(context.Background(), http.MethodGet, "x", nil, &out); err != nil {
+		t.Fatalf("unexpected error on chunked empty 200: %v", err)
+	}
+}
+
+// TestDo_ResponseBodySizeCapped: the transport limits how much of a
+// response body it reads, so a malicious server can't OOM the caller.
+func TestDo_ResponseBodySizeCapped(t *testing.T) {
+	huge := bytes.Repeat([]byte("x"), 2<<20) // 2 MiB of noise
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write(append([]byte(`{"message":"`), append(huge, []byte(`"}`)...)...))
+	}))
+	defer srv.Close()
+	tr, err := New(Config{
+		BaseURL:          srv.URL + "/api/",
+		MaxResponseBytes: 64 << 10, // 64 KiB
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	callErr := tr.Do(context.Background(), http.MethodGet, "x", nil, nil)
+	apiErr, _ := core.AsAPIError(callErr)
+	if int64(len(apiErr.Body)) > 64<<10 {
+		t.Errorf("body not capped: len=%d", len(apiErr.Body))
 	}
 }
 

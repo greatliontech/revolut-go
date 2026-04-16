@@ -55,10 +55,11 @@ func Ptr[T any](v T) *T { return &v }
 type Option func(*clientOptions)
 
 type clientOptions struct {
-	env        Environment
-	baseURL    string // overrides env-derived base URL when non-empty
-	httpClient *http.Client
-	userAgent  string
+	env         Environment
+	baseURL     string // overrides env-derived base URL when non-empty
+	httpClient  *http.Client
+	userAgent   string
+	hostAliases map[string]string // extra caller-supplied aliases
 }
 
 // WithEnvironment selects sandbox or production. Default is sandbox.
@@ -83,6 +84,26 @@ func WithUserAgent(ua string) Option {
 	return func(o *clientOptions) { o.userAgent = ua }
 }
 
+// WithHostAliases supplies additional absolute-URL host rewrites that
+// apply to every request. Useful when pointing the client at a local
+// mock: map apis.revolut.com → 127.0.0.1:8080 so operations whose
+// spec declares a per-operation server: override still land on the
+// mock. Caller-supplied aliases layer on top of the environment's
+// built-in sandbox aliases.
+func WithHostAliases(m map[string]string) Option {
+	return func(o *clientOptions) {
+		if len(m) == 0 {
+			return
+		}
+		if o.hostAliases == nil {
+			o.hostAliases = make(map[string]string, len(m))
+		}
+		for k, v := range m {
+			o.hostAliases[k] = v
+		}
+	}
+}
+
 func resolveOptions(opts []Option) clientOptions {
 	o := clientOptions{env: EnvironmentSandbox}
 	for _, opt := range opts {
@@ -91,13 +112,29 @@ func resolveOptions(opts []Option) clientOptions {
 	return o
 }
 
-// sandboxAliases returns aliases only when the caller picked
-// sandbox without also setting an explicit BaseURL. A custom
-// BaseURL means the caller has taken manual control of routing and
-// shouldn't get silent host rewrites on absolute-URL endpoints.
+// sandboxAliases assembles the alias map to pass to the transport.
+// When sandbox is selected the package's built-in production→sandbox
+// mapping is always applied — that catches per-operation server:
+// overrides that embed absolute production hostnames into generated
+// methods, and it fires regardless of WithBaseURL because a custom
+// base URL only redirects relative-path requests. Caller-supplied
+// aliases (WithHostAliases) layer on top and win on conflict so a
+// local mock can still redirect the production host.
 func sandboxAliases(o clientOptions, aliases map[string]string) map[string]string {
-	if o.env != EnvironmentSandbox || o.baseURL != "" || len(aliases) == 0 {
+	if len(aliases) == 0 && len(o.hostAliases) == 0 {
 		return nil
 	}
-	return aliases
+	out := make(map[string]string, len(aliases)+len(o.hostAliases))
+	if o.env == EnvironmentSandbox {
+		for k, v := range aliases {
+			out[k] = v
+		}
+	}
+	for k, v := range o.hostAliases {
+		out[k] = v
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return out
 }

@@ -49,4 +49,9 @@ func TestClientConstructors_AcceptOptions(t *testing.T) {
 	if _, err := revolut.NewRevolutXClient(auth, revolut.WithEnvironment(revolut.EnvironmentProduction)); err != nil {
 		t.Fatalf("revolutx prod: %v", err)
 	}
+	if _, err := revolut.NewBusinessClient(auth,
+		revolut.WithBaseURL("https://mock.test/"),
+		revolut.WithHostAliases(map[string]string{"apis.revolut.com": "mock.test"})); err != nil {
+		t.Fatalf("business with host aliases: %v", err)
+	}
 }

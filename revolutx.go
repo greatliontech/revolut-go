@@ -2,6 +2,7 @@ package revolut
 
 import (
 	"errors"
+	"time"
 
 	"github.com/greatliontech/revolut-go/internal/transport"
 	"github.com/greatliontech/revolut-go/revolutx"
@@ -40,6 +41,11 @@ func NewRevolutXClient(auth Authenticator, opts ...Option) (*revolutx.Client, er
 		Auth:        auth,
 		UserAgent:   o.userAgent,
 		HostAliases: sandboxAliases(o, revolutx.SandboxHostAliases),
+		// Revolut X documents Retry-After on 429 as milliseconds,
+		// not seconds — unlike every other Revolut API and unlike
+		// RFC 7231. Propagate that quirk into transport so
+		// APIError.RetryAfter is in real time.
+		RetryAfterUnit: time.Millisecond,
 	})
 	if err != nil {
 		return nil, err
