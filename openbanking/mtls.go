@@ -57,17 +57,28 @@ func LoadTransportCert(certPath, keyPath string) (tls.Certificate, error) {
 // the TLS handshake. Used as the http.Client for both the /token
 // call and the API call layer of the Open Banking transport.
 //
-// caCertPEM, when non-nil, replaces the system root pool; pass nil
-// to use the system roots (which is what the sandbox needs).
-func MTLSHTTPClient(cert tls.Certificate, caCertPEM []byte) *http.Client {
+// extraCAsPEM, when non-empty, is appended to the system root
+// pool. The Revolut sandbox is signed by the OBIE Pre-Production
+// CA which isn't in any system pool by default; production is
+// signed by a public CA and needs no extras. Either way, the
+// system roots stay in effect so unrelated TLS calls (the JWKS
+// fetch on GH Pages, etc.) continue to work.
+func MTLSHTTPClient(cert tls.Certificate, extraCAsPEM []byte) *http.Client {
+	pool, err := x509.SystemCertPool()
+	if err != nil || pool == nil {
+		// The system pool is missing on a few exotic platforms;
+		// fall back to an empty pool plus whatever the caller
+		// supplied, so connections fail-closed instead of
+		// fail-open.
+		pool = x509.NewCertPool()
+	}
+	if len(extraCAsPEM) > 0 {
+		pool.AppendCertsFromPEM(extraCAsPEM)
+	}
 	cfg := &tls.Config{
 		Certificates: []tls.Certificate{cert},
+		RootCAs:      pool,
 		MinVersion:   tls.VersionTLS12,
-	}
-	if len(caCertPEM) > 0 {
-		pool := x509.NewCertPool()
-		pool.AppendCertsFromPEM(caCertPEM)
-		cfg.RootCAs = pool
 	}
 	return &http.Client{
 		Transport: &http.Transport{TLSClientConfig: cfg},
