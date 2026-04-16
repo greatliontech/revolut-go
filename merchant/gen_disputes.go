@@ -21,7 +21,7 @@ type Disputes struct {
 // GetList retrieve a dispute list
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-dispute-list
-func (s *Disputes) GetList(ctx context.Context, authorization string, revolutAPIVersion DisputesRevolutAPIVersion, opts *RetrieveDisputeListParams) ([]Dispute, error) {
+func (s *Disputes) GetList(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrieveDisputeListParams) ([]Dispute, error) {
 	if authorization == "" {
 		return nil, errors.New("merchant: Authorization is required")
 	}
@@ -53,7 +53,7 @@ func (s *Disputes) GetList(ctx context.Context, authorization string, revolutAPI
 
 // GetListAll iterates every page of GetList, yielding one Dispute per
 // step. Break out of the loop to stop early.
-func (s *Disputes) GetListAll(ctx context.Context, authorization string, revolutAPIVersion DisputesRevolutAPIVersion, opts *RetrieveDisputeListParams) iter.Seq2[Dispute, error] {
+func (s *Disputes) GetListAll(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrieveDisputeListParams) iter.Seq2[Dispute, error] {
 	return func(yield func(Dispute, error) bool) {
 		var p RetrieveDisputeListParams
 		if opts != nil {
@@ -84,7 +84,7 @@ func (s *Disputes) GetListAll(ctx context.Context, authorization string, revolut
 // Get retrieve a dispute
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-dispute
-func (s *Disputes) Get(ctx context.Context, disputeID string, authorization string, revolutAPIVersion DisputesRevolutAPIVersion) (*Dispute, error) {
+func (s *Disputes) Get(ctx context.Context, disputeID string, authorization string, revolutAPIVersion RevolutAPIVersion) (*Dispute, error) {
 	if disputeID == "" {
 		return nil, errors.New("merchant: dispute_id is required")
 	}
@@ -119,7 +119,7 @@ func (s *Disputes) Get(ctx context.Context, disputeID string, authorization stri
 // AcceptDispute accept a dispute
 //
 // Docs: https://developer.revolut.com/docs/merchant/accept-dispute
-func (s *Disputes) AcceptDispute(ctx context.Context, disputeID string, authorization string, revolutAPIVersion DisputesRevolutAPIVersion) error {
+func (s *Disputes) AcceptDispute(ctx context.Context, disputeID string, authorization string, revolutAPIVersion RevolutAPIVersion) error {
 	if disputeID == "" {
 		return errors.New("merchant: dispute_id is required")
 	}
@@ -151,7 +151,7 @@ func (s *Disputes) AcceptDispute(ctx context.Context, disputeID string, authoriz
 // ChallengeDispute challenge a dispute
 //
 // Docs: https://developer.revolut.com/docs/merchant/challenge-dispute
-func (s *Disputes) ChallengeDispute(ctx context.Context, disputeID string, authorization string, revolutAPIVersion DisputesRevolutAPIVersion, req DisputeChallenge) error {
+func (s *Disputes) ChallengeDispute(ctx context.Context, disputeID string, authorization string, revolutAPIVersion RevolutAPIVersion, req DisputeChallenge) error {
 	if disputeID == "" {
 		return errors.New("merchant: dispute_id is required")
 	}
@@ -191,7 +191,7 @@ func (s *Disputes) ChallengeDispute(ctx context.Context, disputeID string, autho
 // UploadDisputeEvidence upload evidence for a dispute
 //
 // Docs: https://developer.revolut.com/docs/merchant/upload-dispute-evidence
-func (s *Disputes) UploadDisputeEvidence(ctx context.Context, disputeID string, authorization string, revolutAPIVersion DisputesRevolutAPIVersion, contentType string, req DisputeEvidenceCreation) (*DisputeEvidence, error) {
+func (s *Disputes) UploadDisputeEvidence(ctx context.Context, disputeID string, authorization string, revolutAPIVersion RevolutAPIVersion, contentType string, req DisputeEvidenceCreation) (*DisputeEvidence, error) {
 	if disputeID == "" {
 		return nil, errors.New("merchant: dispute_id is required")
 	}

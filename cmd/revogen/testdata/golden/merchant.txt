@@ -9,11 +9,6 @@ const ApplePayCardBrandVisa ApplePayCardBrand = "visa"
 const ApplePayFundingCredit ApplePayFunding = "credit"
 const ApplePayFundingDebit ApplePayFunding = "debit"
 const ApplePayFundingPrepaid ApplePayFunding = "prepaid"
-const ApplePayMerchantRegistrationRevolutAPIVersion20230901 ApplePayMerchantRegistrationRevolutAPIVersion = "2023-09-01"
-const ApplePayMerchantRegistrationRevolutAPIVersion20240501 ApplePayMerchantRegistrationRevolutAPIVersion = "2024-05-01"
-const ApplePayMerchantRegistrationRevolutAPIVersion20240901 ApplePayMerchantRegistrationRevolutAPIVersion = "2024-09-01"
-const ApplePayMerchantRegistrationRevolutAPIVersion20251016 ApplePayMerchantRegistrationRevolutAPIVersion = "2025-10-16"
-const ApplePayMerchantRegistrationRevolutAPIVersion20251204 ApplePayMerchantRegistrationRevolutAPIVersion = "2025-12-04"
 const AuthorisationTypeFinal AuthorisationType = "final"
 const AuthorisationTypePreAuthorisation AuthorisationType = "pre_authorisation"
 const BrowserEnvironmentTypeBrowser BrowserEnvironmentType = "browser"
@@ -58,9 +53,6 @@ const CryptoTransactionStatusCancelled CryptoTransactionStatus = "cancelled"
 const CryptoTransactionStatusCompleted CryptoTransactionStatus = "completed"
 const CryptoTransactionStatusFailed CryptoTransactionStatus = "failed"
 const CryptoTransactionStatusPending CryptoTransactionStatus = "pending"
-const CustomersRevolutAPIVersion20240901 CustomersRevolutAPIVersion = "2024-09-01"
-const CustomersRevolutAPIVersion20251016 CustomersRevolutAPIVersion = "2025-10-16"
-const CustomersRevolutAPIVersion20251204 CustomersRevolutAPIVersion = "2025-12-04"
 const DeclineReasonV23dsChallengeAbandoned DeclineReasonV2 = "3ds_challenge_abandoned"
 const DeclineReasonV23dsChallengeFailedManually DeclineReasonV2 = "3ds_challenge_failed_manually"
 const DeclineReasonV2CardholderNameMissing DeclineReasonV2 = "cardholder_name_missing"
@@ -119,11 +111,6 @@ const DisputeSubstateWonArbitration DisputeSubstate = "won_arbitration"
 const DisputeSubstateWonPreArbitration DisputeSubstate = "won_pre_arbitration"
 const DisputeSubstateWonRepresentment DisputeSubstate = "won_representment"
 const DisputeSubstateWonReversal DisputeSubstate = "won_reversal"
-const DisputesRevolutAPIVersion20230901 DisputesRevolutAPIVersion = "2023-09-01"
-const DisputesRevolutAPIVersion20240501 DisputesRevolutAPIVersion = "2024-05-01"
-const DisputesRevolutAPIVersion20240901 DisputesRevolutAPIVersion = "2024-09-01"
-const DisputesRevolutAPIVersion20251016 DisputesRevolutAPIVersion = "2025-10-16"
-const DisputesRevolutAPIVersion20251204 DisputesRevolutAPIVersion = "2025-12-04"
 const DisputesStateItemLost DisputesStateItem = "lost"
 const DisputesStateItemNeedsResponse DisputesStateItem = "needs_response"
 const DisputesStateItemUnderReview DisputesStateItem = "under_review"
@@ -178,21 +165,11 @@ const OrderTypeV2CreditReimbursement OrderTypeV2 = "credit_reimbursement"
 const OrderTypeV2Payment OrderTypeV2 = "payment"
 const OrderTypeV2PaymentRequest OrderTypeV2 = "payment_request"
 const OrderTypeV2Refund OrderTypeV2 = "refund"
-const OrdersRevolutAPIVersion20230901 OrdersRevolutAPIVersion = "2023-09-01"
-const OrdersRevolutAPIVersion20240501 OrdersRevolutAPIVersion = "2024-05-01"
-const OrdersRevolutAPIVersion20240901 OrdersRevolutAPIVersion = "2024-09-01"
-const OrdersRevolutAPIVersion20251016 OrdersRevolutAPIVersion = "2025-10-16"
-const OrdersRevolutAPIVersion20251204 OrdersRevolutAPIVersion = "2025-12-04"
 const PaymentIntentStateCancelled PaymentIntentState = "cancelled"
 const PaymentIntentStateCompleted PaymentIntentState = "completed"
 const PaymentIntentStateFailed PaymentIntentState = "failed"
 const PaymentIntentStatePending PaymentIntentState = "pending"
 const PaymentIntentStateProcessing PaymentIntentState = "processing"
-const PaymentIntentsRevolutAPIVersion20230901 PaymentIntentsRevolutAPIVersion = "2023-09-01"
-const PaymentIntentsRevolutAPIVersion20240501 PaymentIntentsRevolutAPIVersion = "2024-05-01"
-const PaymentIntentsRevolutAPIVersion20240901 PaymentIntentsRevolutAPIVersion = "2024-09-01"
-const PaymentIntentsRevolutAPIVersion20251016 PaymentIntentsRevolutAPIVersion = "2025-10-16"
-const PaymentIntentsRevolutAPIVersion20251204 PaymentIntentsRevolutAPIVersion = "2025-12-04"
 const PaymentMethodTypeApplePay PaymentMethodType = "apple_pay"
 const PaymentMethodTypeCard PaymentMethodType = "card"
 const PaymentMethodTypeGooglePay PaymentMethodType = "google_pay"
@@ -223,21 +200,11 @@ const PaymentStateV2Pending PaymentStateV2 = "pending"
 const PaymentStateV2RefundStarted PaymentStateV2 = "refund_started"
 const PaymentStateV2RefundValidated PaymentStateV2 = "refund_validated"
 const PaymentStateV2SoftDeclined PaymentStateV2 = "soft_declined"
-const PaymentsRevolutAPIVersion20230901 PaymentsRevolutAPIVersion = "2023-09-01"
-const PaymentsRevolutAPIVersion20240501 PaymentsRevolutAPIVersion = "2024-05-01"
-const PaymentsRevolutAPIVersion20240901 PaymentsRevolutAPIVersion = "2024-09-01"
-const PaymentsRevolutAPIVersion20251016 PaymentsRevolutAPIVersion = "2025-10-16"
-const PaymentsRevolutAPIVersion20251204 PaymentsRevolutAPIVersion = "2025-12-04"
 const PayoutDestinationTypeCurrentPocket PayoutDestinationType = "current_pocket"
 const PayoutDestinationTypeExternalBeneficiary PayoutDestinationType = "external_beneficiary"
 const PayoutStateCompleted PayoutState = "completed"
 const PayoutStateFailed PayoutState = "failed"
 const PayoutStateProcessing PayoutState = "processing"
-const PayoutsRevolutAPIVersion20230901 PayoutsRevolutAPIVersion = "2023-09-01"
-const PayoutsRevolutAPIVersion20240501 PayoutsRevolutAPIVersion = "2024-05-01"
-const PayoutsRevolutAPIVersion20240901 PayoutsRevolutAPIVersion = "2024-09-01"
-const PayoutsRevolutAPIVersion20251016 PayoutsRevolutAPIVersion = "2025-10-16"
-const PayoutsRevolutAPIVersion20251204 PayoutsRevolutAPIVersion = "2025-12-04"
 const PayoutsStateItemCompleted PayoutsStateItem = "completed"
 const PayoutsStateItemFailed PayoutsStateItem = "failed"
 const PayoutsStateItemProcessing PayoutsStateItem = "processing"
@@ -265,6 +232,19 @@ const ReportRunTypeIcppFeeBreakdownReport ReportRunType = "icpp_fee_breakdown_re
 const ReportRunTypePaymentsReport ReportRunType = "payments_report"
 const ReportRunTypePayoutStatementReport ReportRunType = "payout_statement_report"
 const ReportRunTypeSettlementReport ReportRunType = "settlement_report"
+const RevolutAPIVersion20230901 RevolutAPIVersion = "2023-09-01"
+const RevolutAPIVersion20240501 RevolutAPIVersion = "2024-05-01"
+const RevolutAPIVersion20240901 RevolutAPIVersion = "2024-09-01"
+const RevolutAPIVersion20240901Min20240901 RevolutAPIVersion20240901Min = "2024-09-01"
+const RevolutAPIVersion20240901Min20251016 RevolutAPIVersion20240901Min = "2025-10-16"
+const RevolutAPIVersion20240901Min20251204 RevolutAPIVersion20240901Min = "2025-12-04"
+const RevolutAPIVersion20251016 RevolutAPIVersion = "2025-10-16"
+const RevolutAPIVersion20251204 RevolutAPIVersion = "2025-12-04"
+const RevolutAPIVersionOptional20230901 RevolutAPIVersionOptional = "2023-09-01"
+const RevolutAPIVersionOptional20240501 RevolutAPIVersionOptional = "2024-05-01"
+const RevolutAPIVersionOptional20240901 RevolutAPIVersionOptional = "2024-09-01"
+const RevolutAPIVersionOptional20251016 RevolutAPIVersionOptional = "2025-10-16"
+const RevolutAPIVersionOptional20251204 RevolutAPIVersionOptional = "2025-12-04"
 const RevolutPayCardCardBrandAmericanExpress RevolutPayCardCardBrand = "american_express"
 const RevolutPayCardCardBrandMastercard RevolutPayCardCardBrand = "mastercard"
 const RevolutPayCardCardBrandVisa RevolutPayCardCardBrand = "visa"
@@ -302,11 +282,6 @@ const SubscriptionStateFinished SubscriptionState = "finished"
 const SubscriptionStateOverdue SubscriptionState = "overdue"
 const SubscriptionStatePaused SubscriptionState = "paused"
 const SubscriptionStatePending SubscriptionState = "pending"
-const SubscriptionsRevolutAPIVersion20230901 SubscriptionsRevolutAPIVersion = "2023-09-01"
-const SubscriptionsRevolutAPIVersion20240501 SubscriptionsRevolutAPIVersion = "2024-05-01"
-const SubscriptionsRevolutAPIVersion20240901 SubscriptionsRevolutAPIVersion = "2024-09-01"
-const SubscriptionsRevolutAPIVersion20251016 SubscriptionsRevolutAPIVersion = "2025-10-16"
-const SubscriptionsRevolutAPIVersion20251204 SubscriptionsRevolutAPIVersion = "2025-12-04"
 const SynchronousWebhookCreationEventTypeFastCheckoutValidateAddress SynchronousWebhookCreationEventType = "fast_checkout.validate_address"
 const SynchronousWebhookEventTypeFastCheckoutValidateAddress SynchronousWebhookEventType = "fast_checkout.validate_address"
 const TerminalOperationModePaymentAcceptance TerminalOperationMode = "payment_acceptance"
@@ -315,11 +290,6 @@ const TerminalTypeNewlandN750 TerminalType = "newland_n750"
 const TerminalTypeNewlandN950 TerminalType = "newland_n950"
 const TerminalTypeNewlandR25p TerminalType = "newland_r25p"
 const TerminalTypeYoutransactorUcubeTouch TerminalType = "youtransactor_ucube_touch"
-const TerminalsRevolutAPIVersion20230901 TerminalsRevolutAPIVersion = "2023-09-01"
-const TerminalsRevolutAPIVersion20240501 TerminalsRevolutAPIVersion = "2024-05-01"
-const TerminalsRevolutAPIVersion20240901 TerminalsRevolutAPIVersion = "2024-09-01"
-const TerminalsRevolutAPIVersion20251016 TerminalsRevolutAPIVersion = "2025-10-16"
-const TerminalsRevolutAPIVersion20251204 TerminalsRevolutAPIVersion = "2025-12-04"
 const ThreeDsFingerprintTypeThreeDs ThreeDsFingerprintType = "three_ds"
 const ThreeDsFingerprintTypeThreeDsFingerprint ThreeDsFingerprintType = "three_ds_fingerprint"
 const ThreeDsTypeThreeDs ThreeDsType = "three_ds"
@@ -368,9 +338,6 @@ const WebhookEventsItemSubscriptionCancelled WebhookEventsItem = "SUBSCRIPTION_C
 const WebhookEventsItemSubscriptionFinished WebhookEventsItem = "SUBSCRIPTION_FINISHED"
 const WebhookEventsItemSubscriptionInitiated WebhookEventsItem = "SUBSCRIPTION_INITIATED"
 const WebhookEventsItemSubscriptionOverdue WebhookEventsItem = "SUBSCRIPTION_OVERDUE"
-const WebhooksRevolutAPIVersion20240901 WebhooksRevolutAPIVersion = "2024-09-01"
-const WebhooksRevolutAPIVersion20251016 WebhooksRevolutAPIVersion = "2025-10-16"
-const WebhooksRevolutAPIVersion20251204 WebhooksRevolutAPIVersion = "2025-12-04"
 func (*ApplePayMerchantRegistration) RegisterDomainApplePay
 func (*ApplePayMerchantRegistration) UnregisterDomainApplePay
 func (*Customers) Create
@@ -471,7 +438,6 @@ type ApplePayCardBrand string
 type ApplePayFunding string
 type ApplePayMerchantRegistration struct { t *transport.Transport }
 type ApplePayMerchantRegistrationBody struct { Domain string `json:"domain"` }
-type ApplePayMerchantRegistrationRevolutAPIVersion string
 type Arn string
 type AuthenticationChallenge interface { isAuthenticationChallenge() }
 type AuthorisationCode string
@@ -528,7 +494,6 @@ type CustomerV2 struct { DateOfBirth DateOfBirth `json:"date_of_birth,omitempty"
 type CustomerV3 struct { CreatedAt time.Time `json:"created_at"` Email Email `json:"email"` FullName FullName `json:"full_name,omitempty"` ID CustomerID `json:"id"` PaymentMethods []PaymentMethodV4 `json:"payment_methods"` Phone Phone `json:"phone,omitempty"` UpdatedAt time.Time `json:"updated_at"` }
 type Customers struct { t *transport.Transport }
 type CustomersResponse struct { Customers []CustomerSimplified `json:"customers"` NextPageToken *NextPageToken `json:"next_page_token,omitempty"` }
-type CustomersRevolutAPIVersion string
 type CycleCount int
 type CycleDuration string
 type CycleNumber int
@@ -549,7 +514,6 @@ type DisputePaymentPaymentMethodType string
 type DisputeState string
 type DisputeSubstate string
 type Disputes struct { t *transport.Transport }
-type DisputesRevolutAPIVersion string
 type DisputesStateItem string
 type Email string
 type EnforceChallengeV2 string
@@ -632,7 +596,6 @@ type OrderTypeV2 string
 type OrderUpdateV6 struct { Customer CustomerV2 `json:"customer,omitempty"` IndustryData IndustryDataV3 `json:"industry_data,omitempty"` LineItems []LineItem `json:"line_items,omitempty"` Metadata Metadata `json:"metadata,omitempty"` Shipping Shipping `json:"shipping,omitempty"` }
 type OrderV6 struct { Amount OrderAmountV2 `json:"amount,omitempty"` AuthorisationType AuthorisationType `json:"authorisation_type,omitempty"` CancelAuthorisedAfter CancelAuthorisedAfter `json:"cancel_authorised_after,omitempty"` CaptureMode CaptureModeV2 `json:"capture_mode,omitempty"` CheckoutURL CheckoutURL `json:"checkout_url,omitempty"` CreatedAt *time.Time `json:"created_at,omitempty"` Currency Currency `json:"currency,omitempty"` Customer CustomerV2 `json:"customer,omitempty"` Description OrderDescription `json:"description,omitempty"` EnforceChallenge EnforceChallengeV2 `json:"enforce_challenge,omitempty"` ID OrderID `json:"id,omitempty"` IncrementalAuthorisations []IncrementalAuthorisation `json:"incremental_authorisations,omitempty"` IndustryData IndustryDataV3 `json:"industry_data,omitempty"` LineItems []LineItem `json:"line_items,omitempty"` LocationID LocationID `json:"location_id,omitempty"` MerchantOrderData MerchantOrderData `json:"merchant_order_data,omitempty"` Metadata Metadata `json:"metadata,omitempty"` OutstandingAmount OutstandingAmount `json:"outstanding_amount,omitempty"` Payments []PaymentV2 `json:"payments,omitempty"` RedirectURL RedirectURL `json:"redirect_url,omitempty"` RefundedAmount RefundedAmount `json:"refunded_amount,omitempty"` RelatedOrderID RelatedOrderID `json:"related_order_id,omitempty"` SettlementCurrency SettlementCurrency `json:"settlement_currency,omitempty"` Shipping Shipping `json:"shipping,omitempty"` State OrderState `json:"state,omitempty"` StatementDescriptorSuffix StatementDescriptorSuffix `json:"statement_descriptor_suffix,omitempty"` Token OrderToken `json:"token,omitempty"` Type OrderTypeV2 `json:"type,omitempty"` UpcomingPaymentData UpcomingPayment `json:"upcoming_payment_data,omitempty"` UpdatedAt *time.Time `json:"updated_at,omitempty"` }
 type Orders struct { t *transport.Transport }
-type OrdersRevolutAPIVersion string
 type OrdersV2 struct { Orders []OrderSimplifiedV2 `json:"orders"` }
 type Other struct { t *transport.Transport }
 type OutstandingAmount int
@@ -648,7 +611,6 @@ type PaymentIntentCreation struct { Amount PaymentIntentAmount `json:"amount"` T
 type PaymentIntentID string
 type PaymentIntentState string
 type PaymentIntents struct { t *transport.Transport }
-type PaymentIntentsRevolutAPIVersion string
 type PaymentMethodCreatedAt time.Time
 type PaymentMethodID string
 type PaymentMethodType string
@@ -667,14 +629,12 @@ type PaymentToken string
 type PaymentUpdated time.Time
 type PaymentV2 struct { Amount PaymentAmount `json:"amount"` AuthenticationChallenge AuthenticationChallenge `json:"authentication_challenge,omitempty"` AuthorisedAmount PaymentAuthorisedAmount `json:"authorised_amount,omitempty"` BankMessage BankMessage `json:"bank_message,omitempty"` BillingAddress AddressV2 `json:"billing_address,omitempty"` CreatedAt PaymentCreated `json:"created_at"` Currency Currency `json:"currency,omitempty"` DeclineReason DeclineReasonV2 `json:"decline_reason,omitempty"` Fees []Fee `json:"fees,omitempty"` ID PaymentID `json:"id"` Payer Payer `json:"payer,omitempty"` PaymentMethod PaymentMethodV2 `json:"payment_method,omitempty"` RiskLevel PaymentRiskLevel `json:"risk_level,omitempty"` SettledAmount PaymentSettledAmount `json:"settled_amount,omitempty"` SettledCurrency PaymentSettledCurrency `json:"settled_currency,omitempty"` State PaymentStateV2 `json:"state"` Token PaymentToken `json:"token,omitempty"` UpdatedAt PaymentUpdated `json:"updated_at"` }
 type Payments struct { t *transport.Transport }
-type PaymentsRevolutAPIVersion string
 type Payout struct { Amount PayoutAmount `json:"amount,omitempty"` CreatedAt time.Time `json:"created_at"` Currency Currency `json:"currency,omitempty"` DestinationType PayoutDestinationType `json:"destination_type"` ID PayoutID `json:"id"` State PayoutState `json:"state"` }
 type PayoutAmount int
 type PayoutDestinationType string
 type PayoutID string
 type PayoutState string
 type Payouts struct { t *transport.Transport }
-type PayoutsRevolutAPIVersion string
 type PayoutsStateItem string
 type Phone string
 type PreviousCycleID string
@@ -719,6 +679,9 @@ type RetrieveSubscriptionCycleListParams struct { Limit int `json:"limit,omitemp
 type RetrieveSubscriptionListParams struct { Limit int `json:"limit,omitempty"` From time.Time `json:"from,omitempty"` To time.Time `json:"to,omitempty"` ExternalReference string `json:"external_reference,omitempty"` PageToken string `json:"page_token,omitempty"` }
 type RetrieveSubscriptionPlanListParams struct { Limit int `json:"limit,omitempty"` From time.Time `json:"from,omitempty"` To time.Time `json:"to,omitempty"` PageToken string `json:"page_token,omitempty"` }
 type RetrieveTerminalListParams struct { OperationMode TerminalOperationMode `json:"operation_mode,omitempty"` LocationID string `json:"location_id,omitempty"` }
+type RevolutAPIVersion string
+type RevolutAPIVersion20240901Min string
+type RevolutAPIVersionOptional string
 type RevolutPay struct { ID string `json:"id,omitempty"` Subtype RevolutPaySubtype `json:"subtype,omitempty"` Type RevolutPayType `json:"type,omitempty"` Brand string `json:"brand,omitempty"` LastFour string `json:"last_four,omitempty"` }
 type RevolutPayAccount struct { Fingerprint Fingerprint `json:"fingerprint,omitempty"` ID string `json:"id,omitempty"` Type PaymentMethodType `json:"type"` }
 type RevolutPayCard struct { Arn Arn `json:"arn,omitempty"` AuthorisationCode AuthorisationCode `json:"authorisation_code,omitempty"` CaptureDeadline CaptureDeadline `json:"capture_deadline,omitempty"` CardBin string `json:"card_bin,omitempty"` CardBrand RevolutPayCardCardBrand `json:"card_brand,omitempty"` CardCountryCode string `json:"card_country_code,omitempty"` CardExpiry string `json:"card_expiry,omitempty"` CardLastFour string `json:"card_last_four,omitempty"` CardholderName string `json:"cardholder_name,omitempty"` Checks CardChecksV2 `json:"checks,omitempty"` Fingerprint Fingerprint `json:"fingerprint,omitempty"` Funding RevolutPayCardFunding `json:"funding,omitempty"` ID string `json:"id,omitempty"` NetworkTransactionID NetworkTransactionID `json:"network_transaction_id,omitempty"` Type PaymentMethodType `json:"type"` }
@@ -783,7 +746,6 @@ type SubscriptionUpdate struct { ExternalReference SubscriptionExternalReference
 type SubscriptionUpdated time.Time
 type Subscriptions struct { t *transport.Transport }
 type SubscriptionsResponse struct { NextPageToken *NextPageToken `json:"next_page_token,omitempty"` Subscriptions []Subscription `json:"subscriptions"` }
-type SubscriptionsRevolutAPIVersion string
 type SupplierPaymentDate time.Time
 type SynchronousWebhook struct { EventType SynchronousWebhookEventType `json:"event_type"` ID string `json:"id"` LocationID LocationID `json:"location_id,omitempty"` SigningKey string `json:"signing_key"` URL string `json:"url"` }
 type SynchronousWebhookCreation struct { EventType SynchronousWebhookCreationEventType `json:"event_type"` LocationID LocationID `json:"location_id,omitempty"` URL string `json:"url"` }
@@ -801,7 +763,6 @@ type TerminalSerialNumber string
 type TerminalType string
 type Terminals struct { t *transport.Transport }
 type TerminalsResponse struct { Terminals []Terminal `json:"terminals"` }
-type TerminalsRevolutAPIVersion string
 type ThreeDs struct { AcsURL string `json:"acs_url"` Type ThreeDsType `json:"type"` }
 type ThreeDsFingerprint struct { FingerprintData string `json:"fingerprint_data"` FingerprintURL string `json:"fingerprint_url"` Type ThreeDsFingerprintType `json:"type"` }
 type ThreeDsFingerprintType string
@@ -823,5 +784,4 @@ type WebhookV2 struct { Events []WebhookEventsItem `json:"events"` ID WebhookID 
 type Webhooks struct { t *transport.Transport }
 type WebhooksBody struct { ExpirationPeriod string `json:"expiration_period,omitempty"` }
 type WebhooksResponse struct { Webhooks []WebhookV2 `json:"webhooks"` }
-type WebhooksRevolutAPIVersion string
 var SandboxHostAliases = map[string]string{}

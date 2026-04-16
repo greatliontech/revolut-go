@@ -20,7 +20,7 @@ type PaymentIntents struct {
 // Create create a payment intent
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-payment-intent
-func (s *PaymentIntents) Create(ctx context.Context, orderID string, authorization string, revolutAPIVersion PaymentIntentsRevolutAPIVersion, req PaymentIntentCreation) (*PaymentIntent, error) {
+func (s *PaymentIntents) Create(ctx context.Context, orderID string, authorization string, revolutAPIVersion RevolutAPIVersionOptional, req PaymentIntentCreation) (*PaymentIntent, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
@@ -60,7 +60,7 @@ func (s *PaymentIntents) Create(ctx context.Context, orderID string, authorizati
 // Get retrieve a payment intent
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payment-intent
-func (s *PaymentIntents) Get(ctx context.Context, paymentIntentID string, authorization string, revolutAPIVersion PaymentIntentsRevolutAPIVersion) (*PaymentIntent, error) {
+func (s *PaymentIntents) Get(ctx context.Context, paymentIntentID string, authorization string, revolutAPIVersion RevolutAPIVersionOptional) (*PaymentIntent, error) {
 	if paymentIntentID == "" {
 		return nil, errors.New("merchant: payment_intent_id is required")
 	}
@@ -92,7 +92,7 @@ func (s *PaymentIntents) Get(ctx context.Context, paymentIntentID string, author
 // CancelPaymentIntent cancel a payment intent
 //
 // Docs: https://developer.revolut.com/docs/merchant/cancel-payment-intent
-func (s *PaymentIntents) CancelPaymentIntent(ctx context.Context, paymentIntentID string, authorization string, revolutAPIVersion PaymentIntentsRevolutAPIVersion) (*PaymentIntent, error) {
+func (s *PaymentIntents) CancelPaymentIntent(ctx context.Context, paymentIntentID string, authorization string, revolutAPIVersion RevolutAPIVersionOptional) (*PaymentIntent, error) {
 	if paymentIntentID == "" {
 		return nil, errors.New("merchant: payment_intent_id is required")
 	}

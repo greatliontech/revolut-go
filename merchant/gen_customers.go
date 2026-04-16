@@ -21,7 +21,7 @@ type Customers struct {
 // GetList retrieve a customer list
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-customer-list
-func (s *Customers) GetList(ctx context.Context, authorization string, revolutAPIVersion CustomersRevolutAPIVersion, opts *RetrieveCustomerListParams) (*CustomersResponse, error) {
+func (s *Customers) GetList(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion20240901Min, opts *RetrieveCustomerListParams) (*CustomersResponse, error) {
 	if authorization == "" {
 		return nil, errors.New("merchant: Authorization is required")
 	}
@@ -53,7 +53,7 @@ func (s *Customers) GetList(ctx context.Context, authorization string, revolutAP
 
 // GetListAll iterates every page of GetList, yielding one CustomerSimplified per
 // step. Break out of the loop to stop early.
-func (s *Customers) GetListAll(ctx context.Context, authorization string, revolutAPIVersion CustomersRevolutAPIVersion, opts *RetrieveCustomerListParams) iter.Seq2[CustomerSimplified, error] {
+func (s *Customers) GetListAll(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion20240901Min, opts *RetrieveCustomerListParams) iter.Seq2[CustomerSimplified, error] {
 	return func(yield func(CustomerSimplified, error) bool) {
 		var p RetrieveCustomerListParams
 		if opts != nil {
@@ -82,7 +82,7 @@ func (s *Customers) GetListAll(ctx context.Context, authorization string, revolu
 // Create create a customer
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-customer
-func (s *Customers) Create(ctx context.Context, authorization string, revolutAPIVersion CustomersRevolutAPIVersion, req CustomerCreationV2) (*CustomerCreated, error) {
+func (s *Customers) Create(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion20240901Min, req CustomerCreationV2) (*CustomerCreated, error) {
 	if authorization == "" {
 		return nil, errors.New("merchant: Authorization is required")
 	}
@@ -116,7 +116,7 @@ func (s *Customers) Create(ctx context.Context, authorization string, revolutAPI
 // Get retrieve a customer
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-customer
-func (s *Customers) Get(ctx context.Context, customerID string, authorization string, revolutAPIVersion CustomersRevolutAPIVersion) (*CustomerV3, error) {
+func (s *Customers) Get(ctx context.Context, customerID string, authorization string, revolutAPIVersion RevolutAPIVersion20240901Min) (*CustomerV3, error) {
 	if customerID == "" {
 		return nil, errors.New("merchant: customer_id is required")
 	}
@@ -151,7 +151,7 @@ func (s *Customers) Get(ctx context.Context, customerID string, authorization st
 // Update update a customer
 //
 // Docs: https://developer.revolut.com/docs/merchant/update-customer
-func (s *Customers) Update(ctx context.Context, customerID string, authorization string, revolutAPIVersion CustomersRevolutAPIVersion, req CustomerUpdateV2) (*CustomerV3, error) {
+func (s *Customers) Update(ctx context.Context, customerID string, authorization string, revolutAPIVersion RevolutAPIVersion20240901Min, req CustomerUpdateV2) (*CustomerV3, error) {
 	if customerID == "" {
 		return nil, errors.New("merchant: customer_id is required")
 	}
@@ -188,7 +188,7 @@ func (s *Customers) Update(ctx context.Context, customerID string, authorization
 // Delete delete a customer
 //
 // Docs: https://developer.revolut.com/docs/merchant/delete-customer
-func (s *Customers) Delete(ctx context.Context, customerID string, authorization string, revolutAPIVersion CustomersRevolutAPIVersion) error {
+func (s *Customers) Delete(ctx context.Context, customerID string, authorization string, revolutAPIVersion RevolutAPIVersion20240901Min) error {
 	if customerID == "" {
 		return errors.New("merchant: customer_id is required")
 	}
@@ -220,7 +220,7 @@ func (s *Customers) Delete(ctx context.Context, customerID string, authorization
 // GetPaymentMethodList retrieve payment method list of a customer
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payment-method-list
-func (s *Customers) GetPaymentMethodList(ctx context.Context, customerID string, authorization string, revolutAPIVersion CustomersRevolutAPIVersion, opts *RetrievePaymentMethodListParams) (*CustomerPaymentMethodsV2, error) {
+func (s *Customers) GetPaymentMethodList(ctx context.Context, customerID string, authorization string, revolutAPIVersion RevolutAPIVersion20240901Min, opts *RetrievePaymentMethodListParams) (*CustomerPaymentMethodsV2, error) {
 	if customerID == "" {
 		return nil, errors.New("merchant: customer_id is required")
 	}
@@ -259,7 +259,7 @@ func (s *Customers) GetPaymentMethodList(ctx context.Context, customerID string,
 // GetPaymentMethod retrieve a customer's payment method
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payment-method
-func (s *Customers) GetPaymentMethod(ctx context.Context, customerID string, paymentMethodID string, authorization string, revolutAPIVersion CustomersRevolutAPIVersion) (*PaymentMethodV4, error) {
+func (s *Customers) GetPaymentMethod(ctx context.Context, customerID string, paymentMethodID string, authorization string, revolutAPIVersion RevolutAPIVersion20240901Min) (*PaymentMethodV4, error) {
 	if customerID == "" {
 		return nil, errors.New("merchant: customer_id is required")
 	}
@@ -300,7 +300,7 @@ func (s *Customers) GetPaymentMethod(ctx context.Context, customerID string, pay
 // UpdatePaymentMethod update a customer's payment method
 //
 // Docs: https://developer.revolut.com/docs/merchant/update-payment-method
-func (s *Customers) UpdatePaymentMethod(ctx context.Context, customerID string, paymentMethodID string, authorization string, revolutAPIVersion CustomersRevolutAPIVersion, req PaymentMethodUpdate) (*PaymentMethodV4, error) {
+func (s *Customers) UpdatePaymentMethod(ctx context.Context, customerID string, paymentMethodID string, authorization string, revolutAPIVersion RevolutAPIVersion20240901Min, req PaymentMethodUpdate) (*PaymentMethodV4, error) {
 	if customerID == "" {
 		return nil, errors.New("merchant: customer_id is required")
 	}
@@ -343,7 +343,7 @@ func (s *Customers) UpdatePaymentMethod(ctx context.Context, customerID string, 
 // DeletePaymentMethod delete a customer's payment method
 //
 // Docs: https://developer.revolut.com/docs/merchant/delete-payment-method
-func (s *Customers) DeletePaymentMethod(ctx context.Context, customerID string, paymentMethodID string, authorization string, revolutAPIVersion CustomersRevolutAPIVersion) error {
+func (s *Customers) DeletePaymentMethod(ctx context.Context, customerID string, paymentMethodID string, authorization string, revolutAPIVersion RevolutAPIVersion20240901Min) error {
 	if customerID == "" {
 		return errors.New("merchant: customer_id is required")
 	}

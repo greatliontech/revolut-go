@@ -4850,22 +4850,22 @@ type ApplePayMerchantRegistrationBody struct {
 	Domain string `json:"domain"`
 }
 
-type ApplePayMerchantRegistrationRevolutAPIVersion string
+type RevolutAPIVersionOptional string
 
 const (
-	ApplePayMerchantRegistrationRevolutAPIVersion20230901 ApplePayMerchantRegistrationRevolutAPIVersion = "2023-09-01"
-	ApplePayMerchantRegistrationRevolutAPIVersion20240501 ApplePayMerchantRegistrationRevolutAPIVersion = "2024-05-01"
-	ApplePayMerchantRegistrationRevolutAPIVersion20240901 ApplePayMerchantRegistrationRevolutAPIVersion = "2024-09-01"
-	ApplePayMerchantRegistrationRevolutAPIVersion20251016 ApplePayMerchantRegistrationRevolutAPIVersion = "2025-10-16"
-	ApplePayMerchantRegistrationRevolutAPIVersion20251204 ApplePayMerchantRegistrationRevolutAPIVersion = "2025-12-04"
+	RevolutAPIVersionOptional20230901 RevolutAPIVersionOptional = "2023-09-01"
+	RevolutAPIVersionOptional20240501 RevolutAPIVersionOptional = "2024-05-01"
+	RevolutAPIVersionOptional20240901 RevolutAPIVersionOptional = "2024-09-01"
+	RevolutAPIVersionOptional20251016 RevolutAPIVersionOptional = "2025-10-16"
+	RevolutAPIVersionOptional20251204 RevolutAPIVersionOptional = "2025-12-04"
 )
 
-type CustomersRevolutAPIVersion string
+type RevolutAPIVersion20240901Min string
 
 const (
-	CustomersRevolutAPIVersion20240901 CustomersRevolutAPIVersion = "2024-09-01"
-	CustomersRevolutAPIVersion20251016 CustomersRevolutAPIVersion = "2025-10-16"
-	CustomersRevolutAPIVersion20251204 CustomersRevolutAPIVersion = "2025-12-04"
+	RevolutAPIVersion20240901Min20240901 RevolutAPIVersion20240901Min = "2024-09-01"
+	RevolutAPIVersion20240901Min20251016 RevolutAPIVersion20240901Min = "2025-10-16"
+	RevolutAPIVersion20240901Min20251204 RevolutAPIVersion20240901Min = "2025-12-04"
 )
 
 // RetrieveCustomerListParams query parameters for: Retrieve a customer list
@@ -4938,14 +4938,14 @@ func (p *RetrievePaymentMethodListParams) encode() url.Values {
 	return q
 }
 
-type DisputesRevolutAPIVersion string
+type RevolutAPIVersion string
 
 const (
-	DisputesRevolutAPIVersion20230901 DisputesRevolutAPIVersion = "2023-09-01"
-	DisputesRevolutAPIVersion20240501 DisputesRevolutAPIVersion = "2024-05-01"
-	DisputesRevolutAPIVersion20240901 DisputesRevolutAPIVersion = "2024-09-01"
-	DisputesRevolutAPIVersion20251016 DisputesRevolutAPIVersion = "2025-10-16"
-	DisputesRevolutAPIVersion20251204 DisputesRevolutAPIVersion = "2025-12-04"
+	RevolutAPIVersion20230901 RevolutAPIVersion = "2023-09-01"
+	RevolutAPIVersion20240501 RevolutAPIVersion = "2024-05-01"
+	RevolutAPIVersion20240901 RevolutAPIVersion = "2024-09-01"
+	RevolutAPIVersion20251016 RevolutAPIVersion = "2025-10-16"
+	RevolutAPIVersion20251204 RevolutAPIVersion = "2025-12-04"
 )
 
 type DisputesStateItem string
@@ -5040,16 +5040,6 @@ func (p *RetrieveLocationListParams) encode() url.Values {
 	return q
 }
 
-type OrdersRevolutAPIVersion string
-
-const (
-	OrdersRevolutAPIVersion20230901 OrdersRevolutAPIVersion = "2023-09-01"
-	OrdersRevolutAPIVersion20240501 OrdersRevolutAPIVersion = "2024-05-01"
-	OrdersRevolutAPIVersion20240901 OrdersRevolutAPIVersion = "2024-09-01"
-	OrdersRevolutAPIVersion20251016 OrdersRevolutAPIVersion = "2025-10-16"
-	OrdersRevolutAPIVersion20251204 OrdersRevolutAPIVersion = "2025-12-04"
-)
-
 // RetrieveOrderListParams query parameters for: Retrieve an order list
 type RetrieveOrderListParams struct {
 	// Maximum number of records to return. Used for **pagination**.
@@ -5120,36 +5110,6 @@ func (p *RetrieveOrderListParams) ApplyDefaults() {
 	}
 }
 
-type PaymentIntentsRevolutAPIVersion string
-
-const (
-	PaymentIntentsRevolutAPIVersion20230901 PaymentIntentsRevolutAPIVersion = "2023-09-01"
-	PaymentIntentsRevolutAPIVersion20240501 PaymentIntentsRevolutAPIVersion = "2024-05-01"
-	PaymentIntentsRevolutAPIVersion20240901 PaymentIntentsRevolutAPIVersion = "2024-09-01"
-	PaymentIntentsRevolutAPIVersion20251016 PaymentIntentsRevolutAPIVersion = "2025-10-16"
-	PaymentIntentsRevolutAPIVersion20251204 PaymentIntentsRevolutAPIVersion = "2025-12-04"
-)
-
-type PaymentsRevolutAPIVersion string
-
-const (
-	PaymentsRevolutAPIVersion20230901 PaymentsRevolutAPIVersion = "2023-09-01"
-	PaymentsRevolutAPIVersion20240501 PaymentsRevolutAPIVersion = "2024-05-01"
-	PaymentsRevolutAPIVersion20240901 PaymentsRevolutAPIVersion = "2024-09-01"
-	PaymentsRevolutAPIVersion20251016 PaymentsRevolutAPIVersion = "2025-10-16"
-	PaymentsRevolutAPIVersion20251204 PaymentsRevolutAPIVersion = "2025-12-04"
-)
-
-type PayoutsRevolutAPIVersion string
-
-const (
-	PayoutsRevolutAPIVersion20230901 PayoutsRevolutAPIVersion = "2023-09-01"
-	PayoutsRevolutAPIVersion20240501 PayoutsRevolutAPIVersion = "2024-05-01"
-	PayoutsRevolutAPIVersion20240901 PayoutsRevolutAPIVersion = "2024-09-01"
-	PayoutsRevolutAPIVersion20251016 PayoutsRevolutAPIVersion = "2025-10-16"
-	PayoutsRevolutAPIVersion20251204 PayoutsRevolutAPIVersion = "2025-12-04"
-)
-
 type PayoutsStateItem string
 
 const (
@@ -5199,16 +5159,6 @@ func (p *RetrievePayoutListParams) encode() url.Values {
 	}
 	return q
 }
-
-type SubscriptionsRevolutAPIVersion string
-
-const (
-	SubscriptionsRevolutAPIVersion20230901 SubscriptionsRevolutAPIVersion = "2023-09-01"
-	SubscriptionsRevolutAPIVersion20240501 SubscriptionsRevolutAPIVersion = "2024-05-01"
-	SubscriptionsRevolutAPIVersion20240901 SubscriptionsRevolutAPIVersion = "2024-09-01"
-	SubscriptionsRevolutAPIVersion20251016 SubscriptionsRevolutAPIVersion = "2025-10-16"
-	SubscriptionsRevolutAPIVersion20251204 SubscriptionsRevolutAPIVersion = "2025-12-04"
-)
 
 // RetrieveSubscriptionPlanListParams query parameters for: Retrieve a subscription plan list
 type RetrieveSubscriptionPlanListParams struct {
@@ -5372,16 +5322,6 @@ func (p *RetrieveSubscriptionCycleListParams) ApplyDefaults() {
 	}
 }
 
-type TerminalsRevolutAPIVersion string
-
-const (
-	TerminalsRevolutAPIVersion20230901 TerminalsRevolutAPIVersion = "2023-09-01"
-	TerminalsRevolutAPIVersion20240501 TerminalsRevolutAPIVersion = "2024-05-01"
-	TerminalsRevolutAPIVersion20240901 TerminalsRevolutAPIVersion = "2024-09-01"
-	TerminalsRevolutAPIVersion20251016 TerminalsRevolutAPIVersion = "2025-10-16"
-	TerminalsRevolutAPIVersion20251204 TerminalsRevolutAPIVersion = "2025-12-04"
-)
-
 // RetrieveTerminalListParams query parameters for: Retrieve terminal list
 type RetrieveTerminalListParams struct {
 	// Filter terminals by operation mode.
@@ -5405,14 +5345,6 @@ func (p *RetrieveTerminalListParams) encode() url.Values {
 	}
 	return q
 }
-
-type WebhooksRevolutAPIVersion string
-
-const (
-	WebhooksRevolutAPIVersion20240901 WebhooksRevolutAPIVersion = "2024-09-01"
-	WebhooksRevolutAPIVersion20251016 WebhooksRevolutAPIVersion = "2025-10-16"
-	WebhooksRevolutAPIVersion20251204 WebhooksRevolutAPIVersion = "2025-12-04"
-)
 
 type WebhooksBody struct {
 	// The expiration period of the signing secret in the [ISO 8601 format](https://en.wikipedia.org/wiki/ISO_8601#Durations).

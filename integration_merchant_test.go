@@ -87,7 +87,12 @@ const merchantAuthPlaceholder = "bearer-stripped-by-transport"
 
 // apiVersion is a constant so every test targets the same wire
 // version and results stay comparable across runs.
-const merchantAPIVersion = merchant.CustomersRevolutAPIVersion20251204
+// merchantAPIVersion is the Revolut-Api-Version value passed on
+// methods whose spec parameter is the Min-2024-09-01 variant
+// (customers). Resources whose spec uses the plain Revolut-Api-
+// Version (orders, disputes) get merchant.RevolutAPIVersion20251204
+// directly.
+const merchantAPIVersion = merchant.RevolutAPIVersion20240901Min20251204
 
 func TestSandbox_Merchant_CustomersList(t *testing.T) {
 	c := merchantClient(t)
@@ -133,7 +138,7 @@ func TestSandbox_Merchant_OrdersList(t *testing.T) {
 	c := merchantClient(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	resp, err := c.Orders.GetList(ctx, merchantAuthPlaceholder, merchant.OrdersRevolutAPIVersion20251204, nil)
+	resp, err := c.Orders.GetList(ctx, merchantAuthPlaceholder, merchant.RevolutAPIVersion20251204, nil)
 	if err != nil {
 		t.Fatalf("Orders.GetList: %v", err)
 	}
@@ -152,7 +157,7 @@ func TestSandbox_Merchant_GetUnknownOrder_Returns404(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	_, err := c.Orders.Get(ctx, "00000000-0000-4000-8000-000000000000",
-		merchantAuthPlaceholder, merchant.OrdersRevolutAPIVersion20251204)
+		merchantAuthPlaceholder, merchant.RevolutAPIVersion20251204)
 	if err == nil {
 		t.Fatal("expected error for unknown order id")
 	}
@@ -173,7 +178,7 @@ func TestSandbox_Merchant_GetMalformedOrder_LocalValidation(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	_, err := c.Orders.Get(ctx, "not-a-uuid",
-		merchantAuthPlaceholder, merchant.OrdersRevolutAPIVersion20251204)
+		merchantAuthPlaceholder, merchant.RevolutAPIVersion20251204)
 	if err == nil {
 		t.Fatal("want local validation error")
 	}
@@ -238,7 +243,7 @@ func TestSandbox_Merchant_DisputesList(t *testing.T) {
 	c := merchantClient(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	resp, err := c.Disputes.GetList(ctx, merchantAuthPlaceholder, merchant.DisputesRevolutAPIVersion20251204, nil)
+	resp, err := c.Disputes.GetList(ctx, merchantAuthPlaceholder, merchant.RevolutAPIVersion20251204, nil)
 	if err != nil {
 		if apiErr, ok := revolut.AsAPIError(err); ok && apiErr.StatusCode == http.StatusNotFound {
 			t.Skipf("sandbox parity gap: /api/disputes returns 404")
@@ -271,7 +276,7 @@ func TestSandbox_Merchant_WebhooksList(t *testing.T) {
 	c := merchantClient(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	resp, err := c.Webhooks.GetList(ctx, merchantAuthPlaceholder, merchant.WebhooksRevolutAPIVersion20251204)
+	resp, err := c.Webhooks.GetList(ctx, merchantAuthPlaceholder, merchant.RevolutAPIVersion20240901Min20251204)
 	if err != nil {
 		t.Fatalf("Webhooks.GetList: %v", err)
 	}

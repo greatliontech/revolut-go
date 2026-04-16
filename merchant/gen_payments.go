@@ -20,7 +20,7 @@ type Payments struct {
 // GetDetails retrieve payment details
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payment-details
-func (s *Payments) GetDetails(ctx context.Context, paymentID string, authorization string, revolutAPIVersion PaymentsRevolutAPIVersion) (*PaymentRetrievalV2, error) {
+func (s *Payments) GetDetails(ctx context.Context, paymentID string, authorization string, revolutAPIVersion RevolutAPIVersionOptional) (*PaymentRetrievalV2, error) {
 	if paymentID == "" {
 		return nil, errors.New("merchant: payment_id is required")
 	}

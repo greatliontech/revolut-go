@@ -170,7 +170,10 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 			}
 			queries = append(queries, q)
 		case "header":
-			typ := b.resolveType(p.Schema, Context{Parent: m.Receiver, Field: p.Name})
+			typ := b.resolveSharedParamEnum(paramRef)
+			if typ == nil {
+				typ = b.resolveType(p.Schema, Context{Parent: m.Receiver, Field: p.Name})
+			}
 			if typ == nil {
 				typ = ir.Prim("string")
 			}
@@ -302,6 +305,65 @@ func (b *Builder) applyRequestBody(m *ir.Method, op *openapi3.Operation) {
 			m.HTTPCall.BodyContentType = mime
 		}
 	}
+}
+
+// resolveSharedParamEnum returns the cached Go type for a shared
+// components/parameters entry whose schema is a string enum. When
+// multiple operations reference the same parameter via $ref (the
+// common pattern for Revolut-Api-Version, X-FAPI-* headers, etc.),
+// the generator used to synthesize a separate enum Decl for each
+// usage — leading to `OrdersRevolutAPIVersion`,
+// `CustomersRevolutAPIVersion`, and so on with identical values,
+// all unrelated Go types. Caching by $ref path gives every call
+// site the same type.
+//
+// Non-enum shared parameters and inline parameters fall through
+// to the regular resolveType path.
+func (b *Builder) resolveSharedParamEnum(paramRef *openapi3.ParameterRef) *ir.Type {
+	if paramRef == nil || paramRef.Ref == "" || paramRef.Value == nil {
+		return nil
+	}
+	if cached, ok := b.sharedParamEnum[paramRef.Ref]; ok {
+		return cached
+	}
+	p := paramRef.Value
+	if p.Schema == nil || p.Schema.Value == nil {
+		return nil
+	}
+	s := p.Schema.Value
+	if !schemaTypeIs(s, "string") || len(s.Enum) == 0 {
+		return nil
+	}
+	const prefix = "#/components/parameters/"
+	if !strings.HasPrefix(paramRef.Ref, prefix) {
+		return nil
+	}
+	goName := names.TypeName(strings.TrimPrefix(paramRef.Ref, prefix))
+	if _, exists := b.declByName[goName]; !exists {
+		values := make([]ir.EnumValue, 0, len(s.Enum))
+		seen := map[string]bool{}
+		for _, v := range s.Enum {
+			sv, ok := v.(string)
+			if !ok || seen[sv] {
+				continue
+			}
+			seen[sv] = true
+			values = append(values, ir.EnumValue{
+				GoName: goName + names.TypeName(sv),
+				Value:  sv,
+			})
+		}
+		b.registerDecl(goName, &ir.Decl{
+			Name:       goName,
+			Kind:       ir.DeclEnum,
+			Doc:        s.Description,
+			EnumBase:   ir.Prim("string"),
+			EnumValues: values,
+		})
+	}
+	t := ir.Named(goName)
+	b.sharedParamEnum[paramRef.Ref] = t
+	return t
 }
 
 // pickTextBodyContentType returns the most-specific text-family

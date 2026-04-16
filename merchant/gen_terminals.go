@@ -19,7 +19,7 @@ type Terminals struct {
 // GetList retrieve terminal list
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-terminal-list
-func (s *Terminals) GetList(ctx context.Context, authorization string, revolutAPIVersion TerminalsRevolutAPIVersion, opts *RetrieveTerminalListParams) (*TerminalsResponse, error) {
+func (s *Terminals) GetList(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersionOptional, opts *RetrieveTerminalListParams) (*TerminalsResponse, error) {
 	if authorization == "" {
 		return nil, errors.New("merchant: Authorization is required")
 	}

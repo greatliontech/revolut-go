@@ -20,7 +20,7 @@ type Orders struct {
 // GetList retrieve an order list
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-order-list
-func (s *Orders) GetList(ctx context.Context, authorization string, revolutAPIVersion OrdersRevolutAPIVersion, opts *RetrieveOrderListParams) (*OrdersV2, error) {
+func (s *Orders) GetList(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrieveOrderListParams) (*OrdersV2, error) {
 	if authorization == "" {
 		return nil, errors.New("merchant: Authorization is required")
 	}
@@ -53,7 +53,7 @@ func (s *Orders) GetList(ctx context.Context, authorization string, revolutAPIVe
 // Create create an order
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-order
-func (s *Orders) Create(ctx context.Context, authorization string, revolutAPIVersion OrdersRevolutAPIVersion, req OrderCreationV6) (*OrderV6, error) {
+func (s *Orders) Create(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, req OrderCreationV6) (*OrderV6, error) {
 	if authorization == "" {
 		return nil, errors.New("merchant: Authorization is required")
 	}
@@ -90,7 +90,7 @@ func (s *Orders) Create(ctx context.Context, authorization string, revolutAPIVer
 // Get retrieve an order
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-order
-func (s *Orders) Get(ctx context.Context, orderID string, authorization string, revolutAPIVersion OrdersRevolutAPIVersion) (*OrderV6, error) {
+func (s *Orders) Get(ctx context.Context, orderID string, authorization string, revolutAPIVersion RevolutAPIVersion) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
@@ -125,7 +125,7 @@ func (s *Orders) Get(ctx context.Context, orderID string, authorization string, 
 // Update update an order
 //
 // Docs: https://developer.revolut.com/docs/merchant/update-order
-func (s *Orders) Update(ctx context.Context, orderID string, authorization string, revolutAPIVersion OrdersRevolutAPIVersion, req OrderUpdateV6) (*OrderV6, error) {
+func (s *Orders) Update(ctx context.Context, orderID string, authorization string, revolutAPIVersion RevolutAPIVersion, req OrderUpdateV6) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
@@ -162,7 +162,7 @@ func (s *Orders) Update(ctx context.Context, orderID string, authorization strin
 // CancelOrder cancel an order
 //
 // Docs: https://developer.revolut.com/docs/merchant/cancel-order
-func (s *Orders) CancelOrder(ctx context.Context, orderID string, authorization string, revolutAPIVersion OrdersRevolutAPIVersion) (*OrderV6, error) {
+func (s *Orders) CancelOrder(ctx context.Context, orderID string, authorization string, revolutAPIVersion RevolutAPIVersionOptional) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
@@ -194,7 +194,7 @@ func (s *Orders) CancelOrder(ctx context.Context, orderID string, authorization 
 // CaptureOrder capture an order
 //
 // Docs: https://developer.revolut.com/docs/merchant/capture-order
-func (s *Orders) CaptureOrder(ctx context.Context, orderID string, authorization string, revolutAPIVersion OrdersRevolutAPIVersion, req OrderCaptureV2) (*OrderV6, error) {
+func (s *Orders) CaptureOrder(ctx context.Context, orderID string, authorization string, revolutAPIVersion RevolutAPIVersion, req OrderCaptureV2) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
@@ -231,7 +231,7 @@ func (s *Orders) CaptureOrder(ctx context.Context, orderID string, authorization
 // IncrementAuthorisation increment authorisation
 //
 // Docs: https://developer.revolut.com/docs/merchant/increment-authorisation
-func (s *Orders) IncrementAuthorisation(ctx context.Context, orderID string, authorization string, revolutAPIVersion OrdersRevolutAPIVersion, req IncrementalAuthorisationRequest) (*OrderV6, error) {
+func (s *Orders) IncrementAuthorisation(ctx context.Context, orderID string, authorization string, revolutAPIVersion RevolutAPIVersion, req IncrementalAuthorisationRequest) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}
@@ -346,7 +346,7 @@ func (s *Orders) PayOrder(ctx context.Context, orderID string, authorization str
 // RefundOrder refund an order
 //
 // Docs: https://developer.revolut.com/docs/merchant/refund-order
-func (s *Orders) RefundOrder(ctx context.Context, orderID string, authorization string, revolutAPIVersion OrdersRevolutAPIVersion, idempotencyKey string, req OrderRefundV2) (*OrderV6, error) {
+func (s *Orders) RefundOrder(ctx context.Context, orderID string, authorization string, revolutAPIVersion RevolutAPIVersion, idempotencyKey string, req OrderRefundV2) (*OrderV6, error) {
 	if orderID == "" {
 		return nil, errors.New("merchant: order_id is required")
 	}

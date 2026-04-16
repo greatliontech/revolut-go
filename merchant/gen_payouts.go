@@ -21,7 +21,7 @@ type Payouts struct {
 // GetList retrieve a payout list
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payout-list
-func (s *Payouts) GetList(ctx context.Context, authorization string, revolutAPIVersion PayoutsRevolutAPIVersion, opts *RetrievePayoutListParams) ([]Payout, error) {
+func (s *Payouts) GetList(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrievePayoutListParams) ([]Payout, error) {
 	if authorization == "" {
 		return nil, errors.New("merchant: Authorization is required")
 	}
@@ -53,7 +53,7 @@ func (s *Payouts) GetList(ctx context.Context, authorization string, revolutAPIV
 
 // GetListAll iterates every page of GetList, yielding one Payout per
 // step. Break out of the loop to stop early.
-func (s *Payouts) GetListAll(ctx context.Context, authorization string, revolutAPIVersion PayoutsRevolutAPIVersion, opts *RetrievePayoutListParams) iter.Seq2[Payout, error] {
+func (s *Payouts) GetListAll(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrievePayoutListParams) iter.Seq2[Payout, error] {
 	return func(yield func(Payout, error) bool) {
 		var p RetrievePayoutListParams
 		if opts != nil {
@@ -84,7 +84,7 @@ func (s *Payouts) GetListAll(ctx context.Context, authorization string, revolutA
 // Get retrieve a payout
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-payout
-func (s *Payouts) Get(ctx context.Context, payoutID string, authorization string, revolutAPIVersion PayoutsRevolutAPIVersion) (*Payout, error) {
+func (s *Payouts) Get(ctx context.Context, payoutID string, authorization string, revolutAPIVersion RevolutAPIVersion) (*Payout, error) {
 	if payoutID == "" {
 		return nil, errors.New("merchant: payout_id is required")
 	}

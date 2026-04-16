@@ -21,7 +21,7 @@ type Subscriptions struct {
 // GetPlanList retrieve a subscription plan list
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-subscription-plan-list
-func (s *Subscriptions) GetPlanList(ctx context.Context, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion, opts *RetrieveSubscriptionPlanListParams) (*SubscriptionPlans, error) {
+func (s *Subscriptions) GetPlanList(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrieveSubscriptionPlanListParams) (*SubscriptionPlans, error) {
 	if authorization == "" {
 		return nil, errors.New("merchant: Authorization is required")
 	}
@@ -53,7 +53,7 @@ func (s *Subscriptions) GetPlanList(ctx context.Context, authorization string, r
 
 // GetPlanListAll iterates every page of GetPlanList, yielding one SubscriptionPlan per
 // step. Break out of the loop to stop early.
-func (s *Subscriptions) GetPlanListAll(ctx context.Context, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion, opts *RetrieveSubscriptionPlanListParams) iter.Seq2[SubscriptionPlan, error] {
+func (s *Subscriptions) GetPlanListAll(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrieveSubscriptionPlanListParams) iter.Seq2[SubscriptionPlan, error] {
 	return func(yield func(SubscriptionPlan, error) bool) {
 		var p RetrieveSubscriptionPlanListParams
 		if opts != nil {
@@ -82,7 +82,7 @@ func (s *Subscriptions) GetPlanListAll(ctx context.Context, authorization string
 // CreatePlan create a subscription plan
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-subscription-plan
-func (s *Subscriptions) CreatePlan(ctx context.Context, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion, req SubscriptionPlanCreation) (*SubscriptionPlan, error) {
+func (s *Subscriptions) CreatePlan(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, req SubscriptionPlanCreation) (*SubscriptionPlan, error) {
 	if authorization == "" {
 		return nil, errors.New("merchant: Authorization is required")
 	}
@@ -119,7 +119,7 @@ func (s *Subscriptions) CreatePlan(ctx context.Context, authorization string, re
 // GetPlan retrieve a subscription plan
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-subscription-plan
-func (s *Subscriptions) GetPlan(ctx context.Context, subscriptionPlanID string, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion) (*SubscriptionPlan, error) {
+func (s *Subscriptions) GetPlan(ctx context.Context, subscriptionPlanID string, authorization string, revolutAPIVersion RevolutAPIVersion) (*SubscriptionPlan, error) {
 	if subscriptionPlanID == "" {
 		return nil, errors.New("merchant: subscription_plan_id is required")
 	}
@@ -154,7 +154,7 @@ func (s *Subscriptions) GetPlan(ctx context.Context, subscriptionPlanID string, 
 // GetList retrieve a subscription list
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-subscription-list
-func (s *Subscriptions) GetList(ctx context.Context, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion, opts *RetrieveSubscriptionListParams) (*SubscriptionsResponse, error) {
+func (s *Subscriptions) GetList(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrieveSubscriptionListParams) (*SubscriptionsResponse, error) {
 	if authorization == "" {
 		return nil, errors.New("merchant: Authorization is required")
 	}
@@ -186,7 +186,7 @@ func (s *Subscriptions) GetList(ctx context.Context, authorization string, revol
 
 // GetListAll iterates every page of GetList, yielding one Subscription per
 // step. Break out of the loop to stop early.
-func (s *Subscriptions) GetListAll(ctx context.Context, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion, opts *RetrieveSubscriptionListParams) iter.Seq2[Subscription, error] {
+func (s *Subscriptions) GetListAll(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrieveSubscriptionListParams) iter.Seq2[Subscription, error] {
 	return func(yield func(Subscription, error) bool) {
 		var p RetrieveSubscriptionListParams
 		if opts != nil {
@@ -215,7 +215,7 @@ func (s *Subscriptions) GetListAll(ctx context.Context, authorization string, re
 // Create create a subscription
 //
 // Docs: https://developer.revolut.com/docs/merchant/create-subscription
-func (s *Subscriptions) Create(ctx context.Context, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion, idempotencyKey string, req SubscriptionCreation) (*Subscription, error) {
+func (s *Subscriptions) Create(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersion, idempotencyKey string, req SubscriptionCreation) (*Subscription, error) {
 	if authorization == "" {
 		return nil, errors.New("merchant: Authorization is required")
 	}
@@ -255,7 +255,7 @@ func (s *Subscriptions) Create(ctx context.Context, authorization string, revolu
 // Get retrieve a subscription
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-subscription
-func (s *Subscriptions) Get(ctx context.Context, subscriptionID string, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion) (*Subscription, error) {
+func (s *Subscriptions) Get(ctx context.Context, subscriptionID string, authorization string, revolutAPIVersion RevolutAPIVersion) (*Subscription, error) {
 	if subscriptionID == "" {
 		return nil, errors.New("merchant: subscription_id is required")
 	}
@@ -290,7 +290,7 @@ func (s *Subscriptions) Get(ctx context.Context, subscriptionID string, authoriz
 // Update update a subscription
 //
 // Docs: https://developer.revolut.com/docs/merchant/update-subscription
-func (s *Subscriptions) Update(ctx context.Context, subscriptionID string, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion, req SubscriptionUpdate) (*Subscription, error) {
+func (s *Subscriptions) Update(ctx context.Context, subscriptionID string, authorization string, revolutAPIVersion RevolutAPIVersion, req SubscriptionUpdate) (*Subscription, error) {
 	if subscriptionID == "" {
 		return nil, errors.New("merchant: subscription_id is required")
 	}
@@ -327,7 +327,7 @@ func (s *Subscriptions) Update(ctx context.Context, subscriptionID string, autho
 // CancelSubscription cancel a subscription
 //
 // Docs: https://developer.revolut.com/docs/merchant/cancel-subscription
-func (s *Subscriptions) CancelSubscription(ctx context.Context, subscriptionID string, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion) error {
+func (s *Subscriptions) CancelSubscription(ctx context.Context, subscriptionID string, authorization string, revolutAPIVersion RevolutAPIVersion) error {
 	if subscriptionID == "" {
 		return errors.New("merchant: subscription_id is required")
 	}
@@ -359,7 +359,7 @@ func (s *Subscriptions) CancelSubscription(ctx context.Context, subscriptionID s
 // GetCycleList retrieve a subscription cycle list
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-subscription-cycle-list
-func (s *Subscriptions) GetCycleList(ctx context.Context, subscriptionID string, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion, opts *RetrieveSubscriptionCycleListParams) (*SubscriptionCycles, error) {
+func (s *Subscriptions) GetCycleList(ctx context.Context, subscriptionID string, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrieveSubscriptionCycleListParams) (*SubscriptionCycles, error) {
 	if subscriptionID == "" {
 		return nil, errors.New("merchant: subscription_id is required")
 	}
@@ -397,7 +397,7 @@ func (s *Subscriptions) GetCycleList(ctx context.Context, subscriptionID string,
 
 // GetCycleListAll iterates every page of GetCycleList, yielding one SubscriptionCycle per
 // step. Break out of the loop to stop early.
-func (s *Subscriptions) GetCycleListAll(ctx context.Context, subscriptionID string, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion, opts *RetrieveSubscriptionCycleListParams) iter.Seq2[SubscriptionCycle, error] {
+func (s *Subscriptions) GetCycleListAll(ctx context.Context, subscriptionID string, authorization string, revolutAPIVersion RevolutAPIVersion, opts *RetrieveSubscriptionCycleListParams) iter.Seq2[SubscriptionCycle, error] {
 	return func(yield func(SubscriptionCycle, error) bool) {
 		var p RetrieveSubscriptionCycleListParams
 		if opts != nil {
@@ -431,7 +431,7 @@ func (s *Subscriptions) GetCycleListAll(ctx context.Context, subscriptionID stri
 // GetCycle retrieve a subscription cycle
 //
 // Docs: https://developer.revolut.com/docs/merchant/retrieve-subscription-cycle
-func (s *Subscriptions) GetCycle(ctx context.Context, subscriptionID string, cycleID string, authorization string, revolutAPIVersion SubscriptionsRevolutAPIVersion) (*SubscriptionCycle, error) {
+func (s *Subscriptions) GetCycle(ctx context.Context, subscriptionID string, cycleID string, authorization string, revolutAPIVersion RevolutAPIVersion) (*SubscriptionCycle, error) {
 	if subscriptionID == "" {
 		return nil, errors.New("merchant: subscription_id is required")
 	}

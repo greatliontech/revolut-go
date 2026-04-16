@@ -25,12 +25,13 @@ type Config struct {
 // lower/names pass that runs after this.
 func FromOpenAPI(doc *openapi3.T, cfg Config) (*ir.Spec, error) {
 	b := &Builder{
-		doc:        doc,
-		cfg:        cfg,
-		declByName: map[string]*ir.Decl{},
-		resourceByName: map[string]*ir.Resource{},
-		specNameToGo: map[string]string{},
-		reserved:   map[string]bool{},
+		doc:             doc,
+		cfg:             cfg,
+		declByName:      map[string]*ir.Decl{},
+		resourceByName:  map[string]*ir.Resource{},
+		specNameToGo:    map[string]string{},
+		reserved:        map[string]bool{},
+		sharedParamEnum: map[string]*ir.Type{},
 	}
 	b.reserveResourceNames()
 	b.buildDecls()
@@ -83,6 +84,14 @@ type Builder struct {
 	// ref in a pointer — `type Node struct { Child Node }` is
 	// invalid Go, `type Node struct { Child *Node }` is the fix.
 	currentBuildSpec string
+
+	// sharedParamEnum caches the Go type for each shared
+	// components/parameters entry keyed by $ref. When multiple
+	// operations reference the same parameter ($ref:
+	// '#/components/parameters/Revolut-Api-Version'), the
+	// generator should emit a single enum type and reuse it
+	// rather than fabricating per-resource duplicates.
+	sharedParamEnum map[string]*ir.Type
 }
 
 // resolvedName returns the Go identifier a spec schema name resolves

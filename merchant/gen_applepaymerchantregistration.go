@@ -43,7 +43,7 @@ func (s *ApplePayMerchantRegistration) RegisterDomainApplePay(ctx context.Contex
 // UnregisterDomainApplePay unregister domain for Apple Pay
 //
 // Docs: https://developer.revolut.com/docs/merchant/unregister-domain-apple-pay
-func (s *ApplePayMerchantRegistration) UnregisterDomainApplePay(ctx context.Context, authorization string, revolutAPIVersion ApplePayMerchantRegistrationRevolutAPIVersion, req ApplePayMerchantRegistrationBody) error {
+func (s *ApplePayMerchantRegistration) UnregisterDomainApplePay(ctx context.Context, authorization string, revolutAPIVersion RevolutAPIVersionOptional, req ApplePayMerchantRegistrationBody) error {
 	if authorization == "" {
 		return errors.New("merchant: Authorization is required")
 	}
