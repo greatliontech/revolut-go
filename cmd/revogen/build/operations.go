@@ -132,6 +132,7 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 		required       bool
 		defaultDoc     string
 		defaultLiteral string
+		explodeFalse   bool
 	}
 	var queries []queryParam
 	for _, paramRef := range concatParameters(item.Parameters, op.Parameters) {
@@ -158,11 +159,12 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 				typ = ir.Prim("string")
 			}
 			q := queryParam{
-				wireName: p.Name,
-				goName:   names.FieldName(p.Name),
-				typ:      typ,
-				doc:      firstLine(p.Description),
-				required: p.Required,
+				wireName:     p.Name,
+				goName:       names.FieldName(p.Name),
+				typ:          typ,
+				doc:          firstLine(p.Description),
+				required:     p.Required,
+				explodeFalse: isExplodeFalse(p),
 			}
 			if p.Schema != nil && p.Schema.Value != nil {
 				q.defaultDoc = defaultDoc(p.Schema.Value)
@@ -216,6 +218,7 @@ func (b *Builder) applyParameters(m *ir.Method, item *openapi3.PathItem, op *ope
 			Required:       q.required,
 			DefaultDoc:     q.defaultDoc,
 			DefaultLiteral: q.defaultLiteral,
+			ExplodeFalse:   q.explodeFalse,
 		})
 	}
 	b.registerDecl(paramsName, paramsDecl)
@@ -832,6 +835,24 @@ func isTransportOwnedHeader(name string) bool {
 		return true
 	}
 	return false
+}
+
+// isExplodeFalse reports whether a query parameter uses the
+// style=form, explode=false serialization — items are joined with
+// commas under a single key instead of repeating the key per value.
+// OpenAPI's defaults for a query array are style=form, explode=true,
+// so this fires only when the spec pins explode: false explicitly.
+func isExplodeFalse(p *openapi3.Parameter) bool {
+	if p == nil || p.Schema == nil || p.Schema.Value == nil {
+		return false
+	}
+	if p.Schema.Value.Type == nil || !p.Schema.Value.Type.Is("array") {
+		return false
+	}
+	if p.Explode == nil {
+		return false
+	}
+	return !*p.Explode
 }
 
 func tagLooksDeprecated(tags []string) bool {

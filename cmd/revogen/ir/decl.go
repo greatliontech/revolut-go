@@ -96,6 +96,13 @@ type Field struct {
 	// may have set false on purpose, and zero-value detection would
 	// overwrite it.
 	DefaultLiteral string
+
+	// ExplodeFalse, when true, marks an array query parameter that
+	// OpenAPI declares as style=form + explode=false, meaning items
+	// are serialised as a single comma-joined value (key=a,b,c)
+	// instead of repeated entries (key=a&key=b&key=c). Zero value
+	// keeps the default explode=true behaviour.
+	ExplodeFalse bool
 }
 
 // EnumValue is one entry in an enum.

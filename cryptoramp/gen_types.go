@@ -363,24 +363,12 @@ func (p *GetBuyParams) encode() url.Values {
 		return nil
 	}
 	q := url.Values{}
-	if p.Fiat != "" {
-		q.Set("fiat", string(p.Fiat))
-	}
-	if p.Amount != "" {
-		q.Set("amount", string(p.Amount))
-	}
-	if p.Crypto != "" {
-		q.Set("crypto", p.Crypto)
-	}
-	if p.Payment != "" {
-		q.Set("payment", string(p.Payment))
-	}
-	if p.Region != "" {
-		q.Set("region", string(p.Region))
-	}
-	if p.Wallet != "" {
-		q.Set("wallet", p.Wallet)
-	}
+	q.Set("fiat", string(p.Fiat))
+	q.Set("amount", string(p.Amount))
+	q.Set("crypto", p.Crypto)
+	q.Set("payment", string(p.Payment))
+	q.Set("region", string(p.Region))
+	q.Set("wallet", p.Wallet)
 	if p.OrderID != "" {
 		q.Set("orderId", p.OrderID)
 	}
@@ -421,17 +409,17 @@ func (p *GetOrdersParams) encode() url.Values {
 		return nil
 	}
 	q := url.Values{}
-	if !p.Start.IsZero() {
-		q.Set("start", p.Start.UTC().Format(time.RFC3339Nano))
-	}
-	if !p.End.IsZero() {
-		q.Set("end", p.End.UTC().Format(time.RFC3339Nano))
-	}
+	q.Set("start", p.Start.UTC().Format(time.RFC3339Nano))
+	q.Set("end", p.End.UTC().Format(time.RFC3339Nano))
 	if p.Skip != 0 {
 		q.Set("skip", strconv.FormatInt(int64(p.Skip), 10))
+	} else {
+		q.Set("skip", strconv.FormatInt(int64((0)), 10))
 	}
 	if p.Limit != 0 {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	} else {
+		q.Set("limit", strconv.FormatInt(int64((100)), 10))
 	}
 	return q
 }
@@ -465,9 +453,7 @@ func (p *GetOrdersParams2) encode() url.Values {
 		return nil
 	}
 	q := url.Values{}
-	if p.Wallet != "" {
-		q.Set("wallet", p.Wallet)
-	}
+	q.Set("wallet", p.Wallet)
 	return q
 }
 
@@ -501,21 +487,11 @@ func (p *GetQuoteParams) encode() url.Values {
 		return nil
 	}
 	q := url.Values{}
-	if p.Fiat != "" {
-		q.Set("fiat", string(p.Fiat))
-	}
-	if p.Amount != "" {
-		q.Set("amount", string(p.Amount))
-	}
-	if p.Crypto != "" {
-		q.Set("crypto", p.Crypto)
-	}
-	if p.Payment != "" {
-		q.Set("payment", string(p.Payment))
-	}
-	if p.Region != "" {
-		q.Set("region", string(p.Region))
-	}
+	q.Set("fiat", string(p.Fiat))
+	q.Set("amount", string(p.Amount))
+	q.Set("crypto", p.Crypto)
+	q.Set("payment", string(p.Payment))
+	q.Set("region", string(p.Region))
 	if p.FeePercentage != "" {
 		q.Set("feePercentage", string(p.FeePercentage))
 	}

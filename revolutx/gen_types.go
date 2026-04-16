@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -852,6 +853,8 @@ func (p *GetCandlesParams) encode() url.Values {
 	q := url.Values{}
 	if p.Interval != 0 {
 		q.Set("interval", strconv.FormatInt(int64(p.Interval), 10))
+	} else {
+		q.Set("interval", strconv.FormatInt(int64((5)), 10))
 	}
 	if p.Since != 0 {
 		q.Set("since", strconv.FormatInt(int64(p.Since), 10))
@@ -896,6 +899,8 @@ func (p *GetOrderBookParams) encode() url.Values {
 	q := url.Values{}
 	if p.Limit != 0 {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	} else {
+		q.Set("limit", strconv.FormatInt(int64((20)), 10))
 	}
 	return q
 }
@@ -966,14 +971,26 @@ func (p *GetActiveOrdersParams) encode() url.Values {
 		return nil
 	}
 	q := url.Values{}
-	for _, v := range p.Symbols {
-		q.Add("symbols", v)
+	if len(p.Symbols) > 0 {
+		parts := make([]string, 0, len(p.Symbols))
+		for _, v := range p.Symbols {
+			parts = append(parts, v)
+		}
+		q.Set("symbols", strings.Join(parts, ","))
 	}
-	for _, v := range p.OrderStates {
-		q.Add("order_states", string(v))
+	if len(p.OrderStates) > 0 {
+		parts := make([]string, 0, len(p.OrderStates))
+		for _, v := range p.OrderStates {
+			parts = append(parts, string(v))
+		}
+		q.Set("order_states", strings.Join(parts, ","))
 	}
-	for _, v := range p.OrderTypes {
-		q.Add("order_types", string(v))
+	if len(p.OrderTypes) > 0 {
+		parts := make([]string, 0, len(p.OrderTypes))
+		for _, v := range p.OrderTypes {
+			parts = append(parts, string(v))
+		}
+		q.Set("order_types", strings.Join(parts, ","))
 	}
 	if p.Side != "" {
 		q.Set("side", string(p.Side))
@@ -983,6 +1000,8 @@ func (p *GetActiveOrdersParams) encode() url.Values {
 	}
 	if p.Limit != 0 {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	} else {
+		q.Set("limit", strconv.FormatInt(int64((300)), 10))
 	}
 	return q
 }
@@ -1037,14 +1056,26 @@ func (p *GetHistoricalOrdersParams) encode() url.Values {
 		return nil
 	}
 	q := url.Values{}
-	for _, v := range p.Symbols {
-		q.Add("symbols", v)
+	if len(p.Symbols) > 0 {
+		parts := make([]string, 0, len(p.Symbols))
+		for _, v := range p.Symbols {
+			parts = append(parts, v)
+		}
+		q.Set("symbols", strings.Join(parts, ","))
 	}
-	for _, v := range p.OrderStates {
-		q.Add("order_states", string(v))
+	if len(p.OrderStates) > 0 {
+		parts := make([]string, 0, len(p.OrderStates))
+		for _, v := range p.OrderStates {
+			parts = append(parts, string(v))
+		}
+		q.Set("order_states", strings.Join(parts, ","))
 	}
-	for _, v := range p.OrderTypes {
-		q.Add("order_types", string(v))
+	if len(p.OrderTypes) > 0 {
+		parts := make([]string, 0, len(p.OrderTypes))
+		for _, v := range p.OrderTypes {
+			parts = append(parts, string(v))
+		}
+		q.Set("order_types", strings.Join(parts, ","))
 	}
 	if p.StartDate != 0 {
 		q.Set("start_date", strconv.FormatInt(int64(p.StartDate), 10))
@@ -1057,6 +1088,8 @@ func (p *GetHistoricalOrdersParams) encode() url.Values {
 	}
 	if p.Limit != 0 {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	} else {
+		q.Set("limit", strconv.FormatInt(int64((1900)), 10))
 	}
 	return q
 }
@@ -1091,8 +1124,12 @@ func (p *GetTickerParams) encode() url.Values {
 		return nil
 	}
 	q := url.Values{}
-	for _, v := range p.Symbols {
-		q.Add("symbols", v)
+	if len(p.Symbols) > 0 {
+		parts := make([]string, 0, len(p.Symbols))
+		for _, v := range p.Symbols {
+			parts = append(parts, v)
+		}
+		q.Set("symbols", strings.Join(parts, ","))
 	}
 	return q
 }
@@ -1131,6 +1168,8 @@ func (p *GetAllTradesParams) encode() url.Values {
 	}
 	if p.Limit != 0 {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	} else {
+		q.Set("limit", strconv.FormatInt(int64((1900)), 10))
 	}
 	return q
 }
@@ -1183,6 +1222,8 @@ func (p *GetPrivateTradesParams) encode() url.Values {
 	}
 	if p.Limit != 0 {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	} else {
+		q.Set("limit", strconv.FormatInt(int64((1900)), 10))
 	}
 	return q
 }

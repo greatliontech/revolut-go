@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/greatliontech/revolut-go/internal/core"
@@ -3030,6 +3031,8 @@ func (p *GetAccountingCategoriesParams) encode() url.Values {
 	q := url.Values{}
 	if p.Limit != 0 {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	} else {
+		q.Set("limit", strconv.FormatInt(int64((100)), 10))
 	}
 	if p.PageToken != "" {
 		q.Set("page_token", string(p.PageToken))
@@ -3086,9 +3089,15 @@ func (p *GetCardInvitationsParams) encode() url.Values {
 	}
 	if p.Limit != "" {
 		q.Set("limit", string(p.Limit))
+	} else {
+		q.Set("limit", string((json.Number("100"))))
 	}
-	for _, v := range p.State {
-		q.Add("state", string(v))
+	if len(p.State) > 0 {
+		parts := make([]string, 0, len(p.State))
+		for _, v := range p.State {
+			parts = append(parts, string(v))
+		}
+		q.Set("state", strings.Join(parts, ","))
 	}
 	return q
 }
@@ -3196,6 +3205,8 @@ func (p *GetCardsParams) encode() url.Values {
 	}
 	if p.Limit != "" {
 		q.Set("limit", string(p.Limit))
+	} else {
+		q.Set("limit", string((json.Number("100"))))
 	}
 	return q
 }
@@ -3364,6 +3375,8 @@ func (p *GetCounterpartiesParams) encode() url.Values {
 	}
 	if p.Limit != 0 {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	} else {
+		q.Set("limit", strconv.FormatInt(int64((100)), 10))
 	}
 	return q
 }
@@ -3440,6 +3453,8 @@ func (p *GetExpensesParams) encode() url.Values {
 	}
 	if p.Count != 0 {
 		q.Set("count", strconv.FormatInt(int64(p.Count), 10))
+	} else {
+		q.Set("count", strconv.FormatInt(int64((100)), 10))
 	}
 	if p.State != "" {
 		q.Set("state", string(p.State))
@@ -3482,6 +3497,8 @@ func (p *GetLabelGroupsParams) encode() url.Values {
 	q := url.Values{}
 	if p.Limit != 0 {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	} else {
+		q.Set("limit", strconv.FormatInt(int64((100)), 10))
 	}
 	if p.PageToken != "" {
 		q.Set("page_token", string(p.PageToken))
@@ -3529,6 +3546,8 @@ func (p *GetLabelsParams) encode() url.Values {
 	q := url.Values{}
 	if p.Limit != 0 {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	} else {
+		q.Set("limit", strconv.FormatInt(int64((100)), 10))
 	}
 	if p.PageToken != "" {
 		q.Set("page_token", string(p.PageToken))
@@ -3588,6 +3607,8 @@ func (p *GetPayoutLinksParams) encode() url.Values {
 	}
 	if p.Limit != 0 {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	} else {
+		q.Set("limit", strconv.FormatInt(int64((100)), 10))
 	}
 	return q
 }
@@ -3626,15 +3647,13 @@ func (p *GetRateParams) encode() url.Values {
 		return nil
 	}
 	q := url.Values{}
-	if p.From != "" {
-		q.Set("from", string(p.From))
-	}
+	q.Set("from", string(p.From))
 	if p.Amount != "" {
 		q.Set("amount", string(p.Amount))
+	} else {
+		q.Set("amount", string(("1.00")))
 	}
-	if p.To != "" {
-		q.Set("to", string(p.To))
-	}
+	q.Set("to", string(p.To))
 	return q
 }
 
@@ -3676,6 +3695,8 @@ func (p *GetRolesParams) encode() url.Values {
 	}
 	if p.Limit != "" {
 		q.Set("limit", string(p.Limit))
+	} else {
+		q.Set("limit", string((json.Number("100"))))
 	}
 	return q
 }
@@ -3795,6 +3816,8 @@ func (p *GetTaxRatesParams) encode() url.Values {
 	q := url.Values{}
 	if p.Limit != 0 {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	} else {
+		q.Set("limit", strconv.FormatInt(int64((100)), 10))
 	}
 	if p.PageToken != "" {
 		q.Set("page_token", string(p.PageToken))
@@ -3847,6 +3870,8 @@ func (p *GetTeamMembersParams) encode() url.Values {
 	}
 	if p.Limit != "" {
 		q.Set("limit", string(p.Limit))
+	} else {
+		q.Set("limit", string((json.Number("100"))))
 	}
 	return q
 }
@@ -3953,6 +3978,8 @@ func (p *GetTransactionsParams) encode() url.Values {
 	}
 	if p.Count != 0 {
 		q.Set("count", strconv.FormatInt(int64(p.Count), 10))
+	} else {
+		q.Set("count", strconv.FormatInt(int64((100)), 10))
 	}
 	if p.Type != "" {
 		q.Set("type", string(p.Type))
@@ -3995,6 +4022,8 @@ func (p *GetFailedWebhookEventsParams) encode() url.Values {
 	q := url.Values{}
 	if p.Limit != 0 {
 		q.Set("limit", strconv.FormatInt(int64(p.Limit), 10))
+	} else {
+		q.Set("limit", strconv.FormatInt(int64((100)), 10))
 	}
 	if !p.CreatedBefore.IsZero() {
 		q.Set("created_before", p.CreatedBefore.UTC().Format(time.RFC3339Nano))

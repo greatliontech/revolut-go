@@ -332,7 +332,12 @@ func defaultZeroCond(f *ir.Field) string {
 
 // writeQueryParamsEncoder emits encode() url.Values for a generated
 // `<Op>Params` struct. Each field renders one key=value pair when
-// non-zero; arrays expand into repeated entries.
+// non-zero; arrays expand into repeated entries (style=form
+// explode=true), or a single comma-joined entry when the spec pins
+// explode=false via Field.ExplodeFalse. Fields with a DefaultLiteral
+// are populated on a nil pointer when left at their zero value, so
+// callers that don't set a knob still get the spec-documented
+// default on the wire.
 func writeQueryParamsEncoder(w *fileWriter, d *ir.Decl) {
 	w.printf("// encode serializes %s into a URL query.\n", d.Name)
 	w.printf("func (p *%s) encode() url.Values {\n", d.Name)
@@ -343,18 +348,59 @@ func writeQueryParamsEncoder(w *fileWriter, d *ir.Decl) {
 		if f.Type.IsSlice() {
 			inner := f.Type.Elem
 			conv := queryStringify(inner, "v")
+			if f.ExplodeFalse {
+				// Single comma-joined entry — the server rejects
+				// repeated keys when the spec declares
+				// style=form, explode=false.
+				w.printf("\tif len(%s) > 0 {\n", expr)
+				w.write("\t\tparts := make([]string, 0, len(" + expr + "))\n")
+				w.printf("\t\tfor _, v := range %s {\n", expr)
+				w.printf("\t\t\tparts = append(parts, %s)\n", conv)
+				w.write("\t\t}\n")
+				w.printf("\t\tq.Set(%q, strings.Join(parts, \",\"))\n", f.JSONName)
+				w.write("\t}\n")
+				continue
+			}
 			w.printf("\tfor _, v := range %s {\n", expr)
 			w.printf("\t\tq.Add(%q, %s)\n", f.JSONName, conv)
 			w.write("\t}\n")
 			continue
 		}
 		conv := queryStringify(f.Type, expr)
+		// Required fields are emitted unconditionally: the zero
+		// value may be a legitimate wire value (e.g. a required
+		// time.Time whose zero encodes to "0001-01-01T00:00:00Z"
+		// is better sent and rejected than silently dropped so the
+		// caller has no idea why the server complains).
+		if f.Required {
+			w.printf("\tq.Set(%q, %s)\n", f.JSONName, conv)
+			continue
+		}
 		guard := isSet(f.Type, expr)
+		if guard == "" {
+			w.printf("\tq.Set(%q, %s)\n", f.JSONName, conv)
+			continue
+		}
 		w.printf("\tif %s {\n", guard)
 		w.printf("\t\tq.Set(%q, %s)\n", f.JSONName, conv)
+		if f.DefaultLiteral != "" {
+			// Backfill the server default when the caller left the
+			// field unset; keeps docs and wire in sync.
+			w.write("\t} else {\n")
+			w.printf("\t\tq.Set(%q, %s)\n", f.JSONName, defaultLiteralStringExpr(f))
+		}
 		w.write("\t}\n")
 	}
 	w.write("\treturn q\n}\n\n")
+}
+
+// defaultLiteralStringExpr renders the Go expression that converts
+// Field.DefaultLiteral into the string written onto the wire. The
+// literal itself is typed (an int, a named enum, etc.); we reuse
+// queryStringify's conversion rules so every default lands in the
+// same form a caller-supplied value would.
+func defaultLiteralStringExpr(f *ir.Field) string {
+	return queryStringify(f.Type, "("+f.DefaultLiteral+")")
 }
 
 // queryStringify renders a Go expression that converts a typed

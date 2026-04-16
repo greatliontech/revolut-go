@@ -64,6 +64,11 @@ func FileImports(spec *ir.Spec) map[string][]string {
 			// the explicit cases miss.
 			for _, f := range d.Fields {
 				addQueryFieldImports(f.Type, typesSet)
+				// style=form, explode=false joins slice values with
+				// strings.Join so the wire shape matches the spec.
+				if f.ExplodeFalse {
+					typesSet["strings"] = struct{}{}
+				}
 			}
 		}
 	}
